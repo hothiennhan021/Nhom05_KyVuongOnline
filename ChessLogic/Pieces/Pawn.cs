@@ -57,33 +57,46 @@ namespace ChessLogic
         }
         private IEnumerable<Move> ForwardMoves(Position from, Board board)
         {
-            // Tính vị trí 1 bước tiến
+            // 1. Tính vị trí 1 bước tiến
             Position oneMovePos = from + forward;
 
-            // Kiểm tra xem có thể đi 1 bước không
+            // Kiểm tra ô 1 bước có trống không
             if (CanMoveTo(oneMovePos, board))
             {
-                if(oneMovePos.Row==0 || oneMovePos.Row==7)
+                // A. Nếu đi 1 bước mà chạm đáy (Hàng 0 hoặc 7) -> Phong cấp
+                if (oneMovePos.Row == 0 || oneMovePos.Row == 7)
                 {
-                    foreach(Move promMove in PromotionMoves(from,oneMovePos))
+                    foreach (Move promMove in PromotionMoves(from, oneMovePos))
                     {
                         yield return promMove;
                     }
                 }
                 else
                 {
-                    yield return new NormalMove(from,oneMovePos);
-
+                    // B. Đi 1 bước thường
+                    yield return new NormalMove(from, oneMovePos);
                 }
-                // Tính vị trí 2 bước tiến
-                Position twoMovePos = oneMovePos + forward; // (hoặc from + 2 * forward)
 
-                // Nếu quân Tốt chưa di chuyển VÀ ô 2 bước cũng trống
-                // (lưu ý: chúng ta đã biết ô 1 bước là trống từ khối if bên ngoài)
-                if (!HasMoved && CanMoveTo(twoMovePos, board))
+                // ================================================================
+                // 2. XỬ LÝ ĐI 2 BƯỚC (PHẦN SỬA LỖI QUAN TRỌNG)
+                // ================================================================
+
+                // Thay vì tin vào biến !HasMoved (dễ bị lỗi), ta kiểm tra Hàng (Row).
+                // - Tốt Đen luôn xuất phát ở Hàng 1 (Row 1).
+                // - Tốt Trắng luôn xuất phát ở Hàng 6 (Row 6).
+
+                bool isAtStart = (Color == Player.Black && from.Row == 1)
+                              || (Color == Player.White && from.Row == 6);
+
+                if (isAtStart)
                 {
-                    // Thêm nước đi 2 bước
-                    yield return new NormalMove(from, twoMovePos);
+                    Position twoMovePos = oneMovePos + forward;
+
+                    // Nếu ô thứ 2 cũng trống -> Được phép đi 2 bước
+                    if (CanMoveTo(twoMovePos, board))
+                    {
+                        yield return new NormalMove(from, twoMovePos);
+                    }
                 }
             }
         }
