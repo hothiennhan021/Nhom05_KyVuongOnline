@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using ChessClient;
 
 namespace AccountUI
@@ -11,39 +9,36 @@ namespace AccountUI
     {
         private bool _isListening = false;
 
-        public MainMenu()
+        public MainMenu() { InitializeComponent(); }
+        private void MainMenu_Load(object sender, EventArgs e) { }
+
+        // BUTTON EVENTS
+        private async void button1_Click(object sender, EventArgs e) => await SendReq("FIND_GAME", "Đang tìm...", button1);
+        private async void btnCreateRoom_Click(object sender, EventArgs e) => await SendReq("CREATE_ROOM", "Đang tạo...", btnCreateRoom);
+        private async void btnJoinRoom_Click(object sender, EventArgs e)
         {
-            InitializeComponent();
+            if (string.IsNullOrEmpty(txtRoomId.Text)) { MessageBox.Show("Nhập ID!"); return; }
+            await SendReq($"JOIN_ROOM|{txtRoomId.Text}", "Đang vào...", btnJoinRoom);
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private async Task SendReq(string cmd, string waitText, Button btn)
         {
             if (_isListening) return;
+            if (!ClientManager.Instance.IsConnected) { MessageBox.Show("Mất kết nối!"); return; }
+
             try
             {
-                button1.Text = "Đang tìm...";
-                button1.Enabled = false;
-                button3.Enabled = false;
                 _isListening = true;
+                btn.Text = waitText;
+                button1.Enabled = false; btnCreateRoom.Enabled = false; btnJoinRoom.Enabled = false;
 
-                if (!ClientManager.Instance.IsConnected)
-                {
-                    MessageBox.Show("Mất kết nối! Vui lòng đăng nhập lại.");
-                    this.Close();
-                    return;
-                }
-
-                await ClientManager.Instance.SendAsync("FIND_GAME");
-                await ListenForGameStart();
+                await ClientManager.Instance.SendAsync(cmd);
+                await ListenLoop();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi: {ex.Message}");
-                ResetUI();
-            }
+            catch { ResetUI(); }
         }
 
-        private async Task ListenForGameStart()
+        private async Task ListenLoop()
         {
             await Task.Run(() =>
             {
@@ -51,22 +46,32 @@ namespace AccountUI
                 {
                     try
                     {
-                        string message = ClientManager.Instance.WaitForMessage();
-                        if (message == null)
-                        {
-                            this.Invoke((MethodInvoker)(() => { MessageBox.Show("Mất kết nối."); this.Close(); }));
-                            break;
-                        }
+                        string msg = ClientManager.Instance.WaitForMessage();
+                        if (string.IsNullOrEmpty(msg)) { this.Invoke((MethodInvoker)ResetUI); break; }
 
-                        if (message.StartsWith("GAME_START"))
+                        if (msg.StartsWith("GAME_START"))
                         {
                             _isListening = false;
-                            LaunchWpfGameWindow(message);
+                            LaunchGame(msg);
                             break;
                         }
-                        else if (message.StartsWith("WAITING"))
+                        else if (msg.StartsWith("ROOM_CREATED"))
                         {
-                            this.Invoke((MethodInvoker)(() => button1.Text = "Đang đợi đối thủ..."));
+                            string id = msg.Split('|')[1];
+                            this.Invoke((MethodInvoker)(() => {
+                                txtRoomId.Text = id;
+                                labelRoom.Text = "Mã phòng: " + id;
+                                btnCreateRoom.Text = "Đang chờ...";
+                            }));
+                        }
+                        else if (msg.StartsWith("ERROR") || msg.StartsWith("ROOM_ERROR"))
+                        {
+                            this.Invoke((MethodInvoker)(() => { MessageBox.Show(msg); ResetUI(); }));
+                            break;
+                        }
+                        else if (msg.StartsWith("WAITING"))
+                        {
+                            this.Invoke((MethodInvoker)(() => button1.Text = "Đang đợi..."));
                         }
                     }
                     catch { _isListening = false; }
@@ -74,68 +79,41 @@ namespace AccountUI
             });
         }
 
-        private void LaunchWpfGameWindow(string gameStartMessage)
+        private void LaunchGame(string msg)
         {
-            Thread wpfThread = new Thread(() =>
+            System.Threading.Thread t = new System.Threading.Thread(() =>
             {
                 try
                 {
-                    ChessUI.MainWindow gameWindow = new ChessUI.MainWindow(gameStartMessage);
-
-                    gameWindow.Loaded += (s, e) => this.BeginInvoke((MethodInvoker)(() => this.Hide()));
-
-                    gameWindow.Closed += (s, e) =>
+                    ChessUI.MainWindow win = new ChessUI.MainWindow(msg);
+                    win.Loaded += (s, e) => this.Invoke((MethodInvoker)(() => this.Hide()));
+                    win.Closed += (s, e) =>
                     {
-                        // --- ĐẢM BẢO MENU HIỆN TRƯỚC ---
-                        try
-                        {
-                            if (!this.IsDisposed && this.IsHandleCreated)
-                            {
-                                this.Invoke((MethodInvoker)delegate
-                                {
-                                    this.Show();
-                                    this.WindowState = FormWindowState.Normal;
-                                    this.BringToFront();
-                                    ResetUI();
-                                });
-                            }
-                        }
-                        catch { }
-
-                        // Tắt luồng WPF sau cùng
-                        Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+                        this.Invoke((MethodInvoker)(() => { this.Show(); ResetUI(); }));
+                        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Background);
                     };
-
-                    gameWindow.Show();
-                    Dispatcher.Run();
+                    win.Show();
+                    System.Windows.Threading.Dispatcher.Run();
                 }
-                catch (Exception ex)
-                {
-                    this.BeginInvoke((MethodInvoker)(() => { MessageBox.Show("Lỗi Game: " + ex.Message); this.Show(); ResetUI(); }));
-                }
+                catch (Exception ex) { this.Invoke((MethodInvoker)(() => { MessageBox.Show("Lỗi: " + ex.Message); ResetUI(); })); }
             });
-
-            wpfThread.SetApartmentState(ApartmentState.STA);
-            wpfThread.IsBackground = false;
-            wpfThread.Start();
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.IsBackground = false;
+            t.Start();
         }
 
         private void ResetUI()
         {
             _isListening = false;
-            button1.Text = "Ghép trận";
-            button1.Enabled = true;
-            button3.Enabled = true;
+            button1.Enabled = true; btnCreateRoom.Enabled = true; btnJoinRoom.Enabled = true;
+            button1.Text = "Ghép trận ngẫu nhiên";
+            btnCreateRoom.Text = "Tạo phòng";
+            btnJoinRoom.Text = "Vào phòng";
+            labelRoom.Text = "";
         }
 
-        private void button3_Click(object sender, EventArgs e) { MessageBox.Show("Chưa có tính năng này."); }
+        private void button3_Click(object sender, EventArgs e) { }
         private void button4_Click(object sender, EventArgs e) { ClientManager.Disconnect(); Application.Exit(); }
-        private void MainMenu_Load(object sender, EventArgs e) { }
-
-        private void btnFriend_Click(object sender, EventArgs e)
-        {
-            Friend frm = new Friend();
-            frm.ShowDialog();
-        }
+        private void btnFriend_Click(object sender, EventArgs e) { new Friend().ShowDialog(); }
     }
 }

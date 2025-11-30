@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq; // [MỚI]: Cần để sử dụng FirstOrDefault cho logic xóa phòng
 
 namespace MyTcpServer
 {
@@ -11,14 +12,21 @@ namespace MyTcpServer
         private static readonly object _lobbyLock = new object();
         private static readonly ConcurrentDictionary<ConnectedClient, GameSession> _activeGames = new ConcurrentDictionary<ConnectedClient, GameSession>();
 
+        // [MỚI]: Từ điển để quản lý các phòng riêng
+        private static readonly ConcurrentDictionary<string, ConnectedClient> _privateRooms = new ConcurrentDictionary<string, ConnectedClient>();
+
         public static void HandleClientConnect(ConnectedClient client) { }
 
         public static void HandleClientDisconnect(ConnectedClient client)
         {
-            // Xóa khỏi hàng đợi nếu đang chờ
+            // Xóa khỏi hàng đợi nếu đang chờ (Logic gốc)
             lock (_lobbyLock) { _waitingLobby.Remove(client); }
 
-            // Xử lý nếu đang trong game
+            // [MỚI]: Xóa phòng nếu chủ phòng thoát
+            var roomKey = _privateRooms.FirstOrDefault(x => x.Value == client).Key;
+            if (roomKey != null) _privateRooms.TryRemove(roomKey, out _);
+
+            // Xử lý nếu đang trong game (Logic gốc)
             if (_activeGames.TryRemove(client, out GameSession session))
             {
                 if (!session.IsGameOver())
@@ -35,34 +43,69 @@ namespace MyTcpServer
             }
         }
 
+        // [MỚI]: TÍNH NĂNG TẠO PHÒNG (PUBLIC STATIC)
+        public static async Task CreateRoom(ConnectedClient creator)
+        {
+            // Tạo ID ngẫu nhiên (4 chữ số)
+            string id = new Random().Next(1000, 9999).ToString();
+            while (_privateRooms.ContainsKey(id)) id = new Random().Next(1000, 9999).ToString();
+
+            if (_privateRooms.TryAdd(id, creator))
+            {
+                await creator.SendMessageAsync($"ROOM_CREATED|{id}");
+            }
+            else
+            {
+                await creator.SendMessageAsync("ROOM_ERROR|Không thể tạo phòng.");
+            }
+        }
+
+        // [MỚI]: TÍNH NĂNG VÀO PHÒNG (PUBLIC STATIC)
+        public static async Task JoinRoom(ConnectedClient joiner, string id)
+        {
+            if (_privateRooms.TryRemove(id, out ConnectedClient creator))
+            {
+                if (!creator.Client.Connected)
+                {
+                    await joiner.SendMessageAsync("ROOM_ERROR|Phòng đã hủy.");
+                    return;
+                }
+
+                // Tạo Game Session
+                var session = new GameSession(creator, joiner);
+
+                // [FIX LỖI QUAN TRỌNG]: Đăng ký người chơi vào _activeGames
+                _activeGames[creator] = session;
+                _activeGames[joiner] = session;
+
+                await session.StartGame();
+            }
+            else
+            {
+                await joiner.SendMessageAsync("ROOM_ERROR|Sai ID phòng.");
+            }
+        }
+
         public static async Task ProcessGameCommand(ConnectedClient client, string command)
         {
-            var parts = command.Split('|');
-
-            // Xử lý tìm trận
-            if (parts[0] == "FIND_GAME")
-            {
-                await AddToLobby(client);
-                return;
-            }
-
-            // Xử lý các lệnh trong game
+            // Logic gốc giữ nguyên
             if (_activeGames.TryGetValue(client, out GameSession session))
             {
-                if (parts[0] == "MOVE")
+                string[] parts = command.Split('|');
+                string cmd = parts[0];
+
+                if (cmd == "MOVE")
                     await session.HandleMove(client, command);
-                else if (parts[0] == "CHAT" && parts.Length > 1)
+                else if (cmd == "CHAT")
                     await session.BroadcastChat(client, parts[1]);
-                else if (parts[0] == "REQUEST_ANALYSIS")
+                else if (cmd == "REQUEST_ANALYSIS")
                 {
                     await session.HandleAnalysisRequest(client);
                 }
                 else
                 {
-                    await session.HandleGameCommand(client, parts[0]);
-
-                    // Nếu là lệnh thoát, dọn dẹp ngay lập tức
-                    if (parts[0] == "LEAVE_GAME")
+                    await session.HandleGameCommand(client, cmd);
+                    if (cmd == "LEAVE_GAME")
                     {
                         _activeGames.TryRemove(session.PlayerWhite, out _);
                         _activeGames.TryRemove(session.PlayerBlack, out _);
