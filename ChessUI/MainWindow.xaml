@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:ChessUI"
         mc:Ignorable="d"
         Title="Chess Online"
+        Closing="Window_Closing"
         WindowStartupLocation="CenterScreen"
         Background="#202020"
         Width="1100" Height="850" MinWidth="900" MinHeight="700" MaxWidth="1200" MaxHeight="950">
