@@ -2,8 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Threading;
-using ChessClient;
+using System.Windows.Threading; // Cần cái này cho WPF Dispatcher
+using ChessClient; // Đảm bảo namespace này đúng với project của bạn
 
 namespace AccountUI
 {
@@ -16,34 +16,77 @@ namespace AccountUI
             InitializeComponent();
         }
 
+        private void MainMenu_Load(object sender, EventArgs e)
+        {
+            // Có thể thêm code khởi tạo nếu cần
+        }
+
+        // =================================================================================
+        // KHU VỰC XỬ LÝ SỰ KIỆN BUTTON (Gửi yêu cầu lên Server)
+        // =================================================================================
+
         private async void button1_Click(object sender, EventArgs e)
         {
-            if (_isListening) return;
+            // Nút Ghép trận ngẫu nhiên
+            await SendReq("FIND_GAME", "Đang tìm đối thủ...", button1);
+        }
+
+        private async void btnCreateRoom_Click(object sender, EventArgs e)
+        {
+            // Nút Tạo phòng
+            await SendReq("CREATE_ROOM", "Đang tạo phòng...", btnCreateRoom);
+        }
+
+        private async void btnJoinRoom_Click(object sender, EventArgs e)
+        {
+            // Nút Vào phòng
+            if (string.IsNullOrEmpty(txtRoomId.Text))
+            {
+                MessageBox.Show("Vui lòng nhập ID phòng!");
+                return;
+            }
+            await SendReq($"JOIN_ROOM|{txtRoomId.Text}", "Đang vào phòng...", btnJoinRoom);
+        }
+
+        /// <summary>
+        /// Hàm chung để gửi yêu cầu lên server và bắt đầu lắng nghe phản hồi
+        /// </summary>
+        private async Task SendReq(string cmd, string waitText, Button btnTrigger)
+        {
+            if (_isListening) return; // Tránh bấm nhiều lần
+
+            if (!ClientManager.Instance.IsConnected)
+            {
+                MessageBox.Show("Mất kết nối với máy chủ!");
+                return;
+            }
+
             try
             {
-                button1.Text = "Đang tìm...";
-                button1.Enabled = false;
-                button3.Enabled = false;
                 _isListening = true;
 
-                if (!ClientManager.Instance.IsConnected)
-                {
-                    MessageBox.Show("Mất kết nối! Vui lòng đăng nhập lại.");
-                    this.Close();
-                    return;
-                }
+                // Khóa giao diện
+                btnTrigger.Text = waitText;
+                DisableButtons();
 
-                await ClientManager.Instance.SendAsync("FIND_GAME");
-                await ListenForGameStart();
+                // Gửi lệnh
+                await ClientManager.Instance.SendAsync(cmd);
+
+                // Bắt đầu vòng lặp lắng nghe
+                await ListenLoop();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}");
+                MessageBox.Show($"Lỗi gửi yêu cầu: {ex.Message}");
                 ResetUI();
             }
         }
 
-        private async Task ListenForGameStart()
+        // =================================================================================
+        // KHU VỰC LẮNG NGHE PHẢN HỒI TỪ SERVER
+        // =================================================================================
+
+        private async Task ListenLoop()
         {
             await Task.Run(() =>
             {
@@ -51,30 +94,71 @@ namespace AccountUI
                 {
                     try
                     {
-                        string message = ClientManager.Instance.WaitForMessage();
-                        if (message == null)
+                        // Đợi tin nhắn từ Server
+                        string msg = ClientManager.Instance.WaitForMessage();
+
+                        // Nếu mất kết nối hoặc msg null
+                        if (string.IsNullOrEmpty(msg))
                         {
-                            this.Invoke((MethodInvoker)(() => { MessageBox.Show("Mất kết nối."); this.Close(); }));
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                MessageBox.Show("Mất kết nối server!");
+                                ResetUI();
+                            }));
                             break;
                         }
 
-                        if (message.StartsWith("GAME_START"))
+                        // --- XỬ LÝ CÁC LOẠI TIN NHẮN ---
+
+                        // 1. Game bắt đầu -> Mở bàn cờ
+                        if (msg.StartsWith("GAME_START"))
                         {
                             _isListening = false;
-                            LaunchWpfGameWindow(message);
+                            LaunchGame(msg); // Gọi hàm mở WPF
                             break;
                         }
-                        else if (message.StartsWith("WAITING"))
+                        // 2. Tạo phòng thành công -> Hiển thị ID
+                        else if (msg.StartsWith("ROOM_CREATED"))
                         {
-                            this.Invoke((MethodInvoker)(() => button1.Text = "Đang đợi đối thủ..."));
+                            // msg dạng: ROOM_CREATED|12345
+                            string id = msg.Split('|')[1];
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                txtRoomId.Text = id;
+                                labelRoom.Text = "Mã phòng: " + id;
+                                btnCreateRoom.Text = "Đang chờ người vào...";
+                            }));
+                        }
+                        // 3. Có lỗi (Sai ID phòng, Phòng đầy...)
+                        else if (msg.StartsWith("ERROR") || msg.StartsWith("ROOM_ERROR"))
+                        {
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                MessageBox.Show(msg);
+                                ResetUI();
+                            }));
+                            break;
+                        }
+                        // 4. Trạng thái chờ
+                        else if (msg.StartsWith("WAITING"))
+                        {
+                            this.Invoke((MethodInvoker)(() => button1.Text = "Đang đợi..."));
                         }
                     }
-                    catch { _isListening = false; }
+                    catch
+                    {
+                        _isListening = false;
+                        break;
+                    }
                 }
             });
         }
 
-        private void LaunchWpfGameWindow(string gameStartMessage)
+        // =================================================================================
+        // KHU VỰC MỞ BÀN CỜ WPF (Đã sửa lỗi Threading)
+        // =================================================================================
+
+        private void LaunchGame(string gameStartMessage)
         {
             Thread wpfThread = new Thread(() =>
             {
@@ -82,62 +166,93 @@ namespace AccountUI
                 {
                     ChessUI.MainWindow gameWindow = new ChessUI.MainWindow(gameStartMessage);
 
-                    gameWindow.Loaded += (s, e) => this.BeginInvoke((MethodInvoker)(() => this.Hide()));
+                    // Khi bàn cờ load xong thì ẩn MainMenu
+                    gameWindow.Loaded += (s, e) =>
+                    {
+                        this.Invoke((MethodInvoker)delegate { this.Hide(); });
+                    };
 
+                    // Khi bàn cờ đóng lại thì hiện MainMenu
                     gameWindow.Closed += (s, e) =>
                     {
                         try
                         {
-                            // 1. Đảm bảo form MainMenu chưa bị hủy
+                            // Tắt Dispatcher WPF
+                            System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Background);
+
                             if (!this.IsDisposed && this.IsHandleCreated)
                             {
                                 this.Invoke((MethodInvoker)delegate
                                 {
-                                    this.Show(); // Hiện lại MainMenu
+                                    this.Show();
                                     this.WindowState = FormWindowState.Normal;
                                     this.BringToFront();
-
-                                    // 2. Reset trạng thái UI để sẵn sàng tìm trận mới
                                     ResetUI();
                                 });
                             }
                         }
                         catch { }
-
-                        // 3. Tắt Dispatcher của WPF
-                        Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
                     };
 
                     gameWindow.Show();
-                    Dispatcher.Run();
+                    System.Windows.Threading.Dispatcher.Run(); // Bắt buộc phải có dòng này
                 }
                 catch (Exception ex)
                 {
-                    this.BeginInvoke((MethodInvoker)(() => { MessageBox.Show("Lỗi Game: " + ex.Message); this.Show(); ResetUI(); }));
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        MessageBox.Show("Lỗi mở bàn cờ: " + ex.Message);
+                        ResetUI();
+                        this.Show();
+                    }));
                 }
             });
 
-            wpfThread.SetApartmentState(ApartmentState.STA);
-            wpfThread.IsBackground = false;
+            wpfThread.SetApartmentState(ApartmentState.STA); // Bắt buộc cho WPF
+            wpfThread.IsBackground = true;
             wpfThread.Start();
+        }
+
+        // =================================================================================
+        // KHU VỰC HÀM TIỆN ÍCH & CÁC NÚT KHÁC
+        // =================================================================================
+
+        private void DisableButtons()
+        {
+            button1.Enabled = false;
+            btnCreateRoom.Enabled = false;
+            btnJoinRoom.Enabled = false;
         }
 
         private void ResetUI()
         {
             _isListening = false;
-            button1.Text = "Ghép trận";
-            button1.Enabled = true;
-            button3.Enabled = true;
-        }
 
-        private void button3_Click(object sender, EventArgs e) { MessageBox.Show("Chưa có tính năng này."); }
-        private void button4_Click(object sender, EventArgs e) { ClientManager.Disconnect(); Application.Exit(); }
-        private void MainMenu_Load(object sender, EventArgs e) { }
+            button1.Text = "Ghép Ngẫu Nhiên";
+            btnCreateRoom.Text = "Tạo Phòng Mới";
+            btnJoinRoom.Text = "Vào Phòng";
+
+            button1.Enabled = true;
+            btnCreateRoom.Enabled = true;
+            btnJoinRoom.Enabled = true;
+
+            labelRoom.Text = ""; // Xóa mã phòng cũ nếu có
+        }
 
         private void btnFriend_Click(object sender, EventArgs e)
         {
             Friend frm = new Friend();
             frm.ShowDialog();
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            // Đăng xuất
+            ClientManager.Disconnect();
+            Application.Exit();
+        }
+
+        // Các nút cũ hoặc chưa dùng tới
+        private void button3_Click(object sender, EventArgs e) { }
     }
 }

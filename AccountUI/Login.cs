@@ -35,7 +35,7 @@ namespace AccountUI
                 // PHẦN 1: LOGIN CHÍNH (Code của nhóm - Dùng ClientManager)
                 // -----------------------------------------------------------
                 // Lưu ý: Nếu IP khác 127.0.0.1 thì sửa ở đây
-                await ClientManager.ConnectToServerAsync("192.168.1.185", 8888);
+                await ClientManager.ConnectToServerAsync("127.0.0.1", 8888);
                 
                 string request = $"LOGIN|{tentk}|{matkhau}";
                 await ClientManager.Instance.SendAsync(request);
