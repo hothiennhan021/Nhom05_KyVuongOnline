@@ -22,7 +22,7 @@ namespace ChessUI
         private readonly List<string> _uciMoves;
         private readonly AnalysisService _service = new AnalysisService();
         private Dictionary<int, MoveAnalysis> _cache = new Dictionary<int, MoveAnalysis>();
-
+        private bool _isClosing = false;
         private List<MoveRecord> _moveRecords = new List<MoveRecord>();
         private int _currentIndex = -1; // -1: Start position
 
@@ -69,7 +69,10 @@ namespace ChessUI
             }
             catch { BoardGrid.Background = new SolidColorBrush(Color.FromRgb(32, 32, 32)); }
         }
-
+        private void AnalysisWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _isClosing = true; // Đánh dấu là đang đóng để dừng các luồng chạy ngầm
+        }
         private void InitBoardUI()
         {
             for (int r = 0; r < 8; r++)
@@ -141,6 +144,7 @@ namespace ChessUI
             // Analyze Moves
             for (int i = 0; i < _uciMoves.Count; i++)
             {
+                if (_isClosing) return;
                 Move m = ParseHelper.ParseUci(tempState, _uciMoves[i]);
                 if (m != null) tempState.MakeMove(m);
 
@@ -149,8 +153,7 @@ namespace ChessUI
                 UpdateListRecord(i);
             }
 
-            // Calculate Final Stats
-            CalculateStats();
+            if (!_isClosing) CalculateStats();
         }
 
         private async Task AnalyzeAndCache(int index, string fen)
@@ -167,13 +170,22 @@ namespace ChessUI
 
         private void UpdateListRecord(int i)
         {
+            if (_isClosing) return; // Không làm gì nếu đang đóng
             if (!_cache.ContainsKey(i)) return;
 
             // Get Current Data
             var currRes = _cache[i].Result;
             int? currCp = currRes.centipawns;
             int? currMate = currRes.mate;
+            Dispatcher.Invoke(() =>
+            {
+                if (_isClosing) return; // Kiểm tra lần nữa bên trong UI Thread
 
+                var rec = _moveRecords[i / 2];
+                // ... (Code gán giá trị vào UI) ...
+
+                lstMoves.Items.Refresh();
+            });
             // Get Prev Data
             int? prevCp = 0;
             int? prevMate = null;
@@ -274,6 +286,7 @@ namespace ChessUI
             // Update UI TextBlocks
             Dispatcher.Invoke(() =>
             {
+                if (_isClosing) return;
                 wBrilliant.Text = wBrilliantCount.ToString();
                 wBest.Text = wBestCount.ToString();
                 wMistake.Text = wMistakeCount.ToString();

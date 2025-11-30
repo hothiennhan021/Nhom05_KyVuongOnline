@@ -86,23 +86,25 @@ namespace AccountUI
 
                     gameWindow.Closed += (s, e) =>
                     {
-                        // --- ĐẢM BẢO MENU HIỆN TRƯỚC ---
                         try
                         {
+                            // 1. Đảm bảo form MainMenu chưa bị hủy
                             if (!this.IsDisposed && this.IsHandleCreated)
                             {
                                 this.Invoke((MethodInvoker)delegate
                                 {
-                                    this.Show();
+                                    this.Show(); // Hiện lại MainMenu
                                     this.WindowState = FormWindowState.Normal;
                                     this.BringToFront();
+
+                                    // 2. Reset trạng thái UI để sẵn sàng tìm trận mới
                                     ResetUI();
                                 });
                             }
                         }
                         catch { }
 
-                        // Tắt luồng WPF sau cùng
+                        // 3. Tắt Dispatcher của WPF
                         Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
                     };
 

@@ -18,6 +18,7 @@ namespace ChessUI
 {
     public partial class MainWindow : Window
     {
+        private bool _allowClose = false;
         private bool _isExiting = false;
         private bool _isGameOver = false;
 
@@ -57,19 +58,77 @@ namespace ChessUI
                 Close();
             }
         }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // 1. Nếu game đã kết thúc hoặc đã được phép đóng -> Để cửa sổ đóng tự nhiên
+            if (_isGameOver || _allowClose || _isExiting)
+            {
+                _gameTimer.Stop();
+                _isExiting = true;
+                // e.Cancel mặc định là false, nên cửa sổ sẽ tự đóng, không cần gọi this.Close()
+                return;
+            }
 
+            // 2. Mặc định chặn đóng để hỏi ý kiến người dùng trước
+            e.Cancel = true;
+
+            // 3. Hiện hộp thoại xác nhận
+            var result = MessageBox.Show("Trận đấu đang diễn ra. Bạn có chấp nhận THUA để thoát không?",
+                                         "Xác nhận thoát",
+                                         MessageBoxButton.YesNo,
+                                         MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                // --- XỬ LÝ KHI CHỌN YES ---
+
+                // Đánh dấu để dừng các luồng mạng
+                _allowClose = true;
+                _isExiting = true;
+
+                // Gửi lệnh thua lên Server (chạy ngầm để không đơ UI)
+                Task.Run(async () =>
+                {
+                    try { await _networkClient.SendAsync("LEAVE_GAME"); } catch { }
+                });
+
+                // QUAN TRỌNG: Thay vì gọi this.Close(), ta gán e.Cancel = false
+                // Điều này bảo WPF: "Đừng chặn nữa, hãy đóng cửa sổ đi"
+                e.Cancel = false;
+            }
+            else
+            {
+                // --- XỬ LÝ KHI CHỌN NO ---
+                // e.Cancel vẫn đang là true (ở bước 2), nên cửa sổ sẽ giữ nguyên không đóng.
+            }
+        }
         // --- NHẬN DỮ LIỆU PHÂN TÍCH VÀ MỞ CỬA SỔ MỚI ---
         private void OnAnalysisDataReceived(string moveHistoryString)
         {
-            // Tách chuỗi lịch sử nước đi
             var moves = moveHistoryString.Split(' ').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
 
             Dispatcher.Invoke(() => {
-                // Ẩn menu kết thúc game
-                MenuOverlay.Visibility = Visibility.Collapsed;
-
-                // MỞ CỬA SỔ PHÂN TÍCH RIÊNG
+                // 1. Tạo cửa sổ phân tích
                 AnalysisWindow analysisWin = new AnalysisWindow(moves);
+
+                // 2. Ẩn cửa sổ game hiện tại (để người dùng tập trung vào phân tích)
+                this.Hide();
+
+                // 3. Xử lý sự kiện: Khi cửa sổ phân tích bị đóng (nhấn X)
+                analysisWin.Closed += (s, args) =>
+                {
+                    try
+                    {
+                        // Hiện lại cửa sổ game
+                        this.Show();
+
+                        // Hiện lại Menu Game Over để người dùng có thể chọn "Thoát" hoặc "Ván mới"
+                        MenuOverlay.Visibility = Visibility.Visible;
+                    }
+                    catch { }
+                };
+
+                // 4. Hiển thị cửa sổ phân tích
                 analysisWin.Show();
             });
         }
@@ -128,13 +187,68 @@ namespace ChessUI
             _responseHandler.AskRestartReceived += () => { Dispatcher.Invoke(() => { var res = MessageBox.Show("Đối thủ muốn chơi lại?", "Tái đấu", MessageBoxButton.YesNo); if (res == MessageBoxResult.Yes) _networkClient.SendAsync("REQUEST_RESTART"); else _networkClient.SendAsync("RESTART_NO"); }); };
             _responseHandler.RestartDeniedReceived += () => Dispatcher.Invoke(() => MessageBox.Show("Đối thủ từ chối."));
             _responseHandler.OpponentLeftReceived += () => { if (_isExiting || _isGameOver) return; Dispatcher.Invoke(() => { MessageBox.Show("Đối thủ đã thoát. Bạn thắng!"); _isExiting = true; this.Close(); }); };
-            _gameTimer.Tick += (w, b) => Dispatcher.Invoke(() => { lblWhiteTime.Text = FormatTime(w); lblBlackTime.Text = FormatTime(b); });
+            _gameTimer.Tick += (w, b) =>
+            {
+                // 1. Kiểm tra ngay nếu đang thoát thì không làm gì cả
+                if (_isExiting) return;
+
+                try
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        // 2. Kiểm tra lại lần nữa trong luồng UI để chắc chắn
+                        if (_isExiting) return;
+
+                        lblWhiteTime.Text = FormatTime(w);
+                        lblBlackTime.Text = FormatTime(b);
+                    });
+                }
+                catch (TaskCanceledException)
+                {
+                    // 3. Bắt lỗi "Task was canceled" khi tắt app và lờ nó đi
+                }
+                catch (Exception)
+                {
+                    // Bắt các lỗi UI khác nếu cửa sổ đã bị hủy (Disposed)
+                }
+            };
         }
 
         private void StartServerListener()
         {
             Task.Run(() => {
-                try { while (!_isExiting && _networkClient.IsConnected) { string msg = _networkClient.WaitForMessage(500); if (_isExiting) break; if (msg == "TIMEOUT") continue; if (msg == null) { if (!_isExiting) Dispatcher.Invoke(() => { if (!_isExiting) { MessageBox.Show("Mất kết nối!"); Close(); } }); break; } Dispatcher.Invoke(() => _responseHandler.ProcessMessage(msg)); } } catch { if (!_isExiting) Dispatcher.Invoke(() => Close()); }
+                try
+                {
+                    while (!_isExiting && _networkClient.IsConnected)
+                    {
+                        // Thêm try-catch nhỏ hoặc kiểm tra kỹ
+                        string msg = _networkClient.WaitForMessage(500);
+
+                        if (_isExiting) break; // Thoát ngay nếu cờ đã bật
+
+                        if (msg == "TIMEOUT") continue;
+
+                        if (msg == null)
+                        {
+                            if (!_isExiting) Dispatcher.Invoke(() => {
+                                if (!_isExiting) { MessageBox.Show("Mất kết nối!"); Close(); }
+                            });
+                            break;
+                        }
+
+                        // Quan trọng: Kiểm tra trước khi Invoke để tránh lỗi "Window closed"
+                        if (!_isExiting)
+                        {
+                            Dispatcher.Invoke(() => {
+                                if (!_isExiting) _responseHandler.ProcessMessage(msg);
+                            });
+                        }
+                    }
+                }
+                catch
+                {
+                    // Bắt mọi lỗi để không làm sập ứng dụng
+                }
             });
         }
 
