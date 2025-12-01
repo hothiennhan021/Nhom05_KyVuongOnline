@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System;
 using System.Threading.Tasks;
-using BCrypt.Net;
 
 namespace ChessData
 {

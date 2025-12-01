@@ -15,6 +15,7 @@ namespace MyTcpServer
         private static IConfiguration _config;
         private static FriendRepository _friendRepo;
         private static UserRepository _userRepo;
+        private static MatchRepository _matchRepo;
 
         static async Task Main(string[] args)
         {
@@ -96,99 +97,56 @@ namespace MyTcpServer
                 case "LOGIN":
                     if (parts.Length == 3)
                     {
-                        string result = await _userRepo.LoginUserAsync(parts[1], parts[2]);
-                        if (result.StartsWith("LOGIN_SUCCESS"))
-                        {
-                            int uid = GetUserIdByUsername(parts[1]);
-                            if (uid > 0) client.UserId = uid;
-                        }
-                        return result;
+                        client.UserId = GetUserId(parts[1]);
+                        client.Username = parts[1];  // <— QUAN TRỌNG
                     }
-                    return "ERROR|Format LOGIN sai.";
+                    return res;
 
-                // --- [MỚI] XỬ LÝ LỆNH PHÒNG ---
                 case "CREATE_ROOM":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
                     await GameManager.CreateRoom(client);
                     return null;
 
                 case "JOIN_ROOM":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
-                    if (parts.Length > 1)
-                    {
-                        await GameManager.JoinRoom(client, parts[1]);
-                    }
-                    else
-                    {
-                        return "ERROR|Format JOIN_ROOM sai.";
-                    }
+                    await GameManager.JoinRoom(client, parts[1]);
                     return null;
-                // ------------------------------
 
-                case "FIND_GAME":
                 case "MOVE":
                 case "CHAT":
                 case "REQUEST_RESTART":
                 case "RESTART_NO":
                 case "LEAVE_GAME":
                 case "REQUEST_ANALYSIS":
-                    await GameManager.ProcessGameCommand(client, requestMessage);
+                    await GameManager.ProcessGameCommand(client, msg);
                     return null;
 
-                case "FRIEND_SEARCH":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
-                    return $"FRIEND_RESULT|{_friendRepo.SendFriendRequest(client.UserId, parts[1])}";
-
-                case "FRIEND_GET_LIST":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
-                    var list = _friendRepo.GetListFriends(client.UserId);
-                    return $"FRIEND_LIST|{string.Join(";", list)}";
-
-                case "FRIEND_GET_REQUESTS":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
-                    var reqs = _friendRepo.GetFriendRequests(client.UserId);
-                    return $"FRIEND_REQUESTS|{string.Join(";", reqs)}";
-
-                case "FRIEND_ACCEPT":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
-                    if (int.TryParse(parts[1], out int reqId))
-                    {
-                        _friendRepo.AcceptFriend(reqId);
-                        return "FRIEND_ACCEPT_OK";
-                    }
-                    return "ERROR|Sai ID lời mời";
-
-                case "FRIEND_REMOVE":
-                    if (client.UserId == 0) return "ERROR|Bạn chưa đăng nhập!";
-                    string friendName = parts[1];
-                    bool isDeleted = _friendRepo.RemoveFriend(client.UserId, friendName);
-                    if (isDeleted) return "SUCCESS|Đã xóa bạn thành công.";
-                    else return "ERROR|Lỗi khi xóa bạn (hoặc chưa kết bạn).";
-
-                // --- MẶC ĐỊNH ---
                 default:
                     return "ERROR|Lệnh không xác định.";
             }
         }
 
-        private static int GetUserIdByUsername(string username)
+        public static async Task UpdateMatchAsync(string winner, string loser, int minutes)
         {
             try
             {
-                using (var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
-                {
-                    conn.Open();
-                    var cmd = new SqlCommand("SELECT UserId FROM Users WHERE Username = @u", conn);
-                    cmd.Parameters.AddWithValue("@u", username);
-                    object res = cmd.ExecuteScalar();
-                    return res != null ? (int)res : 0;
-                }
+                await _matchRepo.UpdateMatchResult(winner, loser, minutes);
+                Console.WriteLine($"Match updated: {winner} thắng {loser}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[Lỗi lấy ID]: " + ex.Message);
-                return 0;
+                Console.WriteLine("[UpdateMatch Error] " + ex.Message);
             }
+        }
+
+        private static int GetUserId(string username)
+        {
+            using var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            conn.Open();
+
+            var cmd = new SqlCommand("SELECT UserId FROM Users WHERE Username=@u", conn);
+            cmd.Parameters.AddWithValue("@u", username);
+
+            var r = cmd.ExecuteScalar();
+            return (r != null) ? (int)r : 0;
         }
     }
 }
