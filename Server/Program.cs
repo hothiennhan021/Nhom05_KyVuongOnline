@@ -17,85 +17,92 @@ namespace MyTcpServer
         private static UserRepository _userRepo;
         private static MatchRepository _matchRepo;
 
+        // [MỚI] Repo cập nhật trận đấu
+        private static MatchRepository _matchRepo;
+
         static async Task Main(string[] args)
         {
-            // 1. Load cấu hình (Logic gốc giữ nguyên)
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                .AddJsonFile("appsettings.json");
+
             _config = builder.Build();
 
-            // 2. Kết nối DB (Logic gốc giữ nguyên)
             string connString = _config.GetConnectionString("DefaultConnection");
+
             try
             {
                 _userRepo = new UserRepository(connString);
                 _friendRepo = new FriendRepository(connString);
-                Console.WriteLine("Database: OK.");
+                _matchRepo = new MatchRepository(connString);
+
+                Console.WriteLine("Database OK");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Database Error: {ex.Message}");
+                Console.WriteLine("DB Error: " + ex.Message);
                 return;
             }
 
-            // 3. Mở Server (Logic gốc giữ nguyên)
-            int port = 8888;
-            TcpListener server = new TcpListener(IPAddress.Any, port);
+            TcpListener server = new TcpListener(IPAddress.Any, 8888);
             server.Start();
-            Console.WriteLine($"Server started on port {port}...");
+            Console.WriteLine("Server started...");
 
             while (true)
             {
                 TcpClient client = await server.AcceptTcpClientAsync();
-                _ = HandleClientAsync(client);
+                _ = HandleClient(client);
             }
         }
 
-        static async Task HandleClientAsync(TcpClient client)
+        static async Task HandleClient(TcpClient tcp)
         {
-            ConnectedClient connectedClient = new ConnectedClient(client);
+            var client = new ConnectedClient(tcp);
+
             try
             {
-                GameManager.HandleClientConnect(connectedClient);
+                GameManager.HandleClientConnect(client);
 
                 while (true)
                 {
-                    string requestMessage = await connectedClient.Reader.ReadLineAsync();
-                    if (requestMessage == null) break;
+                    string msg = await client.Reader.ReadLineAsync();
+                    if (msg == null) break;
 
-                    Console.WriteLine($"[RECV] {requestMessage}");
+                    Console.WriteLine("[RECV] " + msg);
 
-                    string response = await ProcessRequest(connectedClient, requestMessage);
+                    string response = await ProcessRequest(client, msg);
+
                     if (response != null)
                     {
-                        await connectedClient.SendMessageAsync(response);
-                        Console.WriteLine($"[SENT] {response}");
+                        await client.SendMessageAsync(response);
+                        Console.WriteLine("[SEND] " + response);
                     }
                 }
             }
-            catch (Exception ex) { Console.WriteLine($"Client Error: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Client Error: " + ex.Message);
+            }
             finally
             {
-                GameManager.HandleClientDisconnect(connectedClient);
-                try { connectedClient.Client.Close(); } catch { }
+                GameManager.HandleClientDisconnect(client);
+                client.Close();
             }
         }
 
-        static async Task<string> ProcessRequest(ConnectedClient client, string requestMessage)
+        static async Task<string> ProcessRequest(ConnectedClient client, string msg)
         {
-            string[] parts = requestMessage.Split('|');
-            string command = parts[0];
+            string[] parts = msg.Split('|');
+            string cmd = parts[0];
 
-            switch (command)
+            switch (cmd)
             {
                 case "REGISTER":
-                    if (parts.Length == 6)
-                        return await _userRepo.RegisterUserAsync(parts[1], parts[2], parts[3], parts[4], parts[5]);
-                    return "ERROR|Format REGISTER sai.";
+                    return await _userRepo.RegisterUserAsync(parts[1], parts[2], parts[3], parts[4], parts[5]);
 
                 case "LOGIN":
-                    if (parts.Length == 3)
+                    string res = await _userRepo.LoginUserAsync(parts[1], parts[2]);
+                    if (res.StartsWith("LOGIN_SUCCESS"))
                     {
                         client.UserId = GetUserId(parts[1]);
                         client.Username = parts[1];  // <— QUAN TRỌNG
@@ -120,7 +127,7 @@ namespace MyTcpServer
                     return null;
 
                 default:
-                    return "ERROR|Lệnh không xác định.";
+                    return "ERROR|Unknown command";
             }
         }
 

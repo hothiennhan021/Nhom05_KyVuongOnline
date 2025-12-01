@@ -14,187 +14,159 @@
 
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.btnFriend = new System.Windows.Forms.Button();
-            this.txtRoomId = new System.Windows.Forms.TextBox();
-            this.btnJoinRoom = new System.Windows.Forms.Button();
-            this.btnCreateRoom = new System.Windows.Forms.Button();
-            this.labelRoom = new System.Windows.Forms.Label();
-            this.SuspendLayout();
-
-            // =========================================================================
-            // CẤU HÌNH THÔNG SỐ GIAO DIỆN (LAYOUT SYSTEM)
-            // =========================================================================
-            // Kích thước Form: 962 x 521
-            // Chiều rộng nút chính: 280 (To hơn chút cho cân đối)
-            // Chiều cao nút: 55
-            // Trục giữa (Center X): (962 - 280) / 2 = 341
-            // =========================================================================
-
-            int centerX = 341;
-            int btnWidth = 280;
-            int btnHeight = 55;
-
-            // Style chung (Giữ phong cách cũ)
-            System.Drawing.Font mainFont = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            System.Drawing.Color btnColor = System.Drawing.Color.DarkSlateBlue;
-            System.Drawing.Color txtColor = System.Drawing.Color.White;
-
+            button1 = new Button();
+            button2 = new Button();
+            button3 = new Button();
+            button4 = new Button();
+            btnFriend = new Button();
+            txtRoomId = new TextBox();
+            btnJoinRoom = new Button();
+            btnCreateRoom = new Button();
+            labelRoom = new Label();
+            btnProfile = new Button();
+            SuspendLayout();
             // 
-            // 1. Button: Ghép trận ngẫu nhiên (Vị trí Y: 60)
+            // button1
             // 
-            this.button1.AutoSize = false;
-            this.button1.BackColor = btnColor;
-            this.button1.Font = mainFont;
-            this.button1.ForeColor = txtColor;
-            this.button1.Location = new System.Drawing.Point(centerX, 60);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(btnWidth, btnHeight);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Ghép trận ngẫu nhiên";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-
+            button1.BackColor = Color.DarkSlateBlue;
+            button1.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            button1.ForeColor = Color.White;
+            button1.Location = new Point(341, 60);
+            button1.Name = "button1";
+            button1.Size = new Size(280, 55);
+            button1.TabIndex = 0;
+            button1.Text = "Ghép trận ngẫu nhiên";
+            button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
             // 
-            // --- CỤM VÀO PHÒNG (Cách nút trên 50px) ---
+            // button2
             // 
-
+            button2.Location = new Point(0, 0);
+            button2.Name = "button2";
+            button2.Size = new Size(75, 23);
+            button2.TabIndex = 8;
+            button2.Visible = false;
             // 
-            // 2. TextBox: Nhập ID (Vị trí Y: 165)
+            // button3
             // 
-            this.txtRoomId.Font = new System.Drawing.Font("Times New Roman", 16F, System.Drawing.FontStyle.Regular);
-            this.txtRoomId.Location = new System.Drawing.Point(centerX, 165);
-            this.txtRoomId.Multiline = true;
-            this.txtRoomId.Name = "txtRoomId";
-            this.txtRoomId.Size = new System.Drawing.Size(btnWidth, 40);
-            this.txtRoomId.TabIndex = 1;
-            this.txtRoomId.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtRoomId.PlaceholderText = "Nhập ID Phòng";
-
+            button3.Location = new Point(0, 0);
+            button3.Name = "button3";
+            button3.Size = new Size(75, 23);
+            button3.TabIndex = 7;
+            button3.Visible = false;
             // 
-            // 3. Button: Vào Phòng (Vị trí Y: 215 - Dính liền dưới TextBox 10px)
+            // button4
             // 
-            this.btnJoinRoom.AutoSize = false;
-            this.btnJoinRoom.BackColor = btnColor;
-            this.btnJoinRoom.Font = mainFont;
-            this.btnJoinRoom.ForeColor = txtColor;
-            this.btnJoinRoom.Location = new System.Drawing.Point(centerX, 215);
-            this.btnJoinRoom.Name = "btnJoinRoom";
-            this.btnJoinRoom.Size = new System.Drawing.Size(btnWidth, btnHeight);
-            this.btnJoinRoom.TabIndex = 2;
-            this.btnJoinRoom.Text = "Vào Phòng";
-            this.btnJoinRoom.UseVisualStyleBackColor = false;
-            this.btnJoinRoom.Click += new System.EventHandler(this.btnJoinRoom_Click);
-
+            button4.BackColor = Color.DarkSlateBlue;
+            button4.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            button4.ForeColor = Color.White;
+            button4.Location = new Point(732, 440);
+            button4.Name = "button4";
+            button4.Size = new Size(180, 55);
+            button4.TabIndex = 6;
+            button4.Text = "Đăng Xuất";
+            button4.UseVisualStyleBackColor = false;
+            button4.Click += button4_Click;
             // 
-            // --- CỤM TẠO PHÒNG (Cách cụm trên 50px) ---
-            //
-
+            // btnFriend
             // 
-            // 4. Button: Tạo Phòng (Vị trí Y: 320)
+            btnFriend.BackColor = Color.DarkSlateBlue;
+            btnFriend.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnFriend.ForeColor = Color.White;
+            btnFriend.Location = new Point(50, 440);
+            btnFriend.Name = "btnFriend";
+            btnFriend.Size = new Size(180, 55);
+            btnFriend.TabIndex = 5;
+            btnFriend.Text = "Bạn bè";
+            btnFriend.UseVisualStyleBackColor = false;
+            btnFriend.Click += btnFriend_Click;
             // 
-            this.btnCreateRoom.AutoSize = false;
-            this.btnCreateRoom.BackColor = btnColor;
-            this.btnCreateRoom.Font = mainFont;
-            this.btnCreateRoom.ForeColor = txtColor;
-            this.btnCreateRoom.Location = new System.Drawing.Point(centerX, 320);
-            this.btnCreateRoom.Name = "btnCreateRoom";
-            this.btnCreateRoom.Size = new System.Drawing.Size(btnWidth, btnHeight);
-            this.btnCreateRoom.TabIndex = 3;
-            this.btnCreateRoom.Text = "Tạo Phòng";
-            this.btnCreateRoom.UseVisualStyleBackColor = false;
-            this.btnCreateRoom.Click += new System.EventHandler(this.btnCreateRoom_Click);
-
+            // txtRoomId
             // 
-            // Label: Hiển thị ID (Ngay dưới nút Tạo phòng)
+            txtRoomId.Font = new Font("Times New Roman", 16F);
+            txtRoomId.Location = new Point(341, 165);
+            txtRoomId.Multiline = true;
+            txtRoomId.Name = "txtRoomId";
+            txtRoomId.PlaceholderText = "Nhập ID Phòng";
+            txtRoomId.Size = new Size(280, 40);
+            txtRoomId.TabIndex = 1;
+            txtRoomId.TextAlign = HorizontalAlignment.Center;
             // 
-            this.labelRoom.AutoSize = false;
-            this.labelRoom.BackColor = System.Drawing.Color.Transparent;
-            this.labelRoom.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold);
-            this.labelRoom.ForeColor = System.Drawing.Color.Yellow;
-            this.labelRoom.Location = new System.Drawing.Point(centerX, 380);
-            this.labelRoom.Name = "labelRoom";
-            this.labelRoom.Size = new System.Drawing.Size(btnWidth, 30);
-            this.labelRoom.TabIndex = 4;
-            this.labelRoom.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-
+            // btnJoinRoom
             // 
-            // --- CÁC NÚT Ở DƯỚI ĐÁY ---
+            btnJoinRoom.BackColor = Color.DarkSlateBlue;
+            btnJoinRoom.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnJoinRoom.ForeColor = Color.White;
+            btnJoinRoom.Location = new Point(341, 215);
+            btnJoinRoom.Name = "btnJoinRoom";
+            btnJoinRoom.Size = new Size(280, 55);
+            btnJoinRoom.TabIndex = 2;
+            btnJoinRoom.Text = "Vào Phòng";
+            btnJoinRoom.UseVisualStyleBackColor = false;
+            btnJoinRoom.Click += btnJoinRoom_Click;
             // 
-
+            // btnCreateRoom
             // 
-            // Button: Bạn bè (Góc trái dưới - Cách lề trái 50px)
+            btnCreateRoom.BackColor = Color.DarkSlateBlue;
+            btnCreateRoom.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnCreateRoom.ForeColor = Color.White;
+            btnCreateRoom.Location = new Point(341, 320);
+            btnCreateRoom.Name = "btnCreateRoom";
+            btnCreateRoom.Size = new Size(280, 55);
+            btnCreateRoom.TabIndex = 3;
+            btnCreateRoom.Text = "Tạo Phòng";
+            btnCreateRoom.UseVisualStyleBackColor = false;
+            btnCreateRoom.Click += btnCreateRoom_Click;
             // 
-            this.btnFriend.AutoSize = false;
-            this.btnFriend.BackColor = btnColor;
-            this.btnFriend.Font = mainFont;
-            this.btnFriend.ForeColor = txtColor;
-            this.btnFriend.Location = new System.Drawing.Point(50, 440);
-            this.btnFriend.Name = "btnFriend";
-            this.btnFriend.Size = new System.Drawing.Size(180, 55);
-            this.btnFriend.TabIndex = 5;
-            this.btnFriend.Text = "Bạn bè";
-            this.btnFriend.UseVisualStyleBackColor = false;
-            this.btnFriend.Click += new System.EventHandler(this.btnFriend_Click);
-
+            // labelRoom
             // 
-            // Button: Đăng Xuất (Góc phải dưới - Cách lề phải 50px)
-            // X = 962 - 50 - 180 = 732
+            labelRoom.BackColor = Color.Transparent;
+            labelRoom.Font = new Font("Times New Roman", 12F, FontStyle.Bold);
+            labelRoom.ForeColor = Color.Yellow;
+            labelRoom.Location = new Point(341, 380);
+            labelRoom.Name = "labelRoom";
+            labelRoom.Size = new Size(280, 30);
+            labelRoom.TabIndex = 4;
+            labelRoom.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            this.button4.AutoSize = false;
-            this.button4.BackColor = btnColor;
-            this.button4.Font = mainFont;
-            this.button4.ForeColor = txtColor;
-            this.button4.Location = new System.Drawing.Point(732, 440);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(180, 55);
-            this.button4.TabIndex = 6;
-            this.button4.Text = "Đăng Xuất";
-            this.button4.UseVisualStyleBackColor = false;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
-
+            // btnProfile
             // 
-            // Controls ẩn/cũ
+            btnProfile.BackColor = Color.DarkSlateBlue;
+            btnProfile.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnProfile.ForeColor = Color.White;
+            btnProfile.Location = new Point(0, 60);
+            btnProfile.Name = "btnProfile";
+            btnProfile.Size = new Size(280, 55);
+            btnProfile.TabIndex = 9;
+            btnProfile.Text = "Hồ Sơ Người Chơi";
+            btnProfile.UseVisualStyleBackColor = false;
+            btnProfile.Click += btnProfile_Click;
             // 
-            this.button2.Visible = false;
-            this.button2.Location = new System.Drawing.Point(0, 0);
-
-            this.button3.Visible = false;
-            this.button3.Location = new System.Drawing.Point(0, 0);
-
+            // MainMenu
             // 
-            // MainMenu Form
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = Properties.Resources.BackGround;
-            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(962, 521);
-
-            // Khóa thay đổi kích thước Form để không bị vỡ layout
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-
-            this.Controls.Add(this.labelRoom);
-            this.Controls.Add(this.btnCreateRoom);
-            this.Controls.Add(this.btnJoinRoom);
-            this.Controls.Add(this.txtRoomId);
-            this.Controls.Add(this.btnFriend);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button1);
-            // Ẩn
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-
-            this.Name = "MainMenu";
-            this.Text = "Game Menu";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Load += new System.EventHandler(this.MainMenu_Load);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackgroundImage = Properties.Resources.BackGround;
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(962, 521);
+            Controls.Add(btnProfile);
+            Controls.Add(labelRoom);
+            Controls.Add(btnCreateRoom);
+            Controls.Add(btnJoinRoom);
+            Controls.Add(txtRoomId);
+            Controls.Add(btnFriend);
+            Controls.Add(button4);
+            Controls.Add(button1);
+            Controls.Add(button3);
+            Controls.Add(button2);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            Name = "MainMenu";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Game Menu";
+            Load += MainMenu_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -208,5 +180,6 @@
         private System.Windows.Forms.Button btnCreateRoom;
         private System.Windows.Forms.Button btnJoinRoom;
         private System.Windows.Forms.Label labelRoom;
+        private Button btnProfile;
     }
 }

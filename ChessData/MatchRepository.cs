@@ -1,45 +1,53 @@
-﻿using Microsoft.Data.SqlClient;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace ChessData
 {
     public class MatchRepository
     {
-        private readonly string _connectionString;
+        private readonly string _conn;
 
         public MatchRepository(string conn)
         {
-            _connectionString = conn;
+            _conn = conn;
         }
 
-        // Cập nhật kết quả trận đấu
-        public async Task UpdateMatchResult(string winner, string loser, int minutes)
+        public async Task UpdateMatchResult(string winner, string loser, int minutesPlayed)
         {
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqlConnection(_conn);
             await conn.OpenAsync();
 
-            // Cộng điểm rank và số trận
-            string sql = @"
-                UPDATE Users 
-                SET 
-                    Wins = Wins + CASE WHEN Username = @winner THEN 1 ELSE 0 END,
-                    Losses = Losses + CASE WHEN Username = @loser THEN 1 ELSE 0 END,
-                    Rank = Rank + CASE WHEN Username = @winner THEN 10 ELSE 0 END,
-                    HighestRank = CASE 
-                        WHEN Username = @winner AND Rank + 10 > HighestRank 
-                            THEN Rank + 10 
-                        ELSE HighestRank 
-                    END,
-                    TotalPlayTimeMinutes = TotalPlayTimeMinutes + @m
-                WHERE Username = @winner OR Username = @loser";
+            // WINNER UPDATE
+            string sqlWinner =
+            @"UPDATE Users
+              SET Wins = Wins + 1,
+                  Rank = Rank + 10,
+                  HighestRank = CASE WHEN Rank + 10 > HighestRank THEN Rank + 10 ELSE HighestRank END,
+                  TotalPlayTimeMinutes = TotalPlayTimeMinutes + @m
+              WHERE Username = @user";
 
-            using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@winner", winner);
-            cmd.Parameters.AddWithValue("@loser", loser);
-            cmd.Parameters.AddWithValue("@m", minutes);
+            using (var cmd = new SqlCommand(sqlWinner, conn))
+            {
+                cmd.Parameters.AddWithValue("@user", winner);
+                cmd.Parameters.AddWithValue("@m", minutesPlayed);
+                await cmd.ExecuteNonQueryAsync();
+            }
 
-            await cmd.ExecuteNonQueryAsync();
+            // LOSER UPDATE
+            string sqlLoser =
+            @"UPDATE Users
+              SET Losses = Losses + 1,
+                  Rank = CASE WHEN Rank > 800 THEN Rank - 10 ELSE Rank END,
+                  TotalPlayTimeMinutes = TotalPlayTimeMinutes + @m
+              WHERE Username = @user";
+
+            using (var cmd = new SqlCommand(sqlLoser, conn))
+            {
+                cmd.Parameters.AddWithValue("@user", loser);
+                cmd.Parameters.AddWithValue("@m", minutesPlayed);
+                await cmd.ExecuteNonQueryAsync();
+            }
         }
     }
 }

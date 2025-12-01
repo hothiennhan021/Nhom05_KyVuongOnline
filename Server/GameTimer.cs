@@ -17,6 +17,7 @@ namespace MyTcpServer
 
         public event Action<Player> OnTimeExpired;
 
+
         public GameTimer(int minutesPerSide)
         {
             WhiteTimeSeconds = minutesPerSide * 60;
