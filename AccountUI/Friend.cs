@@ -232,5 +232,24 @@ namespace AccountUI
                 }
             }
         }
+        private void tabControl1_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            // 1. Lấy TabPage đang vẽ
+            TabPage page = tabControl1.TabPages[e.Index];
+
+            // 2. Tô màu nền cho Header (Màu xám đậm)
+            e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(45, 45, 48)), e.Bounds);
+
+            // 3. Xác định vùng vẽ chữ
+            Rectangle paddedBounds = e.Bounds;
+            int yOffset = (e.State == DrawItemState.Selected) ? -2 : 1;
+            paddedBounds.Offset(1, yOffset);
+
+            // 4. Chọn màu chữ (Vàng nếu đang chọn, Xám nhạt nếu không)
+            Color textColor = (e.State == DrawItemState.Selected) ? Color.Gold : Color.LightGray;
+
+            // 5. Vẽ chữ ra (Quan trọng nhất)
+            TextRenderer.DrawText(e.Graphics, page.Text, Font, paddedBounds, textColor);
+        }
     }
 }
