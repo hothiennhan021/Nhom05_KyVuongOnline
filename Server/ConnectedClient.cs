@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 
 namespace MyTcpServer
 {
-    // Class này để gói gọn TcpClient lại, giúp Server quản lý dễ hơn
     public class ConnectedClient
     {
         public TcpClient Client { get; }
         public StreamReader Reader { get; }
         public StreamWriter Writer { get; }
 
-        // [QUAN TRỌNG] Biến này để lưu ID người dùng sau khi đăng nhập thành công
-        // Mặc định là 0 (chưa đăng nhập)
         public int UserId { get; set; } = 0;
+
+        // [MỚI] Lưu Username để cập nhật Rank/Wins/Losses
+        public string Username { get; set; } = "";
 
         public ConnectedClient(TcpClient client)
         {
             Client = client;
             var stream = client.GetStream();
+
             Reader = new StreamReader(stream, Encoding.UTF8);
             Writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = false };
         }
 
-        // Hàm gửi tin nhắn an toàn, không gây crash server nếu client rớt mạng
         public async Task SendMessageAsync(string message)
         {
             try
@@ -38,20 +38,15 @@ namespace MyTcpServer
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Lỗi gửi tin tới User {UserId}: {ex.Message}");
+                Console.WriteLine($"Send Error (User {UserId}): {ex.Message}");
             }
         }
 
-        // Hàm ngắt kết nối 
         public void Close()
         {
-            try
-            {
-                Reader.Close();
-                Writer.Close();
-                Client.Close();
-            }
-            catch { /* Bỏ qua lỗi khi đóng */ }
+            try { Reader.Close(); } catch { }
+            try { Writer.Close(); } catch { }
+            try { Client.Close(); } catch { }
         }
     }
 }

@@ -254,5 +254,19 @@ namespace AccountUI
 
         // Các nút cũ hoặc chưa dùng tới
         private void button3_Click(object sender, EventArgs e) { }
+
+        private void btnProfile_Click(object sender, EventArgs e)
+        {
+            string conn = "Server=(localdb)\\MSSQLLocalDB;Database=NetChessDB;Trusted_Connection=True;";
+
+            if (string.IsNullOrEmpty(ClientManager.Username))
+            {
+                MessageBox.Show("Bạn chưa đăng nhập!");
+                return;
+            }
+
+            var profileWin = new ChessUI.ProfileWindow(ClientManager.Username, conn);
+            profileWin.ShowDialog();
+        }
     }
 }

@@ -9,85 +9,136 @@ namespace ChessData
     {
         private readonly string _connectionString;
 
-        public UserRepository(string connectionString)
+        public UserRepository(string connection)
         {
-            _connectionString = connectionString;
+            _connectionString = connection;
         }
 
+        // ==============================
+        //  ĐĂNG KÝ
+        // ==============================
         public async Task<string> RegisterUserAsync(string username, string password, string email, string fullName, string birthday)
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
+                using var conn = new SqlConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // Check tồn tại
+                string checkSql = "SELECT COUNT(*) FROM Users WHERE Username=@u OR Email=@e";
+                using (var checkCmd = new SqlCommand(checkSql, conn))
                 {
-                    await conn.OpenAsync();
-
-                    // 1. Check tồn tại
-                    string checkSql = "SELECT COUNT(*) FROM Users WHERE Username = @u OR Email = @e";
-                    using (SqlCommand cmd = new SqlCommand(checkSql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@u", username);
-                        cmd.Parameters.AddWithValue("@e", email);
-                        int count = (int)await cmd.ExecuteScalarAsync();
-                        if (count > 0) return "ERROR|Tên đăng nhập hoặc Email đã tồn tại.";
-                    }
-
-                    // 2. Lưu user mới
-                    string hash = BCrypt.Net.BCrypt.HashPassword(password);
-                    string sql = "INSERT INTO Users (Username, PasswordHash, Email, FullName, Birthday) VALUES (@u, @p, @e, @f, @b)";
-
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@u", username);
-                        cmd.Parameters.AddWithValue("@p", hash);
-                        cmd.Parameters.AddWithValue("@e", email);
-                        cmd.Parameters.AddWithValue("@f", fullName);
-                        cmd.Parameters.AddWithValue("@b", DateTime.Parse(birthday));
-                        await cmd.ExecuteNonQueryAsync();
-                    }
+                    checkCmd.Parameters.AddWithValue("@u", username);
+                    checkCmd.Parameters.AddWithValue("@e", email);
+                    int count = (int)await checkCmd.ExecuteScalarAsync();
+                    if (count > 0)
+                        return "ERROR|Tên đăng nhập hoặc email đã tồn tại.";
                 }
-                return "REGISTER_SUCCESS|Đăng ký thành công!";
+
+                string hash = BCrypt.Net.BCrypt.HashPassword(password);
+
+                string insertSql =
+                    @"INSERT INTO Users 
+                      (Username, PasswordHash, Email, FullName, Birthday, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes) 
+                      VALUES (@u, @p, @e, @f, @b, @in, 800, 800, 0, 0, 0)";
+
+                using (var cmd = new SqlCommand(insertSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@u", username);
+                    cmd.Parameters.AddWithValue("@p", hash);
+                    cmd.Parameters.AddWithValue("@e", email);
+                    cmd.Parameters.AddWithValue("@f", fullName);
+                    cmd.Parameters.AddWithValue("@b", DateTime.Parse(birthday));
+                    cmd.Parameters.AddWithValue("@in", username); // ingame = username
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                return "REGISTER_SUCCESS";
             }
-            catch (Exception ex) { return $"ERROR|Lỗi DB: {ex.Message}"; }
+            catch (Exception ex)
+            {
+                return "ERROR|" + ex.Message;
+            }
         }
 
+        // ==============================
+        //  ĐĂNG NHẬP
+        // ==============================
         public async Task<string> LoginUserAsync(string username, string password)
         {
             try
             {
-                string storedHash = "";
+                using var conn = new SqlConnection(_connectionString);
+                await conn.OpenAsync();
+
+                string sql = @"SELECT PasswordHash, Email, FullName, Birthday 
+                               FROM Users WHERE Username=@u";
+
+                string passwordHash = "";
                 string fullName = "";
                 string email = "";
-                string dob = "";
+                string birthday = "";
 
-                using (SqlConnection conn = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand(sql, conn))
                 {
-                    await conn.OpenAsync();
-                    string sql = "SELECT PasswordHash, FullName, Email, Birthday FROM Users WHERE Username = @u";
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@u", username);
-                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                storedHash = reader["PasswordHash"].ToString();
-                                fullName = reader["FullName"].ToString();
-                                email = reader["Email"].ToString();
-                                dob = Convert.ToDateTime(reader["Birthday"]).ToString("yyyy-MM-dd");
-                            }
-                            else return "ERROR|Sai tài khoản.";
-                        }
-                    }
+                    cmd.Parameters.AddWithValue("@u", username);
+                    using var reader = await cmd.ExecuteReaderAsync();
+                    if (!reader.Read())
+                        return "ERROR|Sai tài khoản";
+
+                    passwordHash = reader["PasswordHash"].ToString();
+                    fullName = reader["FullName"].ToString();
+                    email = reader["Email"].ToString();
+                    birthday = Convert.ToDateTime(reader["Birthday"]).ToString("yyyy-MM-dd");
                 }
 
-                if (BCrypt.Net.BCrypt.Verify(password, storedHash))
-                {
-                    return $"LOGIN_SUCCESS|{fullName}|{email}|{dob}";
-                }
-                return "ERROR|Sai mật khẩu.";
+                if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
+                    return "ERROR|Sai mật khẩu";
+
+                return $"LOGIN_SUCCESS|{fullName}|{email}|{birthday}";
             }
-            catch (Exception ex) { return $"ERROR|Lỗi DB: {ex.Message}"; }
+            catch (Exception ex)
+            {
+                return "ERROR|" + ex.Message;
+            }
+        }
+
+        // ==============================
+        //  LẤY THỐNG KÊ PROFILE (NEW)
+        // ==============================
+        public async Task<UserStats?> GetUserStatsAsync(string username)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_connectionString);
+                await conn.OpenAsync();
+
+                string sql = @"
+                    SELECT Username, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes
+                    FROM Users
+                    WHERE Username=@u";
+
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@u", username);
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (!reader.Read()) return null;
+
+                return new UserStats
+                {
+                    Username = reader["Username"].ToString(),
+                    IngameName = reader["IngameName"].ToString(),
+                    Rank = Convert.ToInt32(reader["Rank"]),
+                    HighestRank = Convert.ToInt32(reader["HighestRank"]),
+                    Wins = Convert.ToInt32(reader["Wins"]),
+                    Losses = Convert.ToInt32(reader["Losses"]),
+                    TotalPlayTimeMinutes = Convert.ToInt32(reader["TotalPlayTimeMinutes"])
+                };
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
