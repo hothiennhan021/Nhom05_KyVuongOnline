@@ -1,162 +1,199 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
-
-namespace AccountUI
+﻿namespace AccountUI
 {
     partial class Resetpassword
     {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
         private System.ComponentModel.IContainer components = null;
-        private TextBox txtPass2;
-        private Button btnXacNhan;
-        private Button btnQuayLai;
-        private Button btnShow1;
-        private Button btnShow2;
 
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
+            {
                 components.Dispose();
+            }
             base.Dispose(disposing);
         }
 
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Resetpassword));
-            txtPass2 = new TextBox();
-            btnXacNhan = new Button();
-            btnQuayLai = new Button();
-            btnShow1 = new Button();
-            btnShow2 = new Button();
-            txtPass1 = new TextBox();
-            label4 = new Label();
-            label1 = new Label();
+            pictureBox3 = new PictureBox();
             label2 = new Label();
+            textBox3 = new TextBox();
+            pictureBox2 = new PictureBox();
+            textBox2 = new TextBox();
+            button2 = new Button();
+            button1 = new Button();
+            label4 = new Label();
             label3 = new Label();
-            label5 = new Label();
+            button_passwordhide2 = new Button();
+            button_passwordhide = new Button();
+            button_passwordshow2 = new Button();
+            button_passwordshow = new Button();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             SuspendLayout();
             // 
-            // txtPass2
+            // pictureBox3
             // 
-            txtPass2.Font = new Font("Times New Roman", 16.2F);
-            txtPass2.Location = new Point(279, 219);
-            txtPass2.Name = "txtPass2";
-            txtPass2.Size = new Size(360, 39);
-            txtPass2.TabIndex = 1;
-            txtPass2.UseSystemPasswordChar = true;
+            pictureBox3.BackColor = Color.White;
+            pictureBox3.Image = Properties.Resources.Password;
+            pictureBox3.Location = new Point(43, 248);
+            pictureBox3.Name = "pictureBox3";
+            pictureBox3.Size = new Size(39, 39);
+            pictureBox3.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox3.TabIndex = 28;
+            pictureBox3.TabStop = false;
             // 
-            // btnXacNhan
+            // label2
             // 
-            btnXacNhan.AutoSize = true;
-            btnXacNhan.BackColor = Color.DarkSlateBlue;
-            btnXacNhan.Font = new Font("Times New Roman", 13.8F);
-            btnXacNhan.ForeColor = Color.White;
-            btnXacNhan.Location = new Point(357, 286);
-            btnXacNhan.Name = "btnXacNhan";
-            btnXacNhan.Size = new Size(224, 54);
-            btnXacNhan.TabIndex = 4;
-            btnXacNhan.Text = "Xác Nhận";
-            btnXacNhan.UseVisualStyleBackColor = false;
-            btnXacNhan.Click += btnXacNhan_Click;
+            label2.AutoSize = true;
+            label2.BackColor = Color.White;
+            label2.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            label2.ForeColor = Color.DarkSlateBlue;
+            label2.Location = new Point(101, 260);
+            label2.Name = "label2";
+            label2.Size = new Size(0, 26);
+            label2.TabIndex = 27;
             // 
-            // btnQuayLai
+            // textBox3
             // 
-            btnQuayLai.AutoSize = true;
-            btnQuayLai.BackColor = Color.DarkSlateBlue;
-            btnQuayLai.Font = new Font("Times New Roman", 13.8F);
-            btnQuayLai.ForeColor = Color.White;
-            btnQuayLai.Location = new Point(357, 367);
-            btnQuayLai.Name = "btnQuayLai";
-            btnQuayLai.Size = new Size(224, 54);
-            btnQuayLai.TabIndex = 5;
-            btnQuayLai.Text = "Quay Lại";
-            btnQuayLai.UseVisualStyleBackColor = false;
-            btnQuayLai.Click += btnQuayLai_Click;
+            textBox3.Font = new Font("Times New Roman", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            textBox3.ForeColor = SystemColors.GrayText;
+            textBox3.Location = new Point(88, 248);
+            textBox3.Name = "textBox3";
+            textBox3.Size = new Size(395, 39);
+            textBox3.TabIndex = 26;
+            textBox3.Text = "Xác Nhận Mật Khẩu";
+            textBox3.TextChanged += textBox3_TextChanged;
+            textBox3.Enter += textBox3_Enter;
+            textBox3.Leave += textBox3_Leave;
             // 
-            // btnShow1
+            // pictureBox2
             // 
-            btnShow1.Location = new Point(645, 140);
-            btnShow1.Name = "btnShow1";
-            btnShow1.Size = new Size(40, 39);
-            btnShow1.TabIndex = 2;
-            btnShow1.Text = "👁";
-            btnShow1.UseVisualStyleBackColor = true;
+            pictureBox2.BackColor = Color.White;
+            pictureBox2.Image = Properties.Resources.Password;
+            pictureBox2.Location = new Point(43, 171);
+            pictureBox2.Name = "pictureBox2";
+            pictureBox2.Size = new Size(39, 39);
+            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox2.TabIndex = 25;
+            pictureBox2.TabStop = false;
             // 
-            // btnShow2
+            // textBox2
             // 
-            btnShow2.Location = new Point(645, 218);
-            btnShow2.Name = "btnShow2";
-            btnShow2.Size = new Size(40, 39);
-            btnShow2.TabIndex = 3;
-            btnShow2.Text = "👁";
-            btnShow2.UseVisualStyleBackColor = true;
+            textBox2.Font = new Font("Times New Roman", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            textBox2.ForeColor = SystemColors.GrayText;
+            textBox2.Location = new Point(88, 171);
+            textBox2.Name = "textBox2";
+            textBox2.Size = new Size(395, 39);
+            textBox2.TabIndex = 23;
+            textBox2.Text = "Mật Khẩu Mới";
+            textBox2.Enter += textBox2_Enter;
+            textBox2.Leave += textBox2_Leave;
             // 
-            // txtPass1
+            // button2
             // 
-            txtPass1.Font = new Font("Times New Roman", 16.2F);
-            txtPass1.Location = new Point(279, 137);
-            txtPass1.Name = "txtPass1";
-            txtPass1.Size = new Size(360, 39);
-            txtPass1.TabIndex = 6;
-            txtPass1.UseSystemPasswordChar = true;
+            button2.AutoSize = true;
+            button2.BackColor = Color.DarkSlateBlue;
+            button2.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            button2.ForeColor = Color.White;
+            button2.Location = new Point(160, 396);
+            button2.Name = "button2";
+            button2.Size = new Size(224, 54);
+            button2.TabIndex = 30;
+            button2.Text = "Quay Lại";
+            button2.UseVisualStyleBackColor = false;
+            button2.Click += button2_Click;
+            // 
+            // button1
+            // 
+            button1.AutoSize = true;
+            button1.BackColor = Color.DarkSlateBlue;
+            button1.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            button1.ForeColor = Color.White;
+            button1.Location = new Point(160, 319);
+            button1.Name = "button1";
+            button1.Size = new Size(224, 54);
+            button1.TabIndex = 29;
+            button1.Text = "Xác Nhận";
+            button1.UseVisualStyleBackColor = false;
             // 
             // label4
             // 
             label4.AutoSize = true;
             label4.BackColor = Color.Transparent;
-            label4.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold);
+            label4.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold, GraphicsUnit.Point, 163);
             label4.ForeColor = Color.White;
-            label4.Location = new Point(247, 38);
+            label4.Location = new Point(123, 42);
             label4.Name = "label4";
-            label4.Size = new Size(0, 42);
-            label4.TabIndex = 8;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.BackColor = Color.Transparent;
-            label1.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold);
-            label1.ForeColor = Color.White;
-            label1.Location = new Point(306, 26);
-            label1.Name = "label1";
-            label1.Size = new Size(296, 42);
-            label1.TabIndex = 9;
-            label1.Text = "CHESS ONLINE";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.BackColor = Color.Transparent;
-            label2.Font = new Font("Times New Roman", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.White;
-            label2.Location = new Point(12, 137);
-            label2.Name = "label2";
-            label2.Size = new Size(206, 35);
-            label2.TabIndex = 10;
-            label2.Text = "Mật Khẩu Mới";
+            label4.Size = new Size(296, 42);
+            label4.TabIndex = 31;
+            label4.Text = "CHESS ONLINE";
             // 
             // label3
             // 
             label3.AutoSize = true;
             label3.BackColor = Color.Transparent;
-            label3.Font = new Font("Times New Roman", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label3.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
             label3.ForeColor = Color.White;
-            label3.Location = new Point(-6, 218);
+            label3.Location = new Point(133, 109);
             label3.Name = "label3";
-            label3.Size = new Size(278, 35);
-            label3.TabIndex = 11;
-            label3.Text = "Xác Nhận Mật Khẩu";
+            label3.Size = new Size(272, 25);
+            label3.TabIndex = 32;
+            label3.Text = "Hãy Nhập Mật Khẩu Mới";
             // 
-            // label5
+            // button_passwordhide2
             // 
-            label5.AutoSize = true;
-            label5.BackColor = Color.Transparent;
-            label5.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            label5.ForeColor = Color.White;
-            label5.Location = new Point(318, 85);
-            label5.Name = "label5";
-            label5.Size = new Size(272, 25);
-            label5.TabIndex = 33;
-            label5.Text = "Hãy Nhập Mật Khẩu Mới";
+            button_passwordhide2.Image = (Image)resources.GetObject("button_passwordhide2.Image");
+            button_passwordhide2.Location = new Point(443, 248);
+            button_passwordhide2.Name = "button_passwordhide2";
+            button_passwordhide2.Size = new Size(40, 40);
+            button_passwordhide2.TabIndex = 34;
+            button_passwordhide2.UseVisualStyleBackColor = true;
+            button_passwordhide2.Click += button_passwordhide2_Click;
+            // 
+            // button_passwordhide
+            // 
+            button_passwordhide.Image = (Image)resources.GetObject("button_passwordhide.Image");
+            button_passwordhide.Location = new Point(443, 170);
+            button_passwordhide.Name = "button_passwordhide";
+            button_passwordhide.Size = new Size(40, 40);
+            button_passwordhide.TabIndex = 33;
+            button_passwordhide.UseVisualStyleBackColor = true;
+            button_passwordhide.Click += button_passwordhide_Click;
+            // 
+            // button_passwordshow2
+            // 
+            button_passwordshow2.Image = (Image)resources.GetObject("button_passwordshow2.Image");
+            button_passwordshow2.Location = new Point(443, 248);
+            button_passwordshow2.Name = "button_passwordshow2";
+            button_passwordshow2.Size = new Size(40, 40);
+            button_passwordshow2.TabIndex = 36;
+            button_passwordshow2.UseVisualStyleBackColor = true;
+            button_passwordshow2.Click += button_passwordshow2_Click;
+            // 
+            // button_passwordshow
+            // 
+            button_passwordshow.Image = (Image)resources.GetObject("button_passwordshow.Image");
+            button_passwordshow.Location = new Point(443, 170);
+            button_passwordshow.Name = "button_passwordshow";
+            button_passwordshow.Size = new Size(40, 40);
+            button_passwordshow.TabIndex = 35;
+            button_passwordshow.UseVisualStyleBackColor = true;
+            button_passwordshow.Click += button_passwordshow_Click;
             // 
             // Resetpassword
             // 
@@ -164,28 +201,42 @@ namespace AccountUI
             AutoScaleMode = AutoScaleMode.Font;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(966, 488);
-            Controls.Add(label5);
+            ClientSize = new Size(968, 489);
+            Controls.Add(button_passwordshow2);
+            Controls.Add(button_passwordshow);
+            Controls.Add(button_passwordhide2);
+            Controls.Add(button_passwordhide);
             Controls.Add(label3);
-            Controls.Add(label2);
-            Controls.Add(label1);
             Controls.Add(label4);
-            Controls.Add(txtPass1);
-            Controls.Add(btnQuayLai);
-            Controls.Add(btnXacNhan);
-            Controls.Add(btnShow2);
-            Controls.Add(btnShow1);
-            Controls.Add(txtPass2);
+            Controls.Add(button2);
+            Controls.Add(button1);
+            Controls.Add(pictureBox3);
+            Controls.Add(label2);
+            Controls.Add(textBox3);
+            Controls.Add(pictureBox2);
+            Controls.Add(textBox2);
             Name = "Resetpassword";
             Text = "Resetpassword";
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
-        private TextBox txtPass1;
-        private Label label4;
-        private Label label1;
+
+        #endregion
+
+        private PictureBox pictureBox3;
         private Label label2;
+        private TextBox textBox3;
+        private PictureBox pictureBox2;
+        private TextBox textBox2;
+        private Button button2;
+        private Button button1;
+        private Label label4;
         private Label label3;
-        private Label label5;
+        private Button button_passwordhide2;
+        private Button button_passwordhide;
+        private Button button_passwordshow2;
+        private Button button_passwordshow;
     }
 }

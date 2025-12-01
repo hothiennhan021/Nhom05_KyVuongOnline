@@ -23,7 +23,7 @@ namespace MyTcpServer
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             _config = builder.Build();
-                
+
             // 2. Kết nối DB (Logic gốc giữ nguyên)
             string connString = _config.GetConnectionString("DefaultConnection");
             try
