@@ -57,26 +57,29 @@ namespace AccountUI
 
                 if (command == "LOGIN_SUCCESS")
                 {
-                    // LƯU USERNAME LẠI CHO TOÀN BỘ HỆ THỐNG
-                    ClientManager.Username = tentk;
-
-                    try
+                    // -----------------------------------------------------------
+                    // PHẦN 2: LOGIN PHỤ (Cho chức năng Bạn bè - Dùng ClientSocket)
+                    // -----------------------------------------------------------
+                    try 
                     {
+                        // Kết nối ngầm để Server biết ID người dùng này cho chức năng Bạn bè
                         bool connected = ClientSocket.Connect("127.0.0.1", 8888);
                         if (connected)
                         {
+                            // Gửi login lần 2 qua kênh này để định danh
                             ClientSocket.SendAndReceive($"LOGIN|{tentk}|{matkhau}");
                         }
-                    }
-                    catch { }
+                    } 
+                    catch { /* Lờ đi lỗi này để không ảnh hưởng game chính */ }
+                    // -----------------------------------------------------------
 
                     MessageBox.Show("Đăng nhập thành công!", "Thông báo");
                     this.Hide();
+                    // Mở MainMenu (Code cũ của nhóm)
                     MainMenu mainmenu = new MainMenu();
                     mainmenu.ShowDialog();
                     this.Close();
                 }
-
                 else
                 {
                     string msg = parts.Length > 1 ? parts[1] : "Lỗi đăng nhập";

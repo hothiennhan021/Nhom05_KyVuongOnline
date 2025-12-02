@@ -6,9 +6,6 @@ namespace ChessClient
     {
         private static NetworkClient _instance;
 
-        // LƯU TÊN USER HIỆN TẠI SAU KHI LOGIN
-        public static string Username { get; set; }
-
         public static NetworkClient Instance
         {
             get
@@ -30,17 +27,14 @@ namespace ChessClient
             }
         }
 
-        // RESET KẾT NỐI
+        // --- BỔ SUNG HÀM NÀY ---
         public static void Disconnect()
         {
             if (_instance != null)
             {
                 _instance.CloseConnection();
-                _instance = null;
+                _instance = null; // Reset để lần sau gọi Instance sẽ tạo mới
             }
-
-            // RESET username khi logout
-            Username = null;
         }
     }
 }
