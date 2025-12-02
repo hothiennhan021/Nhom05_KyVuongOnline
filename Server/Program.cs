@@ -104,9 +104,23 @@ namespace MyTcpServer
                     if (res.StartsWith("LOGIN_SUCCESS"))
                     {
                         client.UserId = GetUserId(parts[1]);
-                        client.Username = parts[1];  // <— QUAN TRỌNG
+                        client.Username = parts[1];
                     }
                     return res;
+
+                // [MỚI]: Xử lý tìm trận ngẫu nhiên
+                case "FIND_GAME":
+                    await GameManager.FindGame(client);
+                    return null;
+
+                // [MỚI]: Xử lý chấp nhận/từ chối trận đấu
+                case "MATCH_RESPONSE":
+                    // Format: MATCH_RESPONSE | RoomID/MatchID | ACCEPT/DECLINE
+                    if (parts.Length >= 3)
+                    {
+                        await GameManager.HandleMatchResponse(client, parts[1], parts[2]);
+                    }
+                    return null;
 
                 case "CREATE_ROOM":
                     await GameManager.CreateRoom(client);
@@ -129,7 +143,6 @@ namespace MyTcpServer
                     return "ERROR|Unknown command";
             }
         }
-
         public static async Task UpdateMatchAsync(string winner, string loser, int minutes)
         {
             try
