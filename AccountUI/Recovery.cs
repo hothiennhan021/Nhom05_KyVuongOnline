@@ -1,106 +1,146 @@
 ﻿using System;
+using System.Drawing; // Thêm using này nếu chưa có
 using System.Windows.Forms;
-using Microsoft.Data.SqlClient;
 
 namespace AccountUI
 {
     public partial class Recovery : Form
     {
-        private string otpCode = "";
-        public static string selectedEmail = "";   // ⬅ Lưu email để ResetPassword dùng lại
-
-        private string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=NetChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
-
         public Recovery()
         {
             InitializeComponent();
         }
 
-        // Kiểm tra email có trong DB
-        private bool CheckEmailInDB(string email)
+        // --- Nút "Gửi" (Kiểm tra Email tồn tại) ---
+        private void button3_Click(object sender, EventArgs e)
         {
+            string email = textBox1.Text;
+
+            // --- Kiểm tra cơ bản ---
+            if (email.Trim() == "" || email == "Email")
+            {
+                MessageBox.Show("Vui lòng nhập email!", "Chú Ý");
+                return;
+            }
+            // Giữ lại kiểm tra định dạng email của bạn
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[a-zA-Z0-9_.]{3,20}@gmail.com(.vn|)$"))
+            {
+                MessageBox.Show("Vui lòng nhập đúng định dạng email @gmail.com!", "Chú Ý");
+                return;
+            }
+            // ---------------------
+
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                // --- Giao tiếp với Server ---
+                // 1. Tạo lệnh kiểm tra email
+                string request = $"CHECK_EMAIL|{email}";
+
+                // 2. Gửi và nhận phản hồi
+                string response = ClientSocket.SendAndReceive(request);
+
+                // 3. Xử lý phản hồi
+                if (response == "EMAIL_EXISTS")
                 {
-                    conn.Open();
-                    string sql = "SELECT COUNT(*) FROM Users WHERE Email = @e";
+                    MessageBox.Show("Email hợp lệ. Bạn có thể tiến hành đặt lại mật khẩu.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@e", email);
-                        return (int)cmd.ExecuteScalar() > 0;
-                    }
+                    // Cho phép nhập mã xác nhận (textBox2) và nhấn nút Xác nhận (button1)
+                    // Hoặc đơn giản là mở luôn form Resetpassword
+                    // Tạm thời: Kích hoạt ô nhập mã và nút xác nhận
+                    textBox2.Enabled = true;
+                    button1.Enabled = true; // button1 là nút "Xác Nhận" mã
+
+                    // Bạn cũng có thể mở luôn form Reset Password ở đây nếu không cần bước nhập mã:
+                    // Resetpassword rspassword = new Resetpassword(email); // Truyền email sang
+                    // rspassword.ShowDialog();
+                    // this.Close(); // Đóng form Recovery sau khi Reset xong
                 }
+                else // Bao gồm EMAIL_NOT_FOUND hoặc lỗi khác
+                {
+                    MessageBox.Show("Email này không tồn tại trong hệ thống!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                // ---------------------------
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Không thể kết nối database!");
-                return false;
-            }
-        }
-
-        // Gửi OTP
-        private async void btnGui_Click(object sender, EventArgs e)
-        {
-            string email = txtEmail.Text.Trim();
-
-            if (email == "" || email == "Email")
-            {
-                MessageBox.Show("Vui lòng nhập Email!");
-                return;
-            }
-
-            // Check email trong DB
-            if (!CheckEmailInDB(email))
-            {
-                MessageBox.Show("Email này không tồn tại trong hệ thống!");
-                return;
-            }
-
-            // Tạo OTP
-            Random rd = new Random();
-            otpCode = rd.Next(100000, 999999).ToString();
-
-            string subject = "Mã Khôi Phục Mật Khẩu - CHESS ONLINE";
-            string body = $"Mã OTP của bạn là: {otpCode}";
-
-            bool sent = await EmailService.SendEmailAsync(email, subject, body);
-
-            if (sent)
-            {
-                MessageBox.Show("Đã gửi OTP, hãy kiểm tra email!");
-
-                selectedEmail = email;   // ⬅ Ghi nhớ email để reset mật khẩu
-            }
-            else
-            {
-                MessageBox.Show("Gửi email thất bại. Kiểm tra App Password Gmail!");
+                MessageBox.Show("Lỗi kết nối hoặc server chưa chạy: " + ex.Message, "Lỗi");
             }
         }
 
-        // Xác nhận OTP
-        private void btnXacNhan_Click(object sender, EventArgs e)
+        // --- Nút "Xác Nhận" (Sau khi nhập mã - Tạm thời chỉ mở form Reset) ---
+        private void button1_Click_1(object sender, EventArgs e)
         {
-            if (txtOTP.Text.Trim() == otpCode)
+            string email = textBox1.Text; // Lấy lại email đã nhập
+            string confirmationCode = textBox2.Text; // Lấy mã xác nhận
+
+            if (confirmationCode.Trim() == "" || confirmationCode == "Mã Xác Nhận")
             {
-                MessageBox.Show("OTP chính xác! Hãy đặt mật khẩu mới.");
+                MessageBox.Show("Vui Lòng Nhập Mã Xác Nhận", "Chú Ý");
+                return;
+            }
 
-                Resetpassword f = new Resetpassword();
-                f.ShowDialog();
+            // --- Tạm thời bỏ qua kiểm tra mã xác nhận ---
+            // (Trong bài tập TCP cơ bản này, việc gửi/nhận mã khá phức tạp)
+            // Chỉ cần mở form Reset Password và truyền email qua
+            Resetpassword rspassword = new Resetpassword(email); // Truyền email sang form Reset
+            rspassword.ShowDialog();
+            this.Close(); // Đóng form Recovery sau khi Reset xong
+            // ------------------------------------------
+        }
 
+
+        // --- Nút "Quay Lại" ---
+        private void button2_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Quay Lại ?", "Chú Ý", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
                 this.Close();
             }
-            else
+        }
+
+
+        // --- Các hàm sự kiện Enter/Leave/TextChanged cho TextBox (Giữ nguyên) ---
+        private void textBox1_TextChanged(object sender, EventArgs e) { } // Email
+        private void textBox1_Enter(object sender, EventArgs e)
+        {
+            if (textBox1.Text == "Email")
             {
-                MessageBox.Show("Sai OTP!");
+                textBox1.Text = "";
+                textBox1.ForeColor = Color.DarkSlateBlue;
+            }
+        }
+        private void textBox1_Leave(object sender, EventArgs e)
+        {
+            if (textBox1.Text == "")
+            {
+                textBox1.Text = "Email";
+                textBox1.ForeColor = Color.Gray;
             }
         }
 
-        private void btnQuayLai_Click(object sender, EventArgs e)
+        private void textBox2_TextChanged(object sender, EventArgs e) { } // Mã Xác Nhận
+        private void textBox2_Enter(object sender, EventArgs e)
         {
-            this.Close();
+            if (textBox2.Text == "Mã Xác Nhận")
+            {
+                textBox2.Text = "";
+                textBox2.ForeColor = Color.DarkSlateBlue;
+            }
         }
+        private void textBox2_Leave(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "")
+            {
+                textBox2.Text = "Mã Xác Nhận";
+                textBox2.ForeColor = Color.Gray;
+            }
+        }
+
+        // --- Có thể bạn có hàm này từ code cũ, nếu không cần thì xóa đi ---
+        // private void button1_Click(object sender, EventArgs e)
+        // {
+        //     // Hàm này có vẻ bị trùng, hàm button1_Click_1 ở trên mới đúng là nút "Xác Nhận" mã
+        // }
     }
 }

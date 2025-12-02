@@ -1,56 +1,58 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
-
-namespace AccountUI
+﻿namespace AccountUI
 {
     partial class Recovery
     {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        private Button btnQuayLai;
-        private PictureBox pictureBox1;
-        private TextBox txtEmail;
-        private TextBox txtOTP;
-        private Button btnGui;
-        private Label label4;
-        private Label label2;
-        private Button btnXacNhan;
-
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
+            {
                 components.Dispose();
+            }
             base.Dispose(disposing);
         }
 
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources =
-                new System.ComponentModel.ComponentResourceManager(typeof(Recovery));
-            btnQuayLai = new Button();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Recovery));
+            button2 = new Button();
             pictureBox1 = new PictureBox();
-            txtEmail = new TextBox();
-            txtOTP = new TextBox();
-            btnGui = new Button();
+            textBox1 = new TextBox();
+            textBox2 = new TextBox();
+            button3 = new Button();
             label4 = new Label();
             label2 = new Label();
-            btnXacNhan = new Button();
+            button1 = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
-            // btnQuayLai
+            // button2
             // 
-            btnQuayLai.AutoSize = true;
-            btnQuayLai.BackColor = Color.DarkSlateBlue;
-            btnQuayLai.Font = new Font("Times New Roman", 13.8F);
-            btnQuayLai.ForeColor = Color.White;
-            btnQuayLai.Location = new Point(175, 409);
-            btnQuayLai.Name = "btnQuayLai";
-            btnQuayLai.Size = new Size(224, 54);
-            btnQuayLai.TabIndex = 4;
-            btnQuayLai.Text = "Quay Lại";
-            btnQuayLai.UseVisualStyleBackColor = false;
-            btnQuayLai.Click += btnQuayLai_Click;
+            button2.AutoSize = true;
+            button2.BackColor = Color.DarkSlateBlue;
+            button2.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            button2.ForeColor = Color.White;
+            button2.Location = new Point(175, 409);
+            button2.Name = "button2";
+            button2.Size = new Size(224, 54);
+            button2.TabIndex = 32;
+            button2.Text = "Quay Lại";
+            button2.UseVisualStyleBackColor = false;
+            button2.Click += button2_Click;
             // 
             // pictureBox1
             // 
@@ -60,75 +62,86 @@ namespace AccountUI
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(39, 39);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 35;
             pictureBox1.TabStop = false;
             // 
-            // txtEmail
+            // textBox1
             // 
-            txtEmail.Font = new Font("Times New Roman", 16.2F);
-            txtEmail.ForeColor = SystemColors.WindowText;
-            txtEmail.Location = new Point(98, 136);
-            txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(395, 39);
-            txtEmail.TabIndex = 1;
+            textBox1.Font = new Font("Times New Roman", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            textBox1.ForeColor = SystemColors.GrayText;
+            textBox1.Location = new Point(98, 136);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(395, 39);
+            textBox1.TabIndex = 33;
+            textBox1.Text = "Email";
+            textBox1.TextChanged += textBox1_TextChanged;
+            textBox1.Enter += textBox1_Enter;
+            textBox1.Leave += textBox1_Leave;
             // 
-            // txtOTP
+            // textBox2
             // 
-            txtOTP.Font = new Font("Times New Roman", 16.2F);
-            txtOTP.ForeColor = SystemColors.WindowText;
-            txtOTP.Location = new Point(98, 275);
-            txtOTP.Name = "txtOTP";
-            txtOTP.Size = new Size(395, 39);
-            txtOTP.TabIndex = 2;
+            textBox2.Font = new Font("Times New Roman", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            textBox2.ForeColor = SystemColors.GrayText;
+            textBox2.Location = new Point(98, 275);
+            textBox2.Name = "textBox2";
+            textBox2.Size = new Size(395, 39);
+            textBox2.TabIndex = 36;
+            textBox2.Text = "Mã Xác Nhận";
+            textBox2.TextChanged += textBox2_TextChanged;
+            textBox2.Enter += textBox2_Enter;
+            textBox2.Leave += textBox2_Leave;
             // 
-            // btnGui
+            // button3
             // 
-            btnGui.AutoSize = true;
-            btnGui.BackColor = Color.DarkSlateBlue;
-            btnGui.Font = new Font("Times New Roman", 13.8F);
-            btnGui.ForeColor = Color.White;
-            btnGui.Location = new Point(175, 199);
-            btnGui.Name = "btnGui";
-            btnGui.Size = new Size(224, 54);
-            btnGui.TabIndex = 3;
-            btnGui.Text = "Gửi";
-            btnGui.UseVisualStyleBackColor = false;
-            btnGui.Click += btnGui_Click;
+            button3.AutoSize = true;
+            button3.BackColor = Color.DarkSlateBlue;
+            button3.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            button3.ForeColor = Color.White;
+            button3.Location = new Point(175, 199);
+            button3.Name = "button3";
+            button3.Size = new Size(224, 54);
+            button3.TabIndex = 38;
+            button3.Text = "Gửi";
+            button3.UseVisualStyleBackColor = false;
+            button3.Click += button3_Click;
             // 
             // label4
             // 
             label4.AutoSize = true;
             label4.BackColor = Color.Transparent;
-            label4.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold);
+            label4.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold, GraphicsUnit.Point, 163);
             label4.ForeColor = Color.White;
             label4.Location = new Point(134, 24);
             label4.Name = "label4";
             label4.Size = new Size(296, 42);
+            label4.TabIndex = 39;
             label4.Text = "CHESS ONLINE";
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.BackColor = Color.Transparent;
-            label2.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold);
+            label2.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
             label2.ForeColor = Color.White;
             label2.Location = new Point(36, 85);
             label2.Name = "label2";
             label2.Size = new Size(488, 25);
+            label2.TabIndex = 40;
             label2.Text = "Nhập Email Để Nhận Mã Khôi Phục Mật Khẩu";
             // 
-            // btnXacNhan
+            // button1
             // 
-            btnXacNhan.AutoSize = true;
-            btnXacNhan.BackColor = Color.DarkSlateBlue;
-            btnXacNhan.Font = new Font("Times New Roman", 13.8F);
-            btnXacNhan.ForeColor = Color.White;
-            btnXacNhan.Location = new Point(175, 336);
-            btnXacNhan.Name = "btnXacNhan";
-            btnXacNhan.Size = new Size(224, 54);
-            btnXacNhan.TabIndex = 5;
-            btnXacNhan.Text = "Xác Nhận";
-            btnXacNhan.UseVisualStyleBackColor = false;
-            btnXacNhan.Click += btnXacNhan_Click;
+            button1.AutoSize = true;
+            button1.BackColor = Color.DarkSlateBlue;
+            button1.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            button1.ForeColor = Color.White;
+            button1.Location = new Point(175, 336);
+            button1.Name = "button1";
+            button1.Size = new Size(224, 54);
+            button1.TabIndex = 41;
+            button1.Text = "Xác Nhận";
+            button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click_1;
             // 
             // Recovery
             // 
@@ -137,19 +150,30 @@ namespace AccountUI
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(966, 488);
-            Controls.Add(btnXacNhan);
+            Controls.Add(button1);
             Controls.Add(label2);
             Controls.Add(label4);
-            Controls.Add(btnGui);
-            Controls.Add(txtOTP);
+            Controls.Add(button3);
+            Controls.Add(textBox2);
             Controls.Add(pictureBox1);
-            Controls.Add(txtEmail);
-            Controls.Add(btnQuayLai);
+            Controls.Add(textBox1);
+            Controls.Add(button2);
             Name = "Recovery";
             Text = "Recovery";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
+
+        #endregion
+
+        private Button button2;
+        private PictureBox pictureBox1;
+        private TextBox textBox1;
+        private TextBox textBox2;
+        private Button button3;
+        private Label label4;
+        private Label label2;
+        private Button button1;
     }
 }
