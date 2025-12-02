@@ -46,7 +46,7 @@ namespace AccountUI
 
         public static string SendAndReceive(string message)
         {
-            // Tự động kết nối lại nếu lỡ rớt mạng
+            // Tự động kết nối lại nếu lỡ rớt mạng (nhưng sẽ mất login state nếu server không lưu session)
             if (_client == null || !_client.Connected)
             {
                 if (!Connect()) return "ERROR|Mất kết nối Server";
@@ -54,32 +54,23 @@ namespace AccountUI
 
             try
             {
-                if (_stream.DataAvailable)
-                {
-                    byte[] garbage = new byte[4096];
-                    _stream.Read(garbage, 0, garbage.Length);
-                }
-
-                //  Gửi tin nhắn
+                // Gửi tin nhắn (Thêm xuống dòng \n)
                 byte[] dataToSend = Encoding.UTF8.GetBytes(message + "\n");
                 _stream.Write(dataToSend, 0, dataToSend.Length);
                 _stream.Flush();
 
-                //  Nhận phản hồi
+                // Nhận phản hồi
                 byte[] buffer = new byte[4096];
                 int bytesRead = _stream.Read(buffer, 0, buffer.Length);
 
-                if (bytesRead == 0)
-                {
-                    Disconnect();
-                    return "ERROR|Server đóng kết nối";
-                }
+                if (bytesRead == 0) return "ERROR|Server đóng kết nối";
 
-                return Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
+                string response = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
+                return response;
             }
             catch (Exception ex)
             {
-                Disconnect();
+                Disconnect(); // Lỗi thì reset
                 return "ERROR|Lỗi mạng: " + ex.Message;
             }
         }
