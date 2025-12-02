@@ -10,7 +10,7 @@ namespace AccountUI
         public static string selectedEmail = "";   // ⬅ Lưu email để ResetPassword dùng lại
 
         private string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=NetChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            "Server=(localdb)\\MSSQLLocalDB;Database=ChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public Recovery()
         {

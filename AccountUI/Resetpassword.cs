@@ -8,7 +8,7 @@ namespace AccountUI
     public partial class Resetpassword : Form
     {
         private string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=NetChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            "Server=(localdb)\\MSSQLLocalDB;Database=ChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public Resetpassword()
         {

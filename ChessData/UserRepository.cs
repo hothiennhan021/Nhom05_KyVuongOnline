@@ -39,8 +39,8 @@ namespace ChessData
 
                 string insertSql =
                     @"INSERT INTO Users 
-                      (Username, PasswordHash, Email, FullName, Birthday, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes) 
-                      VALUES (@u, @p, @e, @f, @b, @in, 800, 800, 0, 0, 0)";
+                      (Username, PasswordHash, Email, FullName, Birthday, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes, IsOnline) 
+                      VALUES (@u, @p, @e, @f, @b, @in, 800, 800, 0, 0, 0, 0)";
 
                 using (var cmd = new SqlCommand(insertSql, conn))
                 {
@@ -104,7 +104,7 @@ namespace ChessData
         }
 
         // ==============================
-        //  LẤY THỐNG KÊ PROFILE (NEW)
+        //  LẤY THỐNG KÊ PROFILE
         // ==============================
         public async Task<UserStats?> GetUserStatsAsync(string username)
         {
@@ -139,6 +139,21 @@ namespace ChessData
             {
                 return null;
             }
+        }
+
+        // ==============================
+        //  CẬP NHẬT TRẠNG THÁI ONLINE
+        // ==============================
+        public void SetOnline(int userId, bool isOnline)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            string sql = "UPDATE Users SET IsOnline = @o WHERE UserId = @id";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@o", isOnline ? 1 : 0);
+            cmd.Parameters.AddWithValue("@id", userId);
+            cmd.ExecuteNonQuery();
         }
     }
 }

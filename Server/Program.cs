@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using ChessData;
-using MyTcpServer;
 using Microsoft.Data.SqlClient;
 
 namespace MyTcpServer
@@ -15,8 +14,6 @@ namespace MyTcpServer
         private static IConfiguration _config;
         private static FriendRepository _friendRepo;
         private static UserRepository _userRepo;
-
-        // [MỚI] Repo cập nhật trận đấu
         private static MatchRepository _matchRepo;
 
         static async Task Main(string[] args)
@@ -84,11 +81,19 @@ namespace MyTcpServer
             }
             finally
             {
+                if (client.UserId != 0)
+                {
+                    _userRepo.SetOnline(client.UserId, false);
+                }
+
                 GameManager.HandleClientDisconnect(client);
                 client.Close();
             }
         }
 
+        // ======================================================
+        //                  PROCESS REQUEST
+        // ======================================================
         static async Task<string> ProcessRequest(ConnectedClient client, string msg)
         {
             string[] parts = msg.Split('|');
@@ -96,31 +101,90 @@ namespace MyTcpServer
 
             switch (cmd)
             {
+                // ======================
+                // REGISTER & LOGIN
+                // ======================
                 case "REGISTER":
                     return await _userRepo.RegisterUserAsync(parts[1], parts[2], parts[3], parts[4], parts[5]);
 
                 case "LOGIN":
-                    string res = await _userRepo.LoginUserAsync(parts[1], parts[2]);
-                    if (res.StartsWith("LOGIN_SUCCESS"))
                     {
-                        client.UserId = GetUserId(parts[1]);
-                        client.Username = parts[1];
+                        string res = await _userRepo.LoginUserAsync(parts[1], parts[2]);
+                        if (res.StartsWith("LOGIN_SUCCESS"))
+                        {
+                            client.UserId = GetUserId(parts[1]);
+                            client.Username = parts[1];
+                            _userRepo.SetOnline(client.UserId, true);
+                        }
+                        return res;
                     }
-                    return res;
 
-                // [MỚI]: Xử lý tìm trận ngẫu nhiên
+                case "LOGOUT":
+                    _userRepo.SetOnline(client.UserId, false);
+                    return "LOGOUT_OK";
+
+                // ======================================================
+                //                   FRIEND SYSTEM
+                // ======================================================
+
+                // LỆNH CŨ CỦA CLIENT: FRIEND_SEARCH|username
+                // → Mặc định: Gửi lời mời kết bạn
+                case "FRIEND_SEARCH":
+                    {
+                        return _friendRepo.SendFriendRequest(client.UserId, parts[1]);
+                    }
+
+                // LỆNH MỚI: FRIEND_SEND|username
+                case "FRIEND_SEND":
+                    {
+                        return _friendRepo.SendFriendRequest(client.UserId, parts[1]);
+                    }
+
+                // GET FRIEND LIST
+                case "FRIEND_LIST":
+                case "FRIEND_GET_LIST":
+                    {
+                        var list = _friendRepo.GetListFriends(client.UserId);
+                        return "FRIEND_LIST|" + string.Join(";", list);
+                    }
+
+                // GET REQUESTS
+                case "FRIEND_REQUESTS":
+                case "FRIEND_GET_REQUESTS":
+                    {
+                        var req = _friendRepo.GetFriendRequests(client.UserId);
+                        return "FRIEND_REQUESTS|" + string.Join(";", req);
+                    }
+
+                // ACCEPT FRIEND
+                case "FRIEND_ACCEPT":
+                    {
+                        _friendRepo.AcceptFriend(int.Parse(parts[1]));
+                        return "FRIEND_ACCEPTED";
+                    }
+
+                // REMOVE FRIEND
+                case "FRIEND_REMOVE":
+                    {
+                        bool ok = _friendRepo.RemoveFriend(client.UserId, parts[1]);
+                        return ok ? "FRIEND_REMOVED" : "FRIEND_REMOVE_FAIL";
+                    }
+
+                // ======================================================
+                //                MATCHMAKING (TÌM TRẬN)
+                // ======================================================
+
                 case "FIND_GAME":
                     await GameManager.FindGame(client);
                     return null;
 
-                // [MỚI]: Xử lý chấp nhận/từ chối trận đấu
                 case "MATCH_RESPONSE":
-                    // Format: MATCH_RESPONSE | RoomID/MatchID | ACCEPT/DECLINE
-                    if (parts.Length >= 3)
-                    {
-                        await GameManager.HandleMatchResponse(client, parts[1], parts[2]);
-                    }
+                    await GameManager.HandleMatchResponse(client, parts[1], parts[2]);
                     return null;
+
+                // ======================================================
+                //                    PRIVATE ROOM
+                // ======================================================
 
                 case "CREATE_ROOM":
                     await GameManager.CreateRoom(client);
@@ -129,6 +193,10 @@ namespace MyTcpServer
                 case "JOIN_ROOM":
                     await GameManager.JoinRoom(client, parts[1]);
                     return null;
+
+                // ======================================================
+                //                    GAME COMMANDS
+                // ======================================================
 
                 case "MOVE":
                 case "CHAT":
@@ -143,6 +211,11 @@ namespace MyTcpServer
                     return "ERROR|Unknown command";
             }
         }
+
+        // ======================================================
+        //          UPDATE MATCH RESULT (WIN/LOSE)
+        // ======================================================
+
         public static async Task UpdateMatchAsync(string winner, string loser, int minutes)
         {
             try

@@ -58,8 +58,16 @@ namespace AccountUI
         // [FIXED] Missing event handler for Profile button
         private void btnProfile_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Chức năng Hồ Sơ đang phát triển!");
-            // You can implement the actual profile form opening here later
+            string conn = "Server=(localdb)\\MSSQLLocalDB;Database=ChessDB;Trusted_Connection=True;";
+
+            if (string.IsNullOrEmpty(ClientManager.Username))
+            {
+                MessageBox.Show("Bạn chưa đăng nhập!");
+                return;
+            }
+
+            var profileWin = new ChessUI.ProfileWindow(ClientManager.Username, conn);
+            profileWin.ShowDialog();
         }
 
         /// <summary>
