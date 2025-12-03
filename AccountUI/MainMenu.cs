@@ -17,8 +17,10 @@ namespace AccountUI
         public MainMenu()
         {
             InitializeComponent();
-            // Ensure MainMenu starts in the center
+            // Đảm bảo Form luôn ở giữa
             this.StartPosition = FormStartPosition.CenterScreen;
+            // Cho phép cập nhật UI từ luồng khác để tránh lỗi Cross-thread
+            CheckForIllegalCrossThreadCalls = false;
         }
 
         private void MainMenu_Load(object sender, EventArgs e)
@@ -27,22 +29,22 @@ namespace AccountUI
         }
 
         // ============================================================
-        // 1. SEND COMMANDS TO SERVER
+        // 1. GỬI LỆNH LÊN SERVER
         // ============================================================
 
-        // Find Random Match
+        // Tìm trận ngẫu nhiên
         private async void button1_Click(object sender, EventArgs e)
         {
             await SendRequest("FIND_GAME", "Đang tìm đối thủ...", button1);
         }
 
-        // Create Room
+        // Tạo phòng
         private async void btnCreateRoom_Click(object sender, EventArgs e)
         {
             await SendRequest("CREATE_ROOM", "Đang tạo phòng...", btnCreateRoom);
         }
 
-        // Join Room
+        // Vào phòng
         private async void btnJoinRoom_Click(object sender, EventArgs e)
         {
             string roomId = txtRoomId.Text.Trim();
@@ -51,11 +53,10 @@ namespace AccountUI
                 MessageBox.Show("Vui lòng nhập ID phòng!");
                 return;
             }
-
             await SendRequest($"JOIN_ROOM|{roomId}", "Đang vào phòng...", btnJoinRoom);
         }
 
-        // [FIXED] Missing event handler for Profile button
+        // Nút Profile
         private void btnProfile_Click(object sender, EventArgs e)
         {
             string conn = "Server=(localdb)\\MSSQLLocalDB;Database=ChessDB;Trusted_Connection=True;";
@@ -71,10 +72,11 @@ namespace AccountUI
         }
 
         /// <summary>
-        /// Sends a command and starts listening for a response.
+        /// Gửi lệnh và bắt đầu lắng nghe phản hồi
         /// </summary>
         private async Task SendRequest(string command, string waitText, Button clickedButton)
         {
+            // Nếu đang lắng nghe rồi thì thôi, tránh tạo nhiều luồng song song
             if (_isListening) return;
 
             if (!ClientManager.Instance.IsConnected)
@@ -87,17 +89,17 @@ namespace AccountUI
             {
                 _isListening = true;
 
-                // Disable buttons
+                // Disable các nút để tránh spam lệnh
                 button1.Enabled = false;
                 btnCreateRoom.Enabled = false;
                 btnJoinRoom.Enabled = false;
 
                 clickedButton.Text = waitText;
 
-                // Send command
+                // Gửi lệnh đi
                 await ClientManager.Instance.SendAsync(command);
 
-                // Start listening
+                // Bắt đầu vòng lặp lắng nghe
                 await ListenForMessages();
             }
             catch (Exception ex)
@@ -108,7 +110,7 @@ namespace AccountUI
         }
 
         // ============================================================
-        // 2. LISTEN FOR SERVER MESSAGES
+        // 2. VÒNG LẶP LẮNG NGHE (ĐÃ FIX LỖI TRANH CHẤP)
         // ============================================================
 
         private async Task ListenForMessages()
@@ -119,9 +121,10 @@ namespace AccountUI
                 {
                     try
                     {
+                        // Đọc tin nhắn từ Server (Blocking call)
                         string message = ClientManager.Instance.WaitForMessage();
 
-                        // Disconnected
+                        // Nếu mất kết nối
                         if (string.IsNullOrEmpty(message))
                         {
                             this.Invoke((MethodInvoker)(() =>
@@ -131,41 +134,46 @@ namespace AccountUI
                                 ResetUI();
                             }));
                             _isListening = false;
-                            break;
+                            return; // Thoát Task
                         }
 
-                        // 1) GAME_START -> Open WPF Board
+                        // --------------------------------------------------------
+                        // 1) GAME_START -> Vào Game (QUAN TRỌNG NHẤT)
+                        // --------------------------------------------------------
                         if (message.StartsWith("GAME_START"))
                         {
+                            // [FIX]: Ngắt cờ lắng nghe ngay lập tức để luồng này không đọc thêm gì nữa
+                            _isListening = false;
+
                             this.Invoke((MethodInvoker)(() =>
                             {
-                                _isListening = false;
                                 CloseMatchFormIfAny();
                                 this.Hide();
                                 LaunchWpfGameWindow(message);
                             }));
-                            break;
+
+                            // [FIX]: Dùng return để kill Task ngay lập tức, đảm bảo Socket rảnh cho Game
+                            return;
                         }
-                        // 2) MATCH_FOUND -> Show Popup
+                        // 2) MATCH_FOUND -> Hiện Popup xác nhận
                         else if (message.StartsWith("MATCH_FOUND"))
                         {
-                            // Format: MATCH_FOUND|roomId
                             string[] parts = message.Split('|');
                             string roomId = parts.Length > 1 ? parts[1] : "";
 
                             this.BeginInvoke((MethodInvoker)(() =>
                             {
-                                CloseMatchFormIfAny(); // Close old one if exists
+                                CloseMatchFormIfAny();
 
                                 var form = new MatchFoundForm();
-
-                                // Center popup on MainMenu
+                                // Căn giữa Popup
                                 form.StartPosition = FormStartPosition.Manual;
                                 form.Location = new Point(
                                     this.Location.X + (this.Width - form.Width) / 2,
                                     this.Location.Y + (this.Height - form.Height) / 2
                                 );
 
+                                // Xử lý sự kiện Accept/Decline
                                 form.Accepted += () =>
                                 {
                                     _ = ClientManager.Instance.SendAsync($"MATCH_RESPONSE|{roomId}|ACCEPT");
@@ -179,30 +187,31 @@ namespace AccountUI
                                     _currentMatchForm = null;
                                 };
 
-                                form.FormClosed += (s, e) =>
+                                form.FormClosed += (s, ev) =>
                                 {
                                     if (_currentMatchForm == form) _currentMatchForm = null;
                                 };
 
                                 _currentMatchForm = form;
-                                form.Show(this); // Show as modeless dialog owned by MainMenu
+                                form.Show(this);
                             }));
                         }
                         // 3) MATCH_CANCELLED
                         else if (message.StartsWith("MATCH_CANCELLED"))
                         {
+                            _isListening = false; // Dừng tìm kiếm
+
                             string reason = "Trận đấu đã bị hủy.";
                             string[] parts = message.Split('|');
                             if (parts.Length > 1) reason = parts[1];
 
                             this.Invoke((MethodInvoker)(() =>
                             {
-                                _isListening = false;
                                 CloseMatchFormIfAny();
                                 MessageBox.Show(reason, "Ghép trận thất bại");
                                 ResetUI();
                             }));
-                            break;
+                            return; // Thoát Task
                         }
                         // 4) ROOM_CREATED
                         else if (message.StartsWith("ROOM_CREATED"))
@@ -220,14 +229,14 @@ namespace AccountUI
                         // 5) ERROR
                         else if (message.StartsWith("ERROR") || message.StartsWith("ROOM_ERROR"))
                         {
+                            _isListening = false;
                             this.Invoke((MethodInvoker)(() =>
                             {
                                 CloseMatchFormIfAny();
                                 MessageBox.Show(message, "Lỗi");
                                 ResetUI();
                             }));
-                            _isListening = false;
-                            break;
+                            return; // Thoát Task
                         }
                         // 6) WAITING
                         else if (message.StartsWith("WAITING"))
@@ -240,12 +249,14 @@ namespace AccountUI
                     }
                     catch
                     {
+                        // Nếu có lỗi socket hoặc luồng bị hủy
+                        _isListening = false;
                         this.Invoke((MethodInvoker)(() =>
                         {
                             CloseMatchFormIfAny();
                             ResetUI();
                         }));
-                        _isListening = false;
+                        return;
                     }
                 }
             });
@@ -265,23 +276,28 @@ namespace AccountUI
         }
 
         // ============================================================
-        // 3. LAUNCH WPF WINDOW
+        // 3. LAUNCH WPF WINDOW (GAME)
         // ============================================================
 
         private void LaunchWpfGameWindow(string gameStartMessage)
         {
+            // Tạo một Thread mới dành riêng cho WPF Window
             Thread wpfThread = new Thread(() =>
             {
                 try
                 {
+                    // 
                     var gameWindow = new ChessUI.MainWindow(gameStartMessage);
 
+                    // Khi tắt Game, hiện lại Menu
                     gameWindow.Closed += (s, e) =>
                     {
                         try
                         {
+                            // Tắt Dispatcher của WPF
                             Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
 
+                            // Quay về luồng UI của MainMenu để hiện form
                             if (!this.IsDisposed && this.IsHandleCreated)
                             {
                                 this.Invoke((MethodInvoker)delegate
@@ -297,7 +313,7 @@ namespace AccountUI
                     };
 
                     gameWindow.Show();
-                    Dispatcher.Run();
+                    Dispatcher.Run(); // Bắt đầu vòng lặp message của WPF
                 }
                 catch (Exception ex)
                 {
@@ -310,7 +326,7 @@ namespace AccountUI
                 }
             });
 
-            wpfThread.SetApartmentState(ApartmentState.STA);
+            wpfThread.SetApartmentState(ApartmentState.STA); // Bắt buộc cho WPF
             wpfThread.IsBackground = false;
             wpfThread.Start();
         }
@@ -321,7 +337,13 @@ namespace AccountUI
 
         private void ResetUI()
         {
-            _isListening = false;
+            _isListening = false; // Đảm bảo trạng thái clean
+
+            if (button1.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)ResetUI);
+                return;
+            }
 
             button1.Text = "Ghép Trận Ngẫu Nhiên";
             btnCreateRoom.Text = "Tạo Phòng";

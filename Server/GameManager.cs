@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace MyTcpServer
 {
-    // Class hỗ trợ lưu trạng thái chờ xác nhận
     public class PendingMatch
     {
         public string MatchId { get; set; }
@@ -14,10 +13,11 @@ namespace MyTcpServer
         public ConnectedClient Player2 { get; set; }
         public bool P1Accepted { get; set; } = false;
         public bool P2Accepted { get; set; } = false;
+        public object LockObj = new object(); // Khóa để tránh race condition
 
         public PendingMatch(ConnectedClient p1, ConnectedClient p2)
         {
-            MatchId = Guid.NewGuid().ToString().Substring(0, 8); // ID ngắn gọn
+            MatchId = Guid.NewGuid().ToString().Substring(0, 8);
             Player1 = p1;
             Player2 = p2;
         }
@@ -30,8 +30,6 @@ namespace MyTcpServer
 
         private static readonly ConcurrentDictionary<ConnectedClient, GameSession> _activeGames = new ConcurrentDictionary<ConnectedClient, GameSession>();
         private static readonly ConcurrentDictionary<string, ConnectedClient> _privateRooms = new ConcurrentDictionary<string, ConnectedClient>();
-
-        // [MỚI]: Danh sách các trận đang chờ bấm Accept
         private static readonly ConcurrentDictionary<string, PendingMatch> _pendingMatches = new ConcurrentDictionary<string, PendingMatch>();
 
         public static void HandleClientConnect(ConnectedClient client) { }
@@ -43,11 +41,10 @@ namespace MyTcpServer
             var roomKey = _privateRooms.FirstOrDefault(x => x.Value == client).Key;
             if (roomKey != null) _privateRooms.TryRemove(roomKey, out _);
 
-            // Xử lý ngắt kết nối khi đang chờ Accept
             var pending = _pendingMatches.Values.FirstOrDefault(m => m.Player1 == client || m.Player2 == client);
             if (pending != null)
             {
-                _ = CancelPendingMatch(pending, "Đối thủ đã thoát.");
+                CancelPendingMatch(pending, "Đối thủ đã thoát.").Wait();
             }
 
             if (_activeGames.TryRemove(client, out GameSession session))
@@ -55,13 +52,13 @@ namespace MyTcpServer
                 if (!session.IsGameOver())
                 {
                     var other = (session.PlayerWhite == client) ? session.PlayerBlack : session.PlayerWhite;
-                    _ = other.SendMessageAsync("GAME_OVER_FULL|Đối thủ thoát|Resigned");
+                    other.SendMessageAsync("GAME_OVER_FULL|Đối thủ thoát|Resigned").Wait();
                     _activeGames.TryRemove(other, out _);
                 }
             }
         }
 
-        // --- TÌM TRẬN NGẪU NHIÊN ---
+        // --- TÌM TRẬN ---
         public static async Task FindGame(ConnectedClient client)
         {
             PendingMatch newMatch = null;
@@ -69,11 +66,8 @@ namespace MyTcpServer
             lock (_lobbyLock)
             {
                 _waitingLobby.RemoveAll(c => !c.Client.Connected);
+                if (!_waitingLobby.Contains(client)) _waitingLobby.Add(client);
 
-                if (!_waitingLobby.Contains(client))
-                    _waitingLobby.Add(client);
-
-                // Nếu đủ 2 người => Tạo Pending Match (chưa Start Game ngay)
                 if (_waitingLobby.Count >= 2)
                 {
                     var p1 = _waitingLobby[0];
@@ -87,7 +81,6 @@ namespace MyTcpServer
 
             if (newMatch != null)
             {
-                // Gửi thông báo MATCH_FOUND để client hiện popup
                 await newMatch.Player1.SendMessageAsync($"MATCH_FOUND|{newMatch.MatchId}");
                 await newMatch.Player2.SendMessageAsync($"MATCH_FOUND|{newMatch.MatchId}");
             }
@@ -97,7 +90,7 @@ namespace MyTcpServer
             }
         }
 
-        // --- XỬ LÝ CHẤP NHẬN / TỪ CHỐI ---
+        // --- XỬ LÝ ACCEPT / DECLINE ---
         public static async Task HandleMatchResponse(ConnectedClient client, string matchId, string response)
         {
             if (_pendingMatches.TryGetValue(matchId, out PendingMatch match))
@@ -108,20 +101,24 @@ namespace MyTcpServer
                 }
                 else if (response == "ACCEPT")
                 {
-                    if (client == match.Player1) match.P1Accepted = true;
-                    if (client == match.Player2) match.P2Accepted = true;
-
-                    // Nếu cả 2 đều đồng ý => BẮT ĐẦU GAME
-                    if (match.P1Accepted && match.P2Accepted)
+                    bool startGame = false;
+                    lock (match.LockObj)
                     {
-                        // Xóa khỏi danh sách chờ
-                        _pendingMatches.TryRemove(matchId, out _);
+                        if (client == match.Player1) match.P1Accepted = true;
+                        if (client == match.Player2) match.P2Accepted = true;
 
-                        // Tạo session game thật
+                        if (match.P1Accepted && match.P2Accepted)
+                        {
+                            startGame = true;
+                            _pendingMatches.TryRemove(matchId, out _);
+                        }
+                    }
+
+                    if (startGame)
+                    {
                         var session = new GameSession(match.Player1, match.Player2);
                         _activeGames[match.Player1] = session;
                         _activeGames[match.Player2] = session;
-
                         await session.StartGame();
                     }
                 }
@@ -131,27 +128,18 @@ namespace MyTcpServer
         private static async Task CancelPendingMatch(PendingMatch match, string reason)
         {
             _pendingMatches.TryRemove(match.MatchId, out _);
-
-            // Gửi tin nhắn hủy trận cho cả 2
-            await match.Player1.SendMessageAsync($"MATCH_CANCELLED|{reason}");
-            await match.Player2.SendMessageAsync($"MATCH_CANCELLED|{reason}");
+            try { await match.Player1.SendMessageAsync($"MATCH_CANCELLED|{reason}"); } catch { }
+            try { await match.Player2.SendMessageAsync($"MATCH_CANCELLED|{reason}"); } catch { }
         }
 
-        // --- TẠO PHÒNG RIÊNG (GIỮ NGUYÊN HOẶC UPDATE TÙY BẠN) ---
-        // Hiện tại Tạo phòng riêng sẽ vào game luôn, nếu muốn popup thì sửa giống FindGame
+        // --- ROOM RIÊNG ---
         public static async Task CreateRoom(ConnectedClient creator)
         {
             string id = new Random().Next(1000, 9999).ToString();
             while (_privateRooms.ContainsKey(id)) id = new Random().Next(1000, 9999).ToString();
 
             if (_privateRooms.TryAdd(id, creator))
-            {
                 await creator.SendMessageAsync($"ROOM_CREATED|{id}");
-            }
-            else
-            {
-                await creator.SendMessageAsync("ROOM_ERROR|Không thể tạo phòng.");
-            }
         }
 
         public static async Task JoinRoom(ConnectedClient joiner, string id)
@@ -163,13 +151,9 @@ namespace MyTcpServer
                     await joiner.SendMessageAsync("ROOM_ERROR|Phòng đã hủy.");
                     return;
                 }
-
-                // Với phòng riêng, ta có thể cho vào game luôn (bỏ qua bước Accept)
-                // Hoặc nếu muốn Accept thì làm tương tự FindGame
                 var session = new GameSession(creator, joiner);
                 _activeGames[creator] = session;
                 _activeGames[joiner] = session;
-
                 await session.StartGame();
             }
             else
