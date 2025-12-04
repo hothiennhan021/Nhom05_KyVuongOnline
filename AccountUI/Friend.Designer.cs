@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Friend));
             tabControl1 = new TabControl();
             tabList = new TabPage();
@@ -42,6 +43,9 @@
             btnSearch = new Button();
             txtSearch = new TextBox();
             label1 = new Label();
+            imgListAvatar = new ImageList(components);
+            imgListStatus = new ImageList(components);
+            timerUpdate = new System.Windows.Forms.Timer(components);
             tabControl1.SuspendLayout();
             tabList.SuspendLayout();
             tabSearch.SuspendLayout();
@@ -84,10 +88,10 @@
             btnRemove.ForeColor = Color.IndianRed;
             btnRemove.Image = (Image)resources.GetObject("btnRemove.Image");
             btnRemove.ImageAlign = ContentAlignment.MiddleLeft;
-            btnRemove.Location = new Point(8, 448);
+            btnRemove.Location = new Point(8, 478);
             btnRemove.Name = "btnRemove";
             btnRemove.Padding = new Padding(10, 0, 10, 0);
-            btnRemove.Size = new Size(526, 52);
+            btnRemove.Size = new Size(258, 37);
             btnRemove.TabIndex = 3;
             btnRemove.Text = "Hủy kết bạn / Xóa";
             btnRemove.UseVisualStyleBackColor = false;
@@ -97,14 +101,17 @@
             // 
             lbFriends.BackColor = Color.FromArgb(45, 45, 48);
             lbFriends.BorderStyle = BorderStyle.FixedSingle;
+            lbFriends.DrawMode = DrawMode.OwnerDrawFixed;
             lbFriends.Font = new Font("Segoe UI", 11F);
             lbFriends.ForeColor = Color.WhiteSmoke;
             lbFriends.FormattingEnabled = true;
-            lbFriends.ItemHeight = 25;
-            lbFriends.Location = new Point(8, 15);
+            lbFriends.ItemHeight = 50;
+            lbFriends.Location = new Point(8, 42);
             lbFriends.Name = "lbFriends";
-            lbFriends.Size = new Size(526, 427);
+            lbFriends.Size = new Size(526, 402);
             lbFriends.TabIndex = 2;
+            lbFriends.DrawItem += lbFriends_DrawItem;
+            lbFriends.DoubleClick += lbFriends_DoubleClick;
             // 
             // btnRefresh
             // 
@@ -116,10 +123,10 @@
             btnRefresh.ForeColor = Color.Gold;
             btnRefresh.Image = (Image)resources.GetObject("btnRefresh.Image");
             btnRefresh.ImageAlign = ContentAlignment.MiddleLeft;
-            btnRefresh.Location = new Point(8, 506);
+            btnRefresh.Location = new Point(282, 478);
             btnRefresh.Name = "btnRefresh";
-            btnRefresh.Padding = new Padding(20, 0, 20, 5);
-            btnRefresh.Size = new Size(526, 65);
+            btnRefresh.Padding = new Padding(10, 0, 0, 2);
+            btnRefresh.Size = new Size(252, 37);
             btnRefresh.TabIndex = 1;
             btnRefresh.Text = "Làm mới danh sách";
             btnRefresh.TextImageRelation = TextImageRelation.ImageAboveText;
@@ -236,6 +243,29 @@
             label1.TabIndex = 0;
             label1.Text = "Nhập tên người chơi:";
             // 
+            // imgListAvatar
+            // 
+            imgListAvatar.ColorDepth = ColorDepth.Depth32Bit;
+            imgListAvatar.ImageStream = (ImageListStreamer)resources.GetObject("imgListAvatar.ImageStream");
+            imgListAvatar.TransparentColor = Color.Transparent;
+            imgListAvatar.Images.SetKeyName(0, "icons8-bishop-50 (2).png");
+            imgListAvatar.Images.SetKeyName(1, "icons8-bishop-50 (3).png");
+            imgListAvatar.Images.SetKeyName(2, "icons8-bishop-50 (4).png");
+            imgListAvatar.Images.SetKeyName(3, "icons8-bishop-50 (5).png");
+            // 
+            // imgListStatus
+            // 
+            imgListStatus.ColorDepth = ColorDepth.Depth32Bit;
+            imgListStatus.ImageStream = (ImageListStreamer)resources.GetObject("imgListStatus.ImageStream");
+            imgListStatus.TransparentColor = Color.Transparent;
+            imgListStatus.Images.SetKeyName(0, "icons8-circle-48 (1).png");
+            imgListStatus.Images.SetKeyName(1, "icons8-circle-48.png");
+            // 
+            // timerUpdate
+            // 
+            timerUpdate.Enabled = true;
+            timerUpdate.Interval = 1000;
+            // 
             // Friend
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -273,5 +303,8 @@
         private System.Windows.Forms.Button btnRefreshRequest;
         private System.Windows.Forms.ListBox lbFriends;
         private System.Windows.Forms.Button btnRemove;
+        private ImageList imgListAvatar;
+        private ImageList imgListStatus;
+        private System.Windows.Forms.Timer timerUpdate;
     }
 }
