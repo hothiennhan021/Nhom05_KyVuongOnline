@@ -409,7 +409,46 @@ namespace AccountUI
             }
         }
 
+        private void timerUpdate_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. CHECK LỜI MỜI
+                string invite = ClientSocket.SendAndReceive("CHECK_INVITE");
+                if (invite != null && invite.StartsWith("INVITE|"))
+                {
+                    timerUpdate.Stop();
+                    string inviter = invite.Split('|')[1];
 
+                    DialogResult dr = MessageBox.Show($"{inviter} thách đấu! Xem không?", "Mời", MessageBoxButtons.YesNo);
+                    if (dr == DialogResult.Yes)
+                    {
+                        using (MatchFoundForm frm = new MatchFoundForm())
+                        {
+                            if (frm.ShowDialog(this) == DialogResult.OK)
+                                ClientSocket.SendAndReceive($"ACCEPT|{inviter}");
+                            else
+                                ClientSocket.SendAndReceive($"DENY|{inviter}");
+                        }
+                    }
+                    else
+                    {
+                        ClientSocket.SendAndReceive($"DENY|{inviter}");
+                    }
+                    timerUpdate.Start();
+                }
+
+                // 2. CHECK VÀO GAME
+                string gameMsg = ClientSocket.SendAndReceive("CHECK_GAME_START");
+                if (gameMsg != null && gameMsg.StartsWith("GAME_START"))
+                {
+                    timerUpdate.Stop();
+                    // Gọi Launcher mở bàn cờ
+                    GameLauncher.StartGame(this, gameMsg);
+                }
+            }
+            catch { }
+        }
     }
 
 }

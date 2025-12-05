@@ -16,6 +16,14 @@ namespace MyTcpServer
         private static UserRepository _userRepo;
         private static MatchRepository _matchRepo;
 
+        // Lưu lời mời: Key=Người Bị Mời, Value=Người Mời
+        private static System.Collections.Generic.Dictionary<string, string> _pendingInvites
+            = new System.Collections.Generic.Dictionary<string, string>();
+
+        // Lưu game chờ start: Key=User, Value=Chuỗi GAME_START...
+        private static System.Collections.Generic.Dictionary<string, string> _pendingGames
+            = new System.Collections.Generic.Dictionary<string, string>();
+
         static async Task Main(string[] args)
         {
             var builder = new ConfigurationBuilder()
@@ -219,6 +227,8 @@ namespace MyTcpServer
                             client.UserId = GetUserId(parts[1]);
                             client.Username = parts[1];
                             _userRepo.SetOnline(client.UserId, true);
+                            GameManager.HandleClientConnect(client);
+                            Console.WriteLine($"[DEBUG] Đã thêm '{client.Username}' vào danh sách Online.");
                         }
                         return res;
                     }
@@ -273,6 +283,94 @@ namespace MyTcpServer
                         bool ok = _friendRepo.RemoveFriend(client.UserId, parts[1]);
                         return ok ? "FRIEND_REMOVED" : "FRIEND_REMOVE_FAIL";
                     }
+
+                // 1. THÁCH ĐẤU
+                case "CHALLENGE":
+                    {
+                        string target = parts[1].Trim();
+                        string sender = client.Username;
+                        if (!_pendingInvites.ContainsKey(target))
+                        {
+                            _pendingInvites.Add(target, sender);
+                            return "WAITING_ACCEPT|Đã gửi lời mời...";
+                        }
+                        return "BUSY|Người chơi đang bận.";
+                    }
+
+                // 2. CHECK LỜI MỜI
+                case "CHECK_INVITE":
+                    {
+                        string me = client.Username;
+                        if (_pendingInvites.ContainsKey(me)) return "INVITE|" + _pendingInvites[me];
+                        return "NO";
+                    }
+
+                // 3. CHẤP NHẬN
+                // Trong Program.cs -> case "ACCEPT"
+
+                // Trong file Program.cs (Server)
+
+                // Trong Program.cs -> case "ACCEPT"
+
+                case "ACCEPT":
+                    {
+                        string inviter = parts[1]; // Người mời
+                        string me = client.Username; // Người chấp nhận
+
+                        if (_pendingInvites.ContainsKey(me)) _pendingInvites.Remove(me);
+
+                        // 1. Lấy tin nhắn gốc dành cho người mời
+                        string msgForInviter = GameManager.StartChallengeGame(inviter, me);
+
+                        if (!msgForInviter.StartsWith("ERROR"))
+                        {
+                            // 2. [SỬA LỖI TẠI ĐÂY] Đảo ngược màu cho người chấp nhận
+                            // Phải xử lý cả 2 trường hợp: Nếu mời là Trắng -> Mình Đen. Nếu mời Đen -> Mình Trắng.
+                            string msgForMe;
+
+                            if (msgForInviter.Contains("|WHITE|"))
+                            {
+                                msgForMe = msgForInviter.Replace("|WHITE|", "|BLACK|");
+                            }
+                            else
+                            {
+                                // Trường hợp người mời bị Random vào ĐEN, thì mình phải là TRẮNG
+                                msgForMe = msgForInviter.Replace("|BLACK|", "|WHITE|");
+                            }
+
+                            // 3. Lưu tin nhắn để Client tự lấy
+                            if (!_pendingGames.ContainsKey(inviter)) _pendingGames.Add(inviter, msgForInviter);
+                            if (!_pendingGames.ContainsKey(me)) _pendingGames.Add(me, msgForMe);
+
+                            return "OK";
+                        }
+                        else
+                        {
+                            return msgForInviter;
+                        }
+                    }
+
+                // 4. TỪ CHỐI
+                case "DENY":
+                    {
+                        string me = client.Username;
+                        if (_pendingInvites.ContainsKey(me)) _pendingInvites.Remove(me);
+                        return "OK";
+                    }
+
+                // 5. CHECK VÀO GAME
+                case "CHECK_GAME_START":
+                    {
+                        string me = client.Username;
+                        if (_pendingGames.ContainsKey(me))
+                        {
+                            string gamemsg = _pendingGames[me];
+                            _pendingGames.Remove(me);
+                            return gamemsg;
+                        }
+                        return "NO";
+                    }
+            
 
                 // ======================================================
                 //                MATCHMAKING (TÌM TRẬN)

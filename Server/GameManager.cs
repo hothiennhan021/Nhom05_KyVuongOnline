@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ChessLogic;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MyTcpServer
 {
@@ -32,10 +33,23 @@ namespace MyTcpServer
         private static readonly ConcurrentDictionary<string, ConnectedClient> _privateRooms = new ConcurrentDictionary<string, ConnectedClient>();
         private static readonly ConcurrentDictionary<string, PendingMatch> _pendingMatches = new ConcurrentDictionary<string, PendingMatch>();
 
-        public static void HandleClientConnect(ConnectedClient client) { }
+        private static readonly ConcurrentDictionary<string, ConnectedClient> _onlineClients
+            = new ConcurrentDictionary<string, ConnectedClient>();
+        public static void HandleClientConnect(ConnectedClient client)
+        {
+            if (!string.IsNullOrEmpty(client.Username))
+            {
+                _onlineClients[client.Username] = client;
+            }
+        }
 
         public static void HandleClientDisconnect(ConnectedClient client)
         {
+            if (!string.IsNullOrEmpty(client.Username))
+            {
+                _onlineClients.TryRemove(client.Username, out _);
+            }
+
             lock (_lobbyLock) { _waitingLobby.Remove(client); }
 
             var roomKey = _privateRooms.FirstOrDefault(x => x.Value == client).Key;
@@ -56,6 +70,41 @@ namespace MyTcpServer
                     _activeGames.TryRemove(other, out _);
                 }
             }
+        }
+
+
+
+        // Trong GameManager.cs
+
+        // Lưu ý: Đổi từ 'string' sang 'async Task<string>'
+        // Trong GameManager.cs
+
+        // Trong GameManager.cs
+
+        public static string StartChallengeGame(string player1Name, string player2Name)
+        {
+            // Kiểm tra online
+            if (_onlineClients.TryGetValue(player1Name, out var p1) &&
+                _onlineClients.TryGetValue(player2Name, out var p2))
+            {
+                var session = new GameSession(p1, p2);
+                _activeGames[p1] = session;
+                _activeGames[p2] = session;
+
+                // Lấy bàn cờ
+                string rawBoard = session.StartGameSilent();
+
+                // Thời gian (nếu GameSession chưa public GameTimer thì hardcode tạm 600)
+                string timeW = "600";
+                string timeB = "600";
+
+                // [QUAN TRỌNG] Kiểm tra xem trong session, p1 (người mời) là màu gì?
+                // Vì Session random, nên phải check thực tế
+                string p1Color = (session.PlayerWhite.Username == p1.Username) ? "WHITE" : "BLACK";
+
+                return $"GAME_START|{p1Color}|{rawBoard}|{timeW}|{timeB}";
+            }
+            return "ERROR|Đối thủ không còn trực tuyến.";
         }
 
         // --- TÌM TRẬN ---
@@ -162,9 +211,69 @@ namespace MyTcpServer
             }
         }
 
+        // Trong GameManager.cs
+
         public static async Task ProcessGameCommand(ConnectedClient client, string command)
         {
-            if (_activeGames.TryGetValue(client, out GameSession session))
+            GameSession session = null;
+
+            // =========================================================================
+            // CASE 1: LOGIC CHUẨN (Dành cho Ghép Ngẫu Nhiên & Tạo Phòng & User không bị lỗi)
+            // =========================================================================
+            // Nếu client hiện tại khớp 100% với client lưu trong phòng -> Lấy ra dùng luôn.
+            // Hai chế độ kia sẽ LUÔN LUÔN chạy vào dòng này nên không bao giờ bị ảnh hưởng.
+            if (_activeGames.TryGetValue(client, out session))
+            {
+                // Tìm thấy ngon lành, không cần làm gì thêm.
+            }
+
+            // =========================================================================
+            // CASE 2: LOGIC CỨU HỘ (Chỉ chạy khi CASE 1 thất bại - Dành riêng cho Thách Đấu)
+            // =========================================================================
+            else
+            {
+                // Quét toàn bộ server xem có phòng nào chứa Username của người này không
+                var entry = _activeGames.FirstOrDefault(x =>
+                    (x.Value.PlayerWhite != null && x.Value.PlayerWhite.Username == client.Username) ||
+                    (x.Value.PlayerBlack != null && x.Value.PlayerBlack.Username == client.Username)
+                );
+
+                if (entry.Value != null) // Tìm thấy phòng!
+                {
+                    session = entry.Value;
+                    Console.WriteLine($"[AUTO-FIX] Phát hiện lệch kết nối của {client.Username}. Đang đồng bộ lại...");
+
+                    // 1. Cập nhật lại Dictionary: Xóa key cũ (ảo), Thêm key mới (thật)
+                    // Để các nước đi sau này nó sẽ tự động rơi vào CASE 1 (cho nhanh)
+                    GameSession temp;
+                    _activeGames.TryRemove(entry.Key, out temp);
+                    _activeGames.TryAdd(client, session);
+
+                    // 2. Cập nhật lại Socket trong Session: Để Server biết đường gửi tin nhắn về
+                    if (session.PlayerWhite.Username == client.Username)
+                    {
+                        session.PlayerWhite = client;
+                    }
+                    else if (session.PlayerBlack.Username == client.Username)
+                    {
+                        session.PlayerBlack = client;
+                    }
+
+                    // 3. [QUAN TRỌNG] GỬI GÓI RESYNC
+                    // Vì bị lệch kết nối nên Client có thể đã lỡ mất gói tin UPDATE trước đó.
+                    // Gửi lại ngay bàn cờ hiện tại để Client vẽ lại và mở khóa nước đi.
+                    string boardStr = Serialization.BoardToString(session.GameState.Board);
+                    string turnStr = session.GameState.CurrentPlayer.ToString().ToUpper();
+
+                    await client.SendMessageAsync($"UPDATE|{boardStr}|{turnStr}|600|600");
+                    Console.WriteLine($"[RESYNC] Đã gửi lại bàn cờ mới nhất cho {client.Username}");
+                }
+            }
+
+            // =========================================================================
+            // PHẦN XỬ LÝ LỆNH (GIỮ NGUYÊN CODE CŨ CỦA BẠN)
+            // =========================================================================
+            if (session != null)
             {
                 string[] parts = command.Split('|');
                 string cmd = parts[0];
@@ -182,6 +291,28 @@ namespace MyTcpServer
                     }
                 }
             }
+            else
+            {
+                // Chỉ khi nào quét cả server mà vẫn không thấy tên thì mới báo lỗi này
+                Console.WriteLine($"[CRITICAL] User {client.Username} gửi lệnh nhưng không tìm thấy phòng chơi nào!");
+            }
         }
+        // Trong GameManager.cs
+
+        // ... (Giữ nguyên các code khác)
+
+        // === THÊM HÀM NÀY VÀO CUỐI CLASS GameManager (Phải là public static) ===
+        // Trong GameManager.cs (Thêm vào cuối class nếu chưa có)
+        public static async Task SendMessageToUser(string username, string message)
+        {
+            if (_onlineClients.TryGetValue(username, out ConnectedClient client))
+            {
+                if (client != null && client.Client != null && client.Client.Connected)
+                {
+                    try { await client.SendMessageAsync(message); } catch { }
+                }
+            }
+        }
+
     }
 }

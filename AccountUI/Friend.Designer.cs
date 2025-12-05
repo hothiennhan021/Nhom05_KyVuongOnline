@@ -265,6 +265,7 @@
             // 
             timerUpdate.Enabled = true;
             timerUpdate.Interval = 1000;
+            timerUpdate.Tick += timerUpdate_Tick;
             // 
             // Friend
             // 

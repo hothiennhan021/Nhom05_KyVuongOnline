@@ -9,10 +9,11 @@ namespace MyTcpServer
     public class GameSession
     {
         public string SessionId { get; }
-        public ConnectedClient PlayerWhite { get; }
-        public ConnectedClient PlayerBlack { get; }
+        public ConnectedClient PlayerWhite { get; set; }
+        public ConnectedClient PlayerBlack { get; set; }
 
         private GameState _gameState;
+        public GameState GameState => _gameState;
         private readonly ChessTimer _gameTimer;
         private readonly ChatRoom _chatRoom;
         private readonly List<string> _moveHistory = new List<string>();
@@ -58,6 +59,17 @@ namespace MyTcpServer
             Console.WriteLine($"[Game Started] {PlayerWhite.Username} vs {PlayerBlack.Username}");
         }
 
+        public string StartGameSilent()
+        {
+            _gameTimer.Start(Player.White);
+
+            string board = Serialization.BoardToString(_gameState.Board);
+            Console.WriteLine($"[Challenge Silent] {PlayerWhite.Username} vs {PlayerBlack.Username}");
+
+            // 3. Thay vì gửi tin nhắn đi, ta TRẢ VỀ chuỗi bàn cờ để GameManager dùng
+            return board;
+        }
+
         // ============================================================
         // [FIXED] XỬ LÝ NƯỚC ĐI VÀ GỬI UPDATE CHUẨN
         // ============================================================
@@ -65,15 +77,23 @@ namespace MyTcpServer
         {
             try
             {
-                // 1. Kiểm tra đúng lượt (Server validation)
-                Player currentPlayer = _gameState.CurrentPlayer;
-                bool isWhiteClient = (client == PlayerWhite);
+                bool isWhite = (client == PlayerWhite) || (client.Username == PlayerWhite.Username);
+                bool isBlack = (client == PlayerBlack) || (client.Username == PlayerBlack.Username);
 
-                // Nếu Client gửi lệnh khi chưa đến lượt -> Bỏ qua
-                if ((isWhiteClient && currentPlayer != Player.White) ||
-                    (!isWhiteClient && currentPlayer != Player.Black))
+                // Nếu không phải Trắng cũng chẳng phải Đen -> Chặn
+                if (!isWhite && !isBlack)
                 {
-                    Console.WriteLine($"[Block] {client.Username} đi sai lượt.");
+                    Console.WriteLine($"[Block-Identity] {client.Username} không có quyền đi.");
+                    return;
+                }
+
+                Player currentPlayer = _gameState.CurrentPlayer;
+
+                // Kiểm tra lượt đi
+                if ((isWhite && currentPlayer != Player.White) ||
+                    (isBlack && currentPlayer != Player.Black))
+                {
+                    Console.WriteLine($"[Block-Turn] {client.Username} đi sai lượt.");
                     return;
                 }
 
@@ -102,10 +122,11 @@ namespace MyTcpServer
                 Position to = new Position(r2, c2);
                 IEnumerable<Move> moves = _gameState.MovesForPiece(from);
 
-                Move move = moves.FirstOrDefault(m => m.ToPos == to);
+                // THAY THẾ BẰNG ĐOẠN ĐÃ FIX:
+                Move move = moves.FirstOrDefault(m => m.ToPos.Equals(to));
 
                 // Xử lý phong cấp (nếu client không gửi type, mặc định Queen)
-                if (move == null) move = moves.OfType<PawnPromotion>().FirstOrDefault(m => m.ToPos == to);
+                if (move == null) move = moves.OfType<PawnPromotion>().FirstOrDefault(m => m.ToPos.Equals(to));
 
                 if (move == null) return; // Nước đi không hợp lệ
 
@@ -122,7 +143,7 @@ namespace MyTcpServer
                 string nextTurnStr = _gameState.CurrentPlayer.ToString().ToUpper();
 
                 string updateMsg = $"UPDATE|{boardStr}|{nextTurnStr}|{_gameTimer.WhiteRemaining}|{_gameTimer.BlackRemaining}";
-                await Broadcast(updateMsg);
+                await BroadcastSafe(updateMsg);
 
                 // (Option) Gửi thêm lệnh MOVE ngắn gọn nếu client cần animation
                 // await Broadcast($"MOVE|{r1}|{c1}|{r2}|{c2}");
@@ -134,7 +155,7 @@ namespace MyTcpServer
                 {
                     _gameTimer.Stop();
                     string winner = _gameState.Result.Winner == Player.White ? "White" : (_gameState.Result.Winner == Player.Black ? "Black" : "Draw");
-                    await Broadcast($"GAME_OVER_FULL|{winner}|{_gameState.Result.Reason}");
+                    await BroadcastSafe($"GAME_OVER_FULL|{winner}|{_gameState.Result.Reason}");
                 }
             }
             catch (Exception ex)
@@ -186,7 +207,7 @@ namespace MyTcpServer
         private void HandleTimeExpired(Player loser)
         {
             string winner = (loser == Player.White) ? "Black" : "White";
-            _ = Broadcast($"GAME_OVER_FULL|{winner}|TimeOut");
+            _ = BroadcastSafe($"GAME_OVER_FULL|{winner}|TimeOut");
         }
 
         public async Task BroadcastChat(ConnectedClient sender, string msg)
@@ -194,10 +215,46 @@ namespace MyTcpServer
             await _chatRoom.SendMessage(sender, msg);
         }
 
-        private async Task Broadcast(string msg)
+        // Trong GameSession.cs -> Kéo xuống cuối file
+
+        // Hàm hỗ trợ gửi tin an toàn
+        // Trong GameSession.cs (Kéo xuống cuối class)
+
+        // Hàm này thử gửi trực tiếp trước, nếu hỏng thì mới nhờ GameManager tìm hộ
+        private async Task SendSmartAsync(ConnectedClient player, string msg)
         {
-            try { await PlayerWhite.SendMessageAsync(msg); } catch { }
-            try { await PlayerBlack.SendMessageAsync(msg); } catch { }
+            bool sent = false;
+
+            // CÁCH 1: Gửi trực tiếp (Dành cho Random Match - Chạy rất nhanh)
+            if (player != null && player.Client != null && player.Client.Connected)
+            {
+                try
+                {
+                    await player.SendMessageAsync(msg);
+                    sent = true;
+                }
+                catch
+                {
+                    sent = false; // Gửi lỗi -> Đánh dấu để chuyển sang cách 2
+                }
+            }
+
+            // CÁCH 2: Gửi theo tên (Dành cho Challenge - Khi kết nối cũ đã mất)
+            if (!sent && !string.IsNullOrEmpty(player?.Username))
+            {
+                // Gọi hàm tìm kiếm bên GameManager (đảm bảo bạn đã thêm hàm SendMessageToUser bên đó)
+                await GameManager.SendMessageToUser(player.Username, msg);
+            }
         }
+
+        // Hàm Broadcast dùng logic thông minh ở trên
+        private async Task BroadcastSafe(string msg)
+        {
+            await SendSmartAsync(PlayerWhite, msg);
+            await SendSmartAsync(PlayerBlack, msg);
+        }
+
+        // Hàm Broadcast chính thức
+        
     }
 }

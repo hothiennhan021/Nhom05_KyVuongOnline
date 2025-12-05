@@ -105,7 +105,11 @@ namespace ChessUI.Services
                         break;
                 }
             }
-            catch { }
+            catch (Exception ex) // <--- Thêm (Exception ex) vào đây
+            {
+                // Giờ thì dùng 'ex' thoải mái không bị lỗi nữa
+                System.Windows.MessageBox.Show($"Lỗi đọc gói tin: {ex.Message}\nNội dung: {message}");
+            }
         }
     }
 }
