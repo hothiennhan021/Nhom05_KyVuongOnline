@@ -95,7 +95,8 @@ namespace ChessLogic
                     // Nếu ô thứ 2 cũng trống -> Được phép đi 2 bước
                     if (CanMoveTo(twoMovePos, board))
                     {
-                        yield return new NormalMove(from, twoMovePos);
+                        //Battotquaduong
+                        yield return new DoublePawn(from, twoMovePos);
                     }
                 }
             }
@@ -106,8 +107,14 @@ namespace ChessLogic
             foreach (Directions dir in new Directions[] { Directions.West, Directions.East })
             {
                 Position to = from + forward + dir;
+                //Battotquaduong
+                if(to==board.GetPawnSkipPosition(Color.Opponent()))
+                {
+                    yield return new EnPassant(from, to);
 
-                if(CanCaptureAt(to, board))
+                }
+
+                 else  if (CanCaptureAt(to, board))
                 {
                     if (to.Row == 0 || to.Row == 7)
                     {
