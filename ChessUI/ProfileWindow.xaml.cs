@@ -1,4 +1,4 @@
-﻿using ChessData;
+﻿using ChessClient;
 using Microsoft.Win32;
 using System;
 using System.IO;
@@ -11,72 +11,85 @@ namespace ChessUI
     public partial class ProfileWindow : Window
     {
         private readonly string _username;
-        private readonly string _connection;
 
-        public ProfileWindow(string username, string connectionString)
+        public ProfileWindow(string username)
         {
             InitializeComponent();
             _username = username;
-            _connection = connectionString;
 
-            LoadProfile();
-            LoadAvatarDisplay();
+            LoadProfileFromServer();
+            LoadAvatarFromServer();
         }
 
-        private async void LoadProfile()
+        // ------------------------------
+        // LOAD PROFILE
+        // ------------------------------
+        private async void LoadProfileFromServer()
         {
-            var repo = new UserRepository(_connection);
-            var stats = await repo.GetUserStatsAsync(_username);
+            await ClientManager.Instance.SendAsync($"GET_PROFILE|{_username}");
+            string resp = ClientManager.Instance.WaitForMessage();
 
-            if (stats == null)
+            if (!resp.StartsWith("PROFILE|"))
             {
-                MessageBox.Show("Không tìm thấy dữ liệu người chơi.");
-                this.Close();
+                MessageBox.Show("Không thể tải thông tin người chơi.");
+                Close();
                 return;
             }
 
-            lblAvatarLetter.Text = stats.IngameName.Substring(0, 1).ToUpper();
-            lblIngameName.Text = stats.IngameName;
-            lblRank.Text = stats.Rank.ToString();
-            lblHighestRank.Text = stats.HighestRank.ToString();
-            lblWins.Text = stats.Wins.ToString();
-            lblLosses.Text = stats.Losses.ToString();
+            // PROFILE|ingame|rank|highest|wins|losses|minutes
+            var p = resp.Split('|');
 
-            double winRate = stats.Wins + stats.Losses == 0
-                ? 0 : (double)stats.Wins / (stats.Wins + stats.Losses) * 100;
+            lblIngameName.Text = p[1];
+            lblAvatarLetter.Text = p[1].Substring(0, 1).ToUpper();
+            lblRank.Text = p[2];
+            lblHighestRank.Text = p[3];
+            lblWins.Text = p[4];
+            lblLosses.Text = p[5];
 
-            lblWinRate.Text = winRate.ToString("0.##") + "%";
+            int wins = int.Parse(p[4]);
+            int losses = int.Parse(p[5]);
 
-            TimeSpan t = TimeSpan.FromMinutes(stats.TotalPlayTimeMinutes);
+            double rate = wins + losses == 0 ? 0 : (wins * 100.0 / (wins + losses));
+            lblWinRate.Text = rate.ToString("0.##") + "%";
+
+            TimeSpan t = TimeSpan.FromMinutes(int.Parse(p[6]));
             lblTotalTime.Text = t.ToString(@"hh\:mm\:ss");
 
-            string title = GetTitleByRank(stats.Rank);
+            string title = GetTitleByRank(int.Parse(p[2]));
             lblTitle.Text = title;
             lblTitle.Foreground = GetTitleColor(title);
         }
 
-        private async void LoadAvatarDisplay()
+        // ------------------------------
+        // LOAD AVATAR
+        // ------------------------------
+        private async void LoadAvatarFromServer()
         {
-            var repo = new UserRepository(_connection);
-            var avatar = await repo.GetAvatarAsync(_username);
+            await ClientManager.Instance.SendAsync($"GET_AVATAR|{_username}");
+            string resp = ClientManager.Instance.WaitForMessage();
 
-            if (avatar == null)
+            if (resp == "AVATAR_NULL")
             {
                 AvatarBrush.ImageSource = null;
                 lblAvatarLetter.Visibility = Visibility.Visible;
                 return;
             }
 
+            if (!resp.StartsWith("AVATAR|")) return;
+
             try
             {
-                using var ms = new MemoryStream(avatar);
-                BitmapImage img = new BitmapImage();
-                img.BeginInit();
-                img.StreamSource = ms;
-                img.CacheOption = BitmapCacheOption.OnLoad;
-                img.EndInit();
+                string base64 = resp.Substring(7);
+                byte[] bytes = Convert.FromBase64String(base64);
 
-                AvatarBrush.ImageSource = img;
+                using var ms = new MemoryStream(bytes);
+                BitmapImage bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.StreamSource = ms;
+                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                bmp.EndInit();
+
+                AvatarBrush.ImageSource = bmp;
                 lblAvatarLetter.Visibility = Visibility.Collapsed;
             }
             catch
@@ -86,6 +99,63 @@ namespace ChessUI
             }
         }
 
+        // ------------------------------
+        // CHANGE AVATAR
+        // ------------------------------
+        private void ChangeAvatar_Click(object sender, RoutedEventArgs e)
+        {
+            var choose = MessageBox.Show(
+                "Yes = Avatar có sẵn\nNo = Tải từ máy",
+                "Đổi Avatar",
+                MessageBoxButton.YesNoCancel
+            );
+
+            if (choose == MessageBoxResult.Yes)
+            {
+                var win = new SelectAvatarWindow(_username);
+                win.ShowDialog();
+                LoadAvatarFromServer();
+            }
+            else if (choose == MessageBoxResult.No)
+            {
+                UploadAvatarFromPC();
+            }
+        }
+
+        // ------------------------------
+        // UPLOAD FROM PC
+        // ------------------------------
+        private async void UploadAvatarFromPC()
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (dlg.ShowDialog() != true)
+                return;
+
+            try
+            {
+                byte[] data = File.ReadAllBytes(dlg.FileName);
+                string base64 = Convert.ToBase64String(data);
+
+                await ClientManager.Instance.SendAsync($"SET_AVATAR|{_username}|{base64}");
+
+                string resp = ClientManager.Instance.WaitForMessage();
+
+                if (resp == "SET_AVATAR_OK")
+                    MessageBox.Show("Cập nhật avatar thành công!");
+
+                LoadAvatarFromServer();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải avatar:\n" + ex.Message);
+            }
+        }
+
+        // ------------------------------
+        // STYLE
+        // ------------------------------
         private string GetTitleByRank(int rank)
         {
             if (rank < 1000) return "Beginner";
@@ -108,64 +178,13 @@ namespace ChessUI
                 "Platinum" => new SolidColorBrush(Color.FromRgb(0, 255, 255)),
                 "Diamond" => new SolidColorBrush(Color.FromRgb(0, 255, 210)),
                 "Master" => new SolidColorBrush(Color.FromRgb(255, 0, 255)),
-                _ => new SolidColorBrush(Colors.White)
+                _ => new SolidColorBrush(Colors.White),
             };
-        }
-
-        private void ChangeAvatar_Click(object sender, RoutedEventArgs e)
-        {
-            var choose = MessageBox.Show(
-                "Bạn muốn dùng Avatar mặc định hay tải từ máy?\n\n" +
-                "Yes = Chọn avatar có sẵn\nNo = Tải từ máy",
-                "Đổi Avatar", MessageBoxButton.YesNoCancel);
-
-            if (choose == MessageBoxResult.Yes)
-            {
-                ChooseDefaultAvatar();
-            }
-            else if (choose == MessageBoxResult.No)
-            {
-                UploadAvatarFromPC();
-            }
-        }
-
-        private void ChooseDefaultAvatar()
-        {
-            var avatarWindow = new SelectAvatarWindow(_username, _connection);
-            avatarWindow.ShowDialog();
-            LoadAvatarDisplay();
-        }
-
-        private async void UploadAvatarFromPC()
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
-
-            if (dlg.ShowDialog() != true)
-                return;
-
-            try
-            {
-                byte[] data = File.ReadAllBytes(dlg.FileName);
-
-                var repo = new UserRepository(_connection);
-                await repo.UpdateAvatarAsync(_username, data);
-
-                MessageBox.Show("Đã cập nhật avatar!", "Thành công",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
-                LoadAvatarDisplay();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi cập nhật avatar:\n" + ex.Message);
-            }
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }
-    

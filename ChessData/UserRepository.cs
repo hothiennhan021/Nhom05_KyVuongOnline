@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using BCrypt.Net;
+using System.Text;
 
 namespace ChessData
 {
@@ -13,6 +14,7 @@ namespace ChessData
         {
             _connectionString = connection;
         }
+
         // ==============================
         //  LẤY AVATAR
         // ==============================
@@ -47,7 +49,6 @@ namespace ChessData
             await cmd.ExecuteNonQueryAsync();
         }
 
-
         // ==============================
         //  ĐĂNG KÝ
         // ==============================
@@ -58,7 +59,6 @@ namespace ChessData
                 using var conn = new SqlConnection(_connectionString);
                 await conn.OpenAsync();
 
-                // Check tồn tại
                 string checkSql = "SELECT COUNT(*) FROM Users WHERE Username=@u OR Email=@e";
                 using (var checkCmd = new SqlCommand(checkSql, conn))
                 {
@@ -83,7 +83,7 @@ namespace ChessData
                     cmd.Parameters.AddWithValue("@e", email);
                     cmd.Parameters.AddWithValue("@f", fullName);
                     cmd.Parameters.AddWithValue("@b", DateTime.Parse(birthday));
-                    cmd.Parameters.AddWithValue("@in", username); // ingame = username
+                    cmd.Parameters.AddWithValue("@in", username);
                     await cmd.ExecuteNonQueryAsync();
                 }
 
@@ -108,26 +108,21 @@ namespace ChessData
                 string sql = @"SELECT PasswordHash, Email, FullName, Birthday 
                                FROM Users WHERE Username=@u";
 
-                string passwordHash = "";
-                string fullName = "";
-                string email = "";
-                string birthday = "";
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@u", username);
 
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@u", username);
-                    using var reader = await cmd.ExecuteReaderAsync();
-                    if (!reader.Read())
-                        return "ERROR|Sai tài khoản";
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (!reader.Read())
+                    return "ERROR|Sai tài khoản";
 
-                    passwordHash = reader["PasswordHash"].ToString();
-                    fullName = reader["FullName"].ToString();
-                    email = reader["Email"].ToString();
-                    birthday = Convert.ToDateTime(reader["Birthday"]).ToString("yyyy-MM-dd");
-                }
+                string passwordHash = reader["PasswordHash"].ToString();
 
                 if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
                     return "ERROR|Sai mật khẩu";
+
+                string fullName = reader["FullName"].ToString();
+                string email = reader["Email"].ToString();
+                string birthday = Convert.ToDateTime(reader["Birthday"]).ToString("yyyy-MM-dd");
 
                 return $"LOGIN_SUCCESS|{fullName}|{email}|{birthday}";
             }
@@ -138,7 +133,7 @@ namespace ChessData
         }
 
         // ==============================
-        //  LẤY THỐNG KÊ PROFILE
+        //  LẤY THỐNG KÊ HỒ SƠ
         // ==============================
         public async Task<UserStats?> GetUserStatsAsync(string username)
         {
@@ -176,7 +171,7 @@ namespace ChessData
         }
 
         // ==============================
-        //  CẬP NHẬT TRẠNG THÁI ONLINE
+        //  SET ONLINE
         // ==============================
         public void SetOnline(int userId, bool isOnline)
         {
@@ -191,7 +186,7 @@ namespace ChessData
         }
 
         // ==============================
-        //  KIỂM TRA EMAIL TỒN TẠI
+        //  CHECK EMAIL
         // ==============================
         public async Task<bool> EmailExistsAsync(string email)
         {
@@ -201,6 +196,7 @@ namespace ChessData
                 await conn.OpenAsync();
 
                 string sql = "SELECT COUNT(*) FROM Users WHERE Email=@e";
+
                 using var cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@e", email);
 
@@ -209,9 +205,41 @@ namespace ChessData
             }
             catch
             {
-                // Nếu lỗi DB thì coi như không tồn tại để tránh chặn nhầm
                 return false;
             }
+        }
+
+        // ===================================================================
+        // ⭐⭐ HÀM MỚI — SERVER CẦN DÙNG — KHÔNG ĐỤNG CODE CŨ ⭐⭐
+        // ===================================================================
+
+        // Trả về dạng: PROFILE|ingame|rank|highest|wins|losses|minutes
+        public async Task<string?> GetProfileStringAsync(string username)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            string sql = @"SELECT IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes
+                           FROM Users WHERE Username=@u";
+
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@u", username);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (!reader.Read()) return null;
+
+            return $"PROFILE|{reader["IngameName"]}|{reader["Rank"]}|{reader["HighestRank"]}|{reader["Wins"]}|{reader["Losses"]}|{reader["TotalPlayTimeMinutes"]}";
+        }
+
+        // Trả về avatar dạng Base64 (server gửi cho client)
+        public async Task<string> GetAvatarBase64(string username)
+        {
+            var bytes = await GetAvatarAsync(username);
+            if (bytes == null || bytes.Length == 0)
+                return "AVATAR_NULL";
+
+            string base64 = Convert.ToBase64String(bytes);
+            return $"AVATAR|{base64}";
         }
     }
 }
