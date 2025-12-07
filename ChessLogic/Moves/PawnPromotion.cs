@@ -33,7 +33,7 @@ namespace ChessLogic
             };
         }
         //Tao chức năng phong hậu
-        public override void Execute(Board board)
+        public override bool Execute(Board board)
         {
             Pieces pawn = board[FromPos];
             board[FromPos] = null;
@@ -41,6 +41,8 @@ namespace ChessLogic
             Pieces promotionPiece = CreatePromotionPiece(pawn.Color);
             promotionPiece.HasMoved = true;
             board[ToPos] = promotionPiece;
+
+            return true;
         }
     }
 }
