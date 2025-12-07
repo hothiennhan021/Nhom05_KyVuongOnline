@@ -4,8 +4,8 @@
         Title="Player Profile"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Width="556"
-        Height="890"
+        Width="962"
+        Height="839"
         Background="#111111">
 
     <Border CornerRadius="25"
@@ -13,7 +13,7 @@
             BorderThickness="4"
             Margin="20">
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,-4,0">
             <Grid Margin="20">
                 <StackPanel HorizontalAlignment="Center">
 
@@ -25,23 +25,19 @@
                                Margin="0,10,0,25"
                                HorizontalAlignment="Center"/>
 
-                    <!-- AVATAR (hình tròn) -->
+                    <!-- AVATAR -->
                     <Grid Margin="0,0,0,10" Width="180" Height="180">
-
-                        <!-- Vòng ngoài -->
                         <Ellipse Stroke="#3A7BFF"
                                  StrokeThickness="5"
                                  Width="180" Height="180"
                                  Fill="#111111"/>
 
-                        <!-- Ảnh avatar dạng ImageBrush -->
                         <Ellipse Width="170" Height="170">
                             <Ellipse.Fill>
                                 <ImageBrush x:Name="AvatarBrush" Stretch="Fill"/>
                             </Ellipse.Fill>
                         </Ellipse>
 
-                        <!-- Chữ cái khi chưa có avatar -->
                         <TextBlock x:Name="lblAvatarLetter"
                                    FontSize="78"
                                    FontWeight="Bold"
@@ -84,6 +80,17 @@
                                        FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
+
+                    <!-- ⭐ THÊM NÚT ĐỔI TÊN IN-GAME -->
+                    <Button Content="Đổi Tên In-Game"
+                            Width="200"
+                            Height="45"
+                            FontSize="20"
+                            Background="#3A7BFF"
+                            Foreground="White"
+                            Margin="0,0,0,20"
+                            Cursor="Hand"
+                            Click="ChangeIngameName_Click"/>
 
                     <!-- RANK -->
                     <Grid Margin="0,0,0,20">
@@ -157,7 +164,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Close Button -->
+                    <!-- Close -->
                     <Button Content="Đóng"
                             Width="170"
                             Height="55"
@@ -168,6 +175,7 @@
                             Click="Close_Click"
                             Margin="0,10,0,20"
                             Cursor="Hand"/>
+
                 </StackPanel>
             </Grid>
         </ScrollViewer>

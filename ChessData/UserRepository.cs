@@ -2,7 +2,6 @@
 using System;
 using System.Threading.Tasks;
 using BCrypt.Net;
-using System.Text;
 
 namespace ChessData
 {
@@ -15,9 +14,7 @@ namespace ChessData
             _connectionString = connection;
         }
 
-        // ==============================
-        //  LẤY AVATAR
-        // ==============================
+        // --- GET AVATAR ---
         public async Task<byte[]?> GetAvatarAsync(string username)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -32,9 +29,7 @@ namespace ChessData
             return result == DBNull.Value ? null : (byte[])result;
         }
 
-        // ==============================
-        //  UPDATE AVATAR
-        // ==============================
+        // --- UPDATE AVATAR ---
         public async Task UpdateAvatarAsync(string username, byte[] avatar)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -49,9 +44,7 @@ namespace ChessData
             await cmd.ExecuteNonQueryAsync();
         }
 
-        // ==============================
-        //  ĐĂNG KÝ
-        // ==============================
+        // --- REGISTER ---
         public async Task<string> RegisterUserAsync(string username, string password, string email, string fullName, string birthday)
         {
             try
@@ -64,6 +57,7 @@ namespace ChessData
                 {
                     checkCmd.Parameters.AddWithValue("@u", username);
                     checkCmd.Parameters.AddWithValue("@e", email);
+
                     int count = (int)await checkCmd.ExecuteScalarAsync();
                     if (count > 0)
                         return "ERROR|Tên đăng nhập hoặc email đã tồn tại.";
@@ -95,9 +89,7 @@ namespace ChessData
             }
         }
 
-        // ==============================
-        //  ĐĂNG NHẬP
-        // ==============================
+        // --- LOGIN ---
         public async Task<string> LoginUserAsync(string username, string password)
         {
             try
@@ -115,9 +107,9 @@ namespace ChessData
                 if (!reader.Read())
                     return "ERROR|Sai tài khoản";
 
-                string passwordHash = reader["PasswordHash"].ToString();
+                string hash = reader["PasswordHash"].ToString();
 
-                if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
+                if (!BCrypt.Net.BCrypt.Verify(password, hash))
                     return "ERROR|Sai mật khẩu";
 
                 string fullName = reader["FullName"].ToString();
@@ -132,9 +124,7 @@ namespace ChessData
             }
         }
 
-        // ==============================
-        //  LẤY THỐNG KÊ HỒ SƠ
-        // ==============================
+        // --- GET STATS ---
         public async Task<UserStats?> GetUserStatsAsync(string username)
         {
             try
@@ -144,8 +134,7 @@ namespace ChessData
 
                 string sql = @"
                     SELECT Username, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes
-                    FROM Users
-                    WHERE Username=@u";
+                    FROM Users WHERE Username=@u";
 
                 using var cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@u", username);
@@ -170,24 +159,22 @@ namespace ChessData
             }
         }
 
-        // ==============================
-        //  SET ONLINE
-        // ==============================
+        // --- SET ONLINE ---
         public void SetOnline(int userId, bool isOnline)
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
-            string sql = "UPDATE Users SET IsOnline = @o WHERE UserId = @id";
+            string sql = "UPDATE Users SET IsOnline=@o WHERE UserId=@id";
+
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@o", isOnline ? 1 : 0);
             cmd.Parameters.AddWithValue("@id", userId);
+
             cmd.ExecuteNonQuery();
         }
 
-        // ==============================
-        //  CHECK EMAIL
-        // ==============================
+        // --- CHECK EMAIL ---
         public async Task<bool> EmailExistsAsync(string email)
         {
             try
@@ -209,37 +196,26 @@ namespace ChessData
             }
         }
 
-        // ===================================================================
-        // ⭐⭐ HÀM MỚI — SERVER CẦN DÙNG — KHÔNG ĐỤNG CODE CŨ ⭐⭐
-        // ===================================================================
-
-        // Trả về dạng: PROFILE|ingame|rank|highest|wins|losses|minutes
-        public async Task<string?> GetProfileStringAsync(string username)
+        // ⭐⭐ HÀM MỚI: UPDATE INGAME NAME ⭐⭐
+        public async Task<bool> UpdateIngameNameAsync(string username, string newName)
         {
-            using var conn = new SqlConnection(_connectionString);
-            await conn.OpenAsync();
+            try
+            {
+                using var conn = new SqlConnection(_connectionString);
+                await conn.OpenAsync();
 
-            string sql = @"SELECT IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes
-                           FROM Users WHERE Username=@u";
+                string sql = @"UPDATE Users SET IngameName=@n WHERE Username=@u";
 
-            using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@u", username);
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@n", newName);
+                cmd.Parameters.AddWithValue("@u", username);
 
-            using var reader = await cmd.ExecuteReaderAsync();
-            if (!reader.Read()) return null;
-
-            return $"PROFILE|{reader["IngameName"]}|{reader["Rank"]}|{reader["HighestRank"]}|{reader["Wins"]}|{reader["Losses"]}|{reader["TotalPlayTimeMinutes"]}";
-        }
-
-        // Trả về avatar dạng Base64 (server gửi cho client)
-        public async Task<string> GetAvatarBase64(string username)
-        {
-            var bytes = await GetAvatarAsync(username);
-            if (bytes == null || bytes.Length == 0)
-                return "AVATAR_NULL";
-
-            string base64 = Convert.ToBase64String(bytes);
-            return $"AVATAR|{base64}";
+                return await cmd.ExecuteNonQueryAsync() > 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

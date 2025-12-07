@@ -21,9 +21,7 @@ namespace ChessUI
             LoadAvatarFromServer();
         }
 
-        // ------------------------------
-        // LOAD PROFILE
-        // ------------------------------
+        // ------------------------------ LOAD PROFILE ------------------------------
         private async void LoadProfileFromServer()
         {
             await ClientManager.Instance.SendAsync($"GET_PROFILE|{_username}");
@@ -36,7 +34,6 @@ namespace ChessUI
                 return;
             }
 
-            // PROFILE|ingame|rank|highest|wins|losses|minutes
             var p = resp.Split('|');
 
             lblIngameName.Text = p[1];
@@ -60,9 +57,7 @@ namespace ChessUI
             lblTitle.Foreground = GetTitleColor(title);
         }
 
-        // ------------------------------
-        // LOAD AVATAR
-        // ------------------------------
+        // ------------------------------ LOAD AVATAR ------------------------------
         private async void LoadAvatarFromServer()
         {
             await ClientManager.Instance.SendAsync($"GET_AVATAR|{_username}");
@@ -99,32 +94,27 @@ namespace ChessUI
             }
         }
 
-        // ------------------------------
-        // CHANGE AVATAR
-        // ------------------------------
+        // ------------------------------ CHANGE AVATAR ------------------------------
         private void ChangeAvatar_Click(object sender, RoutedEventArgs e)
         {
-            var choose = MessageBox.Show(
-                "Yes = Avatar có sẵn\nNo = Tải từ máy",
-                "Đổi Avatar",
-                MessageBoxButton.YesNoCancel
-            );
+            var dlg = new ChangeAvatarDialog();
+            dlg.Owner = this;
 
-            if (choose == MessageBoxResult.Yes)
+            if (dlg.ShowDialog() == true)
             {
-                var win = new SelectAvatarWindow(_username);
-                win.ShowDialog();
-                LoadAvatarFromServer();
-            }
-            else if (choose == MessageBoxResult.No)
-            {
-                UploadAvatarFromPC();
+                if (dlg.SelectedOption == "DEFAULT")
+                {
+                    var win = new SelectAvatarWindow(_username);
+                    win.ShowDialog();
+                    LoadAvatarFromServer();
+                }
+                else if (dlg.SelectedOption == "UPLOAD")
+                {
+                    UploadAvatarFromPC();
+                }
             }
         }
 
-        // ------------------------------
-        // UPLOAD FROM PC
-        // ------------------------------
         private async void UploadAvatarFromPC()
         {
             OpenFileDialog dlg = new OpenFileDialog();
@@ -153,9 +143,32 @@ namespace ChessUI
             }
         }
 
-        // ------------------------------
-        // STYLE
-        // ------------------------------
+        // ⭐⭐⭐ CHANGE INGAME NAME ⭐⭐⭐
+        private async void ChangeIngameName_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new ChangeIngameNameDialog(lblIngameName.Text);
+            dlg.Owner = this;
+
+            if (dlg.ShowDialog() == true)
+            {
+                string newName = dlg.NewName;
+
+                await ClientManager.Instance.SendAsync($"SET_INGAME|{_username}|{newName}");
+                string resp = ClientManager.Instance.WaitForMessage();
+
+                if (resp == "SET_INGAME_OK")
+                {
+                    MessageBox.Show("Đổi tên In-Game thành công!");
+                    LoadProfileFromServer();
+                }
+                else
+                {
+                    MessageBox.Show("Không thể đổi tên In-Game!");
+                }
+            }
+        }
+
+        // ------------------------------ STYLE ------------------------------
         private string GetTitleByRank(int rank)
         {
             if (rank < 1000) return "Beginner";

@@ -1,0 +1,62 @@
+﻿<Window x:Class="ChessUI.ChangeIngameNameDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Đổi Tên In-Game"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Width="420"
+        Height="250"
+        Background="#111111">
+
+    <Border CornerRadius="15" BorderBrush="#3A7BFF" BorderThickness="3" Margin="10" Background="#1a1a1a">
+
+        <StackPanel Margin="20">
+
+            <TextBlock Text="Nhập Tên In-Game Mới:"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="#4da3ff"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,15"/>
+
+            <!-- Ô nhập tên -->
+            <TextBox x:Name="txtIngame"
+                     FontSize="18"
+                     Padding="8"
+                     Background="#222222"
+                     Foreground="White"
+                     BorderBrush="#3A7BFF"
+                     BorderThickness="2"
+                     HorizontalAlignment="Stretch"
+                     Margin="0,0,0,20"/>
+
+            <!-- BUTTONS -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="Hủy"
+                        Grid.Column="0"
+                        Width="120"
+                        Height="40"
+                        FontSize="16"
+                        Background="#444"
+                        Foreground="White"
+                        Click="Cancel_Click"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="Xác Nhận"
+                        Grid.Column="1"
+                        Width="120"
+                        Height="40"
+                        FontSize="16"
+                        Background="#3A7BFF"
+                        Foreground="White"
+                        Click="Confirm_Click"/>
+            </Grid>
+
+        </StackPanel>
+    </Border>
+</Window>

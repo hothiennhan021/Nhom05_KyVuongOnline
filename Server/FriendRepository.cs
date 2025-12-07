@@ -14,7 +14,7 @@ namespace ChessData
         }
 
         // ==============================================================
-        //  1. Gửi lời mời kết bạn
+        // 1. Gửi lời mời kết bạn
         // ==============================================================
         public string SendFriendRequest(int fromUserId, string toUsername)
         {
@@ -33,9 +33,11 @@ namespace ChessData
                 int toUserId = (int)result;
                 if (toUserId == fromUserId) return "SELF_ERROR";
 
-                // B. Kiểm tra đã tồn tại quan hệ bạn bè / lời mời chưa
-                string checkSql = "SELECT COUNT(*) FROM Friendships WHERE " +
-                                  "((RequesterId = @f AND ReceiverId = @t) OR (RequesterId = @t AND ReceiverId = @f))";
+                // B. Kiểm tra đã tồn tại quan hệ bạn bè hoặc lời mời chưa
+                string checkSql = @"
+                    SELECT COUNT(*) FROM Friendships 
+                    WHERE (RequesterId=@f AND ReceiverId=@t)
+                       OR (RequesterId=@t AND ReceiverId=@f)";
 
                 SqlCommand cmdCheck = new SqlCommand(checkSql, conn);
                 cmdCheck.Parameters.AddWithValue("@f", fromUserId);
@@ -56,7 +58,7 @@ namespace ChessData
         }
 
         // ==============================================================
-        //  2. Lấy danh sách bạn bè
+        // 2. Lấy danh sách bạn bè
         // ==============================================================
         public List<string> GetListFriends(int userId)
         {
@@ -66,13 +68,15 @@ namespace ChessData
             {
                 conn.Open();
 
+                // ⭐ FIX: dùng Rank thay Elo — đúng bảng Users
                 string sql = @"
-                    SELECT u.Username, u.Elo, u.IsOnline
+                    SELECT u.Username, u.Rank, u.IsOnline
                     FROM Friendships f
-                    JOIN Users u ON (u.UserId = f.RequesterId OR u.UserId = f.ReceiverId)
+                    JOIN Users u 
+                        ON (u.UserId = f.RequesterId OR u.UserId = f.ReceiverId)
                     WHERE (f.RequesterId = @uid OR f.ReceiverId = @uid)
                       AND u.UserId != @uid
-                      AND f.Status = 1";
+                      AND f.Status = 1"; // ⭐ CHỈ LẤY BẠN ĐÃ ACCEPT
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@uid", userId);
@@ -80,7 +84,7 @@ namespace ChessData
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    list.Add($"{reader["Username"]}|{reader["Elo"]}|{reader["IsOnline"]}");
+                    list.Add($"{reader["Username"]}|{reader["Rank"]}|{reader["IsOnline"]}");
                 }
             }
 
@@ -88,7 +92,7 @@ namespace ChessData
         }
 
         // ==============================================================
-        //  3. Lấy danh sách lời mời kết bạn (Status = 0, mình là Receiver)
+        // 3. Lấy danh sách lời mời kết bạn (Status = 0)
         // ==============================================================
         public List<string> GetFriendRequests(int userId)
         {
@@ -99,7 +103,7 @@ namespace ChessData
                 conn.Open();
 
                 string sql = @"
-                    SELECT u.Username, f.Id AS RequestId
+                    SELECT f.Id AS RequestId, u.Username
                     FROM Friendships f
                     JOIN Users u ON u.UserId = f.RequesterId
                     WHERE f.ReceiverId = @uid AND f.Status = 0";
@@ -118,7 +122,7 @@ namespace ChessData
         }
 
         // ==============================================================
-        //  4. Đồng ý kết bạn
+        // 4. Đồng ý kết bạn (⭐ BẢN FIX QUAN TRỌNG)
         // ==============================================================
         public void AcceptFriend(int requestId)
         {
@@ -126,55 +130,50 @@ namespace ChessData
             {
                 conn.Open();
 
-                string sql = "UPDATE Friendships SET Status = 1 WHERE Id = @id";
+                // ⭐ CAST để tương thích mọi kiểu dữ liệu (bit, int, tinyint, varchar)
+                string sql = "UPDATE Friendships SET Status = CAST(1 AS int) WHERE Id = @id";
+
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@id", requestId);
+
                 cmd.ExecuteNonQuery();
             }
         }
 
         // ==============================================================
-        //  5. XÓA / HỦY KẾT BẠN  ⭐ (ĐÃ FIX)
+        // 5. Xóa / Hủy kết bạn
         // ==============================================================
         public bool RemoveFriend(int myUserId, string friendName)
         {
             try
             {
-                // ⭐ FIX: Lấy username thật (trước dấu cách)
-                friendName = friendName.Split(' ')[0];
+                friendName = friendName.Split(' ')[0]; // name (fix safety)
 
                 using (SqlConnection conn = new SqlConnection(_connectionString))
                 {
                     conn.Open();
 
-                    // A. Tìm ID bạn bè
+                    // A. Lấy friendId
                     string findIdSql = "SELECT UserId FROM Users WHERE Username = @u";
-                    int friendId = 0;
+                    SqlCommand cmd = new SqlCommand(findIdSql, conn);
+                    cmd.Parameters.AddWithValue("@u", friendName);
 
-                    using (SqlCommand cmd = new SqlCommand(findIdSql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@u", friendName);
-                        object result = cmd.ExecuteScalar();
+                    object result = cmd.ExecuteScalar();
+                    if (result == null) return false;
 
-                        if (result == null) return false;
-                        friendId = (int)result;
-                    }
+                    int friendId = (int)result;
 
-                    // B. Xóa mối quan hệ bất kể chiều nào
+                    // B. Xóa quan hệ
                     string deleteSql = @"
-                        DELETE FROM Friendships 
-                        WHERE (RequesterId = @me AND ReceiverId = @friend)
-                           OR (RequesterId = @friend AND ReceiverId = @me)
-                    ";
+                        DELETE FROM Friendships
+                        WHERE (RequesterId=@me AND ReceiverId=@friend)
+                           OR (RequesterId=@friend AND ReceiverId=@me)";
 
-                    using (SqlCommand cmd = new SqlCommand(deleteSql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@me", myUserId);
-                        cmd.Parameters.AddWithValue("@friend", friendId);
+                    SqlCommand cmdDel = new SqlCommand(deleteSql, conn);
+                    cmdDel.Parameters.AddWithValue("@me", myUserId);
+                    cmdDel.Parameters.AddWithValue("@friend", friendId);
 
-                        int rows = cmd.ExecuteNonQuery();
-                        return rows > 0;
-                    }
+                    return cmdDel.ExecuteNonQuery() > 0;
                 }
             }
             catch

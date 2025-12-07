@@ -101,9 +101,9 @@ namespace MyTcpServer
 
             switch (cmd)
             {
-                // =====================================================================
-                //                       OTP + REGISTER + LOGIN
-                // =====================================================================
+                // ======================
+                //  OTP + REGISTER & LOGIN
+                // ======================
 
                 case "REQUEST_OTP":
                     {
@@ -112,49 +112,95 @@ namespace MyTcpServer
 
                         string email = parts[1];
 
-                        if (await _userRepo.EmailExistsAsync(email))
-                            return "ERROR|Email đã tồn tại.";
+                        try
+                        {
+                            // Kiểm tra email đã tồn tại chưa
+                            if (await _userRepo.EmailExistsAsync(email))
+                            {
+                                return "ERROR|Email đã tồn tại trong hệ thống.";
+                            }
 
-                        // Tạo OTP
-                        string otp = new Random().Next(100000, 999999).ToString();
+                            // Tạo OTP 6 chữ số
+                            var rnd = new Random();
+                            string otp = rnd.Next(100000, 999999).ToString();
 
-                        client.TempOtp = otp;
-                        client.PendingEmail = email;
-                        client.OtpExpire = DateTime.UtcNow.AddMinutes(5);
-                        client.IsOtpVerified = false;
+                            client.TempOtp = otp;
+                            client.PendingEmail = email;
+                            client.OtpExpire = DateTime.UtcNow.AddMinutes(5);
+                            client.IsOtpVerified = false;
 
-                        bool ok = await EmailService.SendOtpAsync(email, otp);
-                        return ok ? "OTP_SENT" : "ERROR|Gửi OTP thất bại.";
+                            bool sent = await EmailService.SendOtpAsync(email, otp);
+                            if (!sent)
+                            {
+                                return "ERROR|Gửi OTP thất bại. Vui lòng thử lại.";
+                            }
+
+                            return "OTP_SENT|Mã OTP đã được gửi đến email của bạn.";
+                        }
+                        catch (Exception ex)
+                        {
+                            return "ERROR|" + ex.Message;
+                        }
                     }
 
                 case "VERIFY_OTP":
                     {
                         if (parts.Length < 3)
-                            return "ERROR|Thiếu thông tin.";
+                            return "ERROR|Thiếu email hoặc mã OTP.";
+
+                        string email = parts[1];
+                        string otp = parts[2];
 
                         if (client.PendingEmail == null || client.TempOtp == null)
-                            return "ERROR|Chưa yêu cầu OTP.";
+                        {
+                            return "ERROR|Bạn chưa yêu cầu mã OTP.";
+                        }
 
-                        if (client.OtpExpire < DateTime.UtcNow)
-                            return "ERROR|OTP hết hạn.";
+                        if (!string.Equals(client.PendingEmail, email, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return "ERROR|Email không khớp với email đã gửi OTP.";
+                        }
 
-                        if (parts[2] != client.TempOtp)
-                            return "ERROR|Sai OTP.";
+                        if (client.OtpExpire != default && client.OtpExpire < DateTime.UtcNow)
+                        {
+                            client.TempOtp = null;
+                            client.PendingEmail = null;
+                            client.IsOtpVerified = false;
+                            return "ERROR|Mã OTP đã hết hạn. Vui lòng yêu cầu lại.";
+                        }
+
+                        if (!string.Equals(client.TempOtp, otp, StringComparison.Ordinal))
+                        {
+                            return "ERROR|Mã OTP không chính xác.";
+                        }
 
                         client.IsOtpVerified = true;
-                        return "OTP_OK";
+                        return "OTP_OK|Xác minh OTP thành công.";
                     }
 
                 case "REGISTER":
                     {
                         if (parts.Length < 6)
-                            return "ERROR|Thiếu tham số.";
+                            return "ERROR|Thiếu tham số đăng ký.";
 
-                        if (!client.IsOtpVerified)
-                            return "ERROR|Chưa xác minh OTP.";
+                        string username = parts[1];
+                        string password = parts[2];
+                        string email = parts[3];
+                        string fullName = parts[4];
+                        string birthday = parts[5];
 
-                        string res = await _userRepo.RegisterUserAsync(parts[1], parts[2], parts[3], parts[4], parts[5]);
+                        // Bắt buộc phải xác minh OTP trước khi đăng ký
+                        if (!client.IsOtpVerified ||
+                            client.PendingEmail == null ||
+                            !string.Equals(client.PendingEmail, email, StringComparison.OrdinalIgnoreCase) ||
+                            (client.OtpExpire != default && client.OtpExpire < DateTime.UtcNow))
+                        {
+                            return "ERROR|Vui lòng xác minh OTP hợp lệ trước khi đăng ký.";
+                        }
 
+                        string res = await _userRepo.RegisterUserAsync(username, password, email, fullName, birthday);
+
+                        // Nếu đăng ký thành công thì xoá OTP
                         if (res.StartsWith("REGISTER_SUCCESS"))
                         {
                             client.TempOtp = null;
@@ -181,10 +227,9 @@ namespace MyTcpServer
                     _userRepo.SetOnline(client.UserId, false);
                     return "LOGOUT_OK";
 
-
-                // =====================================================================
-                //                       ⭐⭐  PROFILE SYSTEM  ⭐⭐
-                // =====================================================================
+                // ======================================================
+                //                       ⭐ PROFILE / AVATAR / INGAME ⭐
+                // ======================================================
 
                 case "GET_PROFILE":
                     {
@@ -194,6 +239,7 @@ namespace MyTcpServer
                         if (stats == null)
                             return "ERROR|NO_PROFILE";
 
+                        // PROFILE|ingame|rank|highest|wins|losses|minutes
                         return $"PROFILE|{stats.IngameName}|{stats.Rank}|{stats.HighestRank}|{stats.Wins}|{stats.Losses}|{stats.TotalPlayTimeMinutes}";
                     }
 
@@ -216,36 +262,67 @@ namespace MyTcpServer
                         return "SET_AVATAR_OK";
                     }
 
+                // Đổi tên In-Game
+                case "SET_INGAME":
+                    {
+                        string username = parts[1];
+                        string newName = parts[2];
 
-                // =====================================================================
-                //                       FRIEND SYSTEM (NGUYÊN CODE)
-                // =====================================================================
+                        bool ok = await _userRepo.UpdateIngameNameAsync(username, newName);
+                        return ok ? "SET_INGAME_OK" : "SET_INGAME_FAIL";
+                    }
 
+                // ======================================================
+                //                   FRIEND SYSTEM (GIỮ LOGIC CŨ)
+                // ======================================================
+
+                // LỆNH CŨ CỦA CLIENT: FRIEND_SEARCH|username
+                // → Mặc định: Gửi lời mời kết bạn
                 case "FRIEND_SEARCH":
-                case "FRIEND_SEND":
-                    return _friendRepo.SendFriendRequest(client.UserId, parts[1]);
+                    {
+                        return _friendRepo.SendFriendRequest(client.UserId, parts[1]);
+                    }
 
+                // LỆNH MỚI: FRIEND_SEND|username (nếu phía client có dùng)
+                case "FRIEND_SEND":
+                    {
+                        return _friendRepo.SendFriendRequest(client.UserId, parts[1]);
+                    }
+
+                // GET FRIEND LIST
                 case "FRIEND_LIST":
                 case "FRIEND_GET_LIST":
-                    return "FRIEND_LIST|" + string.Join(";", _friendRepo.GetListFriends(client.UserId));
+                    {
+                        var list = _friendRepo.GetListFriends(client.UserId);
+                        return "FRIEND_LIST|" + string.Join(";", list);
+                    }
 
+                // GET REQUESTS
                 case "FRIEND_REQUESTS":
                 case "FRIEND_GET_REQUESTS":
-                    return "FRIEND_REQUESTS|" + string.Join(";", _friendRepo.GetFriendRequests(client.UserId));
+                    {
+                        var req = _friendRepo.GetFriendRequests(client.UserId);
+                        return "FRIEND_REQUESTS|" + string.Join(";", req);
+                    }
 
+                // ACCEPT FRIEND
                 case "FRIEND_ACCEPT":
-                    _friendRepo.AcceptFriend(int.Parse(parts[1]));
-                    return "FRIEND_ACCEPTED";
+                    {
+                        _friendRepo.AcceptFriend(int.Parse(parts[1]));
+                        // Giữ nguyên như bản cũ: client đang check chứa "FRIEND_ACCEPTED"
+                        return "FRIEND_ACCEPTED";
+                    }
 
+                // REMOVE FRIEND
                 case "FRIEND_REMOVE":
-                    return _friendRepo.RemoveFriend(client.UserId, parts[1])
-                        ? "FRIEND_REMOVED"
-                        : "FRIEND_REMOVE_FAIL";
+                    {
+                        bool ok = _friendRepo.RemoveFriend(client.UserId, parts[1]);
+                        return ok ? "FRIEND_REMOVED" : "FRIEND_REMOVE_FAIL";
+                    }
 
-
-                // =====================================================================
-                //                       MATCHMAKING (GIỮ NGUYÊN)
-                // =====================================================================
+                // ======================================================
+                //                MATCHMAKING (TÌM TRẬN)
+                // ======================================================
 
                 case "FIND_GAME":
                     await GameManager.FindGame(client);
@@ -255,10 +332,9 @@ namespace MyTcpServer
                     await GameManager.HandleMatchResponse(client, parts[1], parts[2]);
                     return null;
 
-
-                // =====================================================================
-                //                       PRIVATE ROOM (GIỮ NGUYÊN)
-                // =====================================================================
+                // ======================================================
+                //                    PRIVATE ROOM
+                // ======================================================
 
                 case "CREATE_ROOM":
                     await GameManager.CreateRoom(client);
@@ -268,10 +344,9 @@ namespace MyTcpServer
                     await GameManager.JoinRoom(client, parts[1]);
                     return null;
 
-
-                // =====================================================================
-                //                              GAME COMMANDS
-                // =====================================================================
+                // ======================================================
+                //                    GAME COMMANDS
+                // ======================================================
 
                 case "MOVE":
                 case "CHAT":
@@ -284,6 +359,23 @@ namespace MyTcpServer
 
                 default:
                     return "ERROR|Unknown command";
+            }
+        }
+
+        // ======================================================
+        //          UPDATE MATCH RESULT (WIN/LOSE)  (GIỮ CODE CŨ)
+        // ======================================================
+
+        public static async Task UpdateMatchAsync(string winner, string loser, int minutes)
+        {
+            try
+            {
+                await _matchRepo.UpdateMatchResult(winner, loser, minutes);
+                Console.WriteLine($"Match updated: {winner} thắng {loser}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[UpdateMatch Error] " + ex.Message);
             }
         }
 
