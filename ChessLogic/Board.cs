@@ -9,6 +9,14 @@ namespace ChessLogic
     public class Board
     {
         private readonly Pieces[,] pieces = new Pieces[8, 8];
+        
+        //Battotquaduong
+        private readonly Dictionary<Player, Position> pawnSkipPositions = new Dictionary<Player, Position>()
+        {
+            { Player.White, null },
+            {Player.Black, null }
+        };
+
         public Pieces this[int row, int col]
         {
             get {return pieces[row, col];}
@@ -19,6 +27,19 @@ namespace ChessLogic
             get { return this[pos.Row, pos.Column]; }
             set { this [pos.Row, pos.Column] = value;}
         }
+
+        //Battotquaduong
+        public Position GetPawnSkipPosition(Player player)
+        {
+            return pawnSkipPositions[player];
+        }
+
+        //Battotquaduong
+        public void SetPawnSkipPosition(Player player,Position pos)
+        {
+            pawnSkipPositions[player] = pos;
+        }
+
         public static Board Initial()
         {
             Board board =new Board();
@@ -101,6 +122,68 @@ namespace ChessLogic
             return copy;
 
         }
+
+        //Insufficitent Material
+        public Counting CountPieces()
+        {
+            Counting counting = new Counting();
+            foreach (Position pos in PiecePosition())
+            {
+                Pieces piece = this[pos];
+                counting.Increment(piece.Color,piece.Type);
+            }
+            return counting;
+        }
+        //Insufficitent Material
+        public bool InsufficientMaterial()
+        {
+            Counting counting = CountPieces();
+
+            return IsKingVKing(counting) || IsKingBishopVKing(counting) ||
+                IsKingKnightVKing(counting) || IsKingBiShopVKingBishop(counting);
+        }
+        //Insufficitent Material
+        private static bool IsKingVKing(Counting counting)
+        {
+            return counting.TotalCount == 2;
+        }
+        //Insufficitent Material
+        private static bool IsKingBishopVKing(Counting counting)
+        {
+            return counting.TotalCount == 3 && (counting.White(PieceType.Bishop) == 1 || counting.Black(PieceType.Bishop) == 1);
+
+        }
+        //Insufficitent Material
+        private static bool IsKingKnightVKing(Counting counting)
+        {
+            return counting.TotalCount == 3 && (counting.White(PieceType.Knight) == 1 || counting.Black(PieceType.Knight) == 1);
+        }
+        //Insufficitent Material
+        private bool IsKingBiShopVKingBishop(Counting counting)
+        {
+            if(counting.TotalCount != 4)
+            {
+                return false;
+            }
+            if(counting.White(PieceType.Bishop) != 1|| counting.Black(PieceType.Bishop) != 1)
+            {
+                return false;   
+            }
+            Position wBishopPos=FindPiece(Player.White,PieceType.Bishop);
+            Position bBishopPos=FindPiece(Player.Black,PieceType.Bishop);
+
+            return wBishopPos.SquareColor()==bBishopPos.SquareColor();
+        }
+
+        //Insufficitent Material
+        private Position FindPiece(Player color,PieceType type)
+        {
+            return PiecePositionsFor(color).First(pos => this[pos].Type == type);
+        }
+
+
+
+
         // Thay thế hàm ToFenString cũ trong ChessLogic/Board.cs bằng hàm này:
 
         public string ToFenString(Player currentPlayer)

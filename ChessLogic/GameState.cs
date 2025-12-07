@@ -45,11 +45,12 @@ namespace ChessLogic
             return piece.GetMoves(pos, Board);
         }
         public void MakeMove(Move move)
-        {
+        {   //Battotquaduong
+            Board.SetPawnSkipPosition(CurrentPlayer, null);
+
             move.Execute(Board);
             CurrentPlayer = CurrentPlayer.Opponent();
 
-            // ****** TẮT VĨNH VIỄN DÒNG NÀY ĐI ******
             CheckForGameOver(); 
         }
 
@@ -78,6 +79,11 @@ namespace ChessLogic
                     // Không bị chiếu và không thể di chuyển -> Stalemate
                     Result = Result.Draw(EndReason.Stalemate);
                 }
+            }
+            //insufficient material
+            else if(Board.InsufficientMaterial())
+            {
+                Result = Result.Draw(EndReason.InsufficientMaterial);
             }
         }
         public bool IsGameOver()
