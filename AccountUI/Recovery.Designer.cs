@@ -7,14 +7,18 @@ namespace AccountUI
     {
         private System.ComponentModel.IContainer components = null;
 
-        private Button btnQuayLai;
-        private PictureBox pictureBox1;
+        private RoundedPanel panelCard;
+        private PictureBox pictureLogo;
+        private Label lblAppName;
+        private Label lblTitle;
+        private Label lblSubTitle;
+        private Label lblEmail;
+        private Label lblOtp;
         private TextBox txtEmail;
         private TextBox txtOTP;
         private Button btnGui;
-        private Label label4;
-        private Label label2;
         private Button btnXacNhan;
+        private Button btnQuayLai;
 
         protected override void Dispose(bool disposing)
         {
@@ -25,131 +29,171 @@ namespace AccountUI
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources =
-                new System.ComponentModel.ComponentResourceManager(typeof(Recovery));
-            btnQuayLai = new Button();
-            pictureBox1 = new PictureBox();
+            components = new System.ComponentModel.Container();
+
+            panelCard = new RoundedPanel();
+            pictureLogo = new PictureBox();
+            lblAppName = new Label();
+            lblTitle = new Label();
+            lblSubTitle = new Label();
+            lblEmail = new Label();
+            lblOtp = new Label();
             txtEmail = new TextBox();
             txtOTP = new TextBox();
             btnGui = new Button();
-            label4 = new Label();
-            label2 = new Label();
             btnXacNhan = new Button();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            btnQuayLai = new Button();
+
+            ((System.ComponentModel.ISupportInitialize)pictureLogo).BeginInit();
             SuspendLayout();
-            // 
-            // btnQuayLai
-            // 
-            btnQuayLai.AutoSize = true;
-            btnQuayLai.BackColor = Color.DarkSlateBlue;
-            btnQuayLai.Font = new Font("Times New Roman", 13.8F);
-            btnQuayLai.ForeColor = Color.White;
-            btnQuayLai.Location = new Point(175, 409);
-            btnQuayLai.Name = "btnQuayLai";
-            btnQuayLai.Size = new Size(224, 54);
-            btnQuayLai.TabIndex = 4;
-            btnQuayLai.Text = "Quay Lại";
-            btnQuayLai.UseVisualStyleBackColor = false;
-            btnQuayLai.Click += btnQuayLai_Click;
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.BackColor = Color.White;
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(56, 136);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(39, 39);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabStop = false;
-            // 
-            // txtEmail
-            // 
-            txtEmail.Font = new Font("Times New Roman", 16.2F);
-            txtEmail.ForeColor = SystemColors.WindowText;
-            txtEmail.Location = new Point(98, 136);
-            txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(395, 39);
-            txtEmail.TabIndex = 1;
-            // 
-            // txtOTP
-            // 
-            txtOTP.Font = new Font("Times New Roman", 16.2F);
-            txtOTP.ForeColor = SystemColors.WindowText;
-            txtOTP.Location = new Point(98, 275);
-            txtOTP.Name = "txtOTP";
-            txtOTP.Size = new Size(395, 39);
-            txtOTP.TabIndex = 2;
-            // 
-            // btnGui
-            // 
-            btnGui.AutoSize = true;
-            btnGui.BackColor = Color.DarkSlateBlue;
-            btnGui.Font = new Font("Times New Roman", 13.8F);
+
+            // ==== FORM ====
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            ClientSize = new Size(1152, 720);
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Quên mật khẩu";
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            BackColor = Color.Black;
+
+            // nền dùng resource Bg (giống login)
+            try
+            {
+                BackgroundImage = Properties.Resources.Bg;
+                BackgroundImageLayout = ImageLayout.Stretch;
+            }
+            catch { }
+
+            // ==== CARD BO TRÒN ====
+            panelCard.CornerRadius = 26;
+            panelCard.BackColor = Color.FromArgb(24, 24, 32);
+            panelCard.Size = new Size(560, 460);
+            panelCard.Location = new Point(
+                (ClientSize.Width - panelCard.Width) / 2,
+                (ClientSize.Height - panelCard.Height) / 2);
+            panelCard.Padding = new Padding(32);
+
+            // ==== LOGO ====
+            pictureLogo.Size = new Size(56, 56);
+            pictureLogo.Location = new Point(32, 24);
+            pictureLogo.SizeMode = PictureBoxSizeMode.Zoom;
+            try
+            {
+                pictureLogo.Image = Properties.Resources.icon_knight;
+            }
+            catch { }
+
+            // ==== CHESS ONLINE ====
+            lblAppName.AutoSize = true;
+            lblAppName.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblAppName.ForeColor = Color.White;
+            lblAppName.Location = new Point(104, 36);
+            lblAppName.Text = "CHESS ONLINE";
+
+            // ==== TITLE ====
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Location = new Point(32, 104);
+            lblTitle.Text = "Forgot Password";
+
+            // ==== SUBTITLE ====
+            lblSubTitle.AutoSize = true;
+            lblSubTitle.Font = new Font("Segoe UI", 11F);
+            lblSubTitle.ForeColor = Color.FromArgb(190, 190, 200);
+            lblSubTitle.Location = new Point(34, 146);
+            lblSubTitle.Text = "Nhập email để nhận mã khôi phục mật khẩu.";
+
+            // ==== EMAIL LABEL ====
+            lblEmail.AutoSize = true;
+            lblEmail.Font = new Font("Segoe UI", 11F);
+            lblEmail.ForeColor = Color.White;
+            lblEmail.Location = new Point(34, 192);
+            lblEmail.Text = "Email";
+
+            // ==== EMAIL TEXTBOX ====
+            txtEmail.Font = new Font("Segoe UI", 12F);
+            txtEmail.ForeColor = Color.White;
+            txtEmail.BackColor = Color.FromArgb(32, 32, 40);
+            txtEmail.BorderStyle = BorderStyle.FixedSingle;
+            txtEmail.Location = new Point(34, 215);
+            txtEmail.Size = new Size(480, 34);
+            txtEmail.TabIndex = 0;
+
+            // ==== OTP LABEL ====
+            lblOtp.AutoSize = true;
+            lblOtp.Font = new Font("Segoe UI", 11F);
+            lblOtp.ForeColor = Color.White;
+            lblOtp.Location = new Point(34, 258);
+            lblOtp.Text = "Mã xác nhận (OTP)";
+
+            // ==== OTP TEXTBOX ====
+            txtOTP.Font = new Font("Segoe UI", 12F);
+            txtOTP.ForeColor = Color.White;
+            txtOTP.BackColor = Color.FromArgb(32, 32, 40);
+            txtOTP.BorderStyle = BorderStyle.FixedSingle;
+            txtOTP.Location = new Point(34, 281);
+            txtOTP.Size = new Size(480, 34);
+            txtOTP.TabIndex = 1;
+
+            // ==== BUTTON GỬI MÃ ====
+            btnGui.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnGui.BackColor = Color.FromArgb(37, 99, 235);
             btnGui.ForeColor = Color.White;
-            btnGui.Location = new Point(175, 199);
-            btnGui.Name = "btnGui";
-            btnGui.Size = new Size(224, 54);
-            btnGui.TabIndex = 3;
-            btnGui.Text = "Gửi";
+            btnGui.FlatStyle = FlatStyle.Flat;
+            btnGui.FlatAppearance.BorderSize = 0;
+            btnGui.Location = new Point(34, 332);
+            btnGui.Size = new Size(220, 44);
+            btnGui.TabIndex = 2;
+            btnGui.Text = "Gửi mã";
             btnGui.UseVisualStyleBackColor = false;
             btnGui.Click += btnGui_Click;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.BackColor = Color.Transparent;
-            label4.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold);
-            label4.ForeColor = Color.White;
-            label4.Location = new Point(134, 24);
-            label4.Name = "label4";
-            label4.Size = new Size(296, 42);
-            label4.Text = "CHESS ONLINE";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.BackColor = Color.Transparent;
-            label2.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold);
-            label2.ForeColor = Color.White;
-            label2.Location = new Point(36, 85);
-            label2.Name = "label2";
-            label2.Size = new Size(488, 25);
-            label2.Text = "Nhập Email Để Nhận Mã Khôi Phục Mật Khẩu";
-            // 
-            // btnXacNhan
-            // 
-            btnXacNhan.AutoSize = true;
-            btnXacNhan.BackColor = Color.DarkSlateBlue;
-            btnXacNhan.Font = new Font("Times New Roman", 13.8F);
+
+            // ==== BUTTON XÁC NHẬN ====
+            btnXacNhan.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnXacNhan.BackColor = Color.FromArgb(37, 99, 235);
             btnXacNhan.ForeColor = Color.White;
-            btnXacNhan.Location = new Point(175, 336);
-            btnXacNhan.Name = "btnXacNhan";
-            btnXacNhan.Size = new Size(224, 54);
-            btnXacNhan.TabIndex = 5;
-            btnXacNhan.Text = "Xác Nhận";
+            btnXacNhan.FlatStyle = FlatStyle.Flat;
+            btnXacNhan.FlatAppearance.BorderSize = 0;
+            btnXacNhan.Location = new Point(294, 332);
+            btnXacNhan.Size = new Size(220, 44);
+            btnXacNhan.TabIndex = 3;
+            btnXacNhan.Text = "Xác nhận";
             btnXacNhan.UseVisualStyleBackColor = false;
             btnXacNhan.Click += btnXacNhan_Click;
-            // 
-            // Recovery
-            // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
-            BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(966, 488);
-            Controls.Add(btnXacNhan);
-            Controls.Add(label2);
-            Controls.Add(label4);
-            Controls.Add(btnGui);
-            Controls.Add(txtOTP);
-            Controls.Add(pictureBox1);
-            Controls.Add(txtEmail);
-            Controls.Add(btnQuayLai);
-            Name = "Recovery";
-            Text = "Recovery";
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+
+            // ==== BUTTON QUAY LẠI ====
+            btnQuayLai.Font = new Font("Segoe UI", 10F);
+            btnQuayLai.ForeColor = Color.FromArgb(82, 145, 255);
+            btnQuayLai.BackColor = Color.Transparent;
+            btnQuayLai.FlatStyle = FlatStyle.Flat;
+            btnQuayLai.FlatAppearance.BorderSize = 0;
+            btnQuayLai.Location = new Point(34, 386);
+            btnQuayLai.Size = new Size(120, 30);
+            btnQuayLai.TabIndex = 4;
+            btnQuayLai.Text = "Quay lại";
+            btnQuayLai.UseVisualStyleBackColor = true;
+            btnQuayLai.Click += btnQuayLai_Click;
+
+            // ADD TO CARD
+            panelCard.Controls.Add(pictureLogo);
+            panelCard.Controls.Add(lblAppName);
+            panelCard.Controls.Add(lblTitle);
+            panelCard.Controls.Add(lblSubTitle);
+            panelCard.Controls.Add(lblEmail);
+            panelCard.Controls.Add(txtEmail);
+            panelCard.Controls.Add(lblOtp);
+            panelCard.Controls.Add(txtOTP);
+            panelCard.Controls.Add(btnGui);
+            panelCard.Controls.Add(btnXacNhan);
+            panelCard.Controls.Add(btnQuayLai);
+
+            // ADD TO FORM
+            Controls.Add(panelCard);
+
+            ((System.ComponentModel.ISupportInitialize)pictureLogo).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
     }
 }

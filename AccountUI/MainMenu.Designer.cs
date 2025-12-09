@@ -146,7 +146,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackgroundImage = Properties.Resources.BackGround;
+            BackgroundImage = Properties.Resources.Bg;
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(962, 521);
             Controls.Add(btnProfile);

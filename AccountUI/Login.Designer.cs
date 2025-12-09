@@ -1,233 +1,249 @@
-﻿namespace AccountUI
+﻿using System.Windows.Forms;
+
+namespace AccountUI
 {
     partial class Login
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && components != null) components.Dispose();
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
+        private RoundedPanel panelCard;
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
+        // Logo
+        private Panel panelIcon;
+        private RoundedPanel panelKnightBg;
+        private PictureBox picKnight;
+        private Label lblChess;
+        private Label lblOnline;
+
+        private Label lblWelcome;
+
+        private Panel pnlUser;
+        private PictureBox picUser;
+        private TextBox txtUser;
+
+        private Panel pnlPass;
+        private PictureBox picLock;
+        private PictureBox picEye;
+        private TextBox txtPass;
+
+        private Button btnLogin;
+        private LinkLabel linkForgot;
+        private LinkLabel linkCreate;
+
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Login));
-            label3 = new Label();
-            label4 = new Label();
-            button1 = new Button();
-            textBox1 = new TextBox();
-            textBox2 = new TextBox();
-            linkLabel1 = new LinkLabel();
-            linkLabel2 = new LinkLabel();
-            pictureBox2 = new PictureBox();
-            pictureBox1 = new PictureBox();
-            button_passwordhide = new Button();
-            button_passwordshow = new Button();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            SuspendLayout();
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.BackColor = Color.Transparent;
-            label3.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            label3.ForeColor = Color.White;
-            label3.Location = new Point(130, 511);
-            label3.Margin = new Padding(4, 0, 4, 0);
-            label3.Name = "label3";
-            label3.Size = new Size(249, 33);
-            label3.TabIndex = 2;
-            label3.Text = "Chưa Có Tài Khoản?";
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.BackColor = Color.Transparent;
-            label4.Font = new Font("Times New Roman", 22.2F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            label4.ForeColor = Color.White;
-            label4.Location = new Point(168, 51);
-            label4.Margin = new Padding(4, 0, 4, 0);
-            label4.Name = "label4";
-            label4.Size = new Size(357, 52);
-            label4.TabIndex = 3;
-            label4.Text = "CHESS ONLINE";
-            // 
-            // button1
-            // 
-            button1.AutoSize = true;
-            button1.BackColor = Color.DarkSlateBlue;
-            button1.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            button1.ForeColor = Color.White;
-            button1.Location = new Point(202, 401);
-            button1.Margin = new Padding(4);
-            button1.Name = "button1";
-            button1.Size = new Size(280, 68);
-            button1.TabIndex = 4;
-            button1.Text = "Đăng Nhập";
-            button1.UseVisualStyleBackColor = false;
-            button1.Click += button1_Click;
-            // 
-            // textBox1
-            // 
-            textBox1.Font = new Font("Times New Roman", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            textBox1.ForeColor = SystemColors.GrayText;
-            textBox1.Location = new Point(149, 140);
-            textBox1.Margin = new Padding(4);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(434, 45);
-            textBox1.TabIndex = 5;
-            textBox1.Text = "Tên Đăng Nhập";
-            textBox1.TextChanged += textBox1_TextChanged;
-            textBox1.Enter += textBox1_Enter;
-            textBox1.Leave += textBox1_Leave;
-            // 
-            // textBox2
-            // 
-            textBox2.Font = new Font("Times New Roman", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            textBox2.ForeColor = SystemColors.GrayText;
-            textBox2.Location = new Point(149, 239);
-            textBox2.Margin = new Padding(4);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(434, 45);
-            textBox2.TabIndex = 6;
-            textBox2.Text = "Mật Khẩu";
-            textBox2.Enter += textBox2_Enter;
-            textBox2.Leave += textBox2_Leave;
-            // 
-            // linkLabel1
-            // 
-            linkLabel1.AutoSize = true;
-            linkLabel1.BackColor = Color.Transparent;
-            linkLabel1.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            linkLabel1.LinkColor = Color.White;
-            linkLabel1.Location = new Point(384, 511);
-            linkLabel1.Margin = new Padding(4, 0, 4, 0);
-            linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(179, 33);
-            linkLabel1.TabIndex = 9;
-            linkLabel1.TabStop = true;
-            linkLabel1.Text = "Đăng Ký Ngay";
-            linkLabel1.LinkClicked += linkLabel1_LinkClicked;
-            // 
-            // linkLabel2
-            // 
-            linkLabel2.AutoSize = true;
-            linkLabel2.BackColor = Color.Transparent;
-            linkLabel2.Font = new Font("Times New Roman", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            linkLabel2.ForeColor = Color.White;
-            linkLabel2.LinkColor = Color.White;
-            linkLabel2.Location = new Point(364, 329);
-            linkLabel2.Margin = new Padding(4, 0, 4, 0);
-            linkLabel2.Name = "linkLabel2";
-            linkLabel2.Size = new Size(212, 33);
-            linkLabel2.TabIndex = 10;
-            linkLabel2.TabStop = true;
-            linkLabel2.Text = "Quên Mật Khẩu ?";
-            linkLabel2.LinkClicked += linkLabel2_LinkClicked;
-            // 
-            // pictureBox2
-            // 
-            pictureBox2.Image = Properties.Resources.Password;
-            pictureBox2.Location = new Point(96, 239);
-            pictureBox2.Margin = new Padding(4);
-            pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(49, 49);
-            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox2.TabIndex = 12;
-            pictureBox2.TabStop = false;
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.BackColor = Color.White;
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(96, 140);
-            pictureBox1.Margin = new Padding(4);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(49, 49);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabIndex = 13;
-            pictureBox1.TabStop = false;
-            // 
-            // button_passwordhide
-            // 
-            button_passwordhide.Image = (Image)resources.GetObject("button_passwordhide.Image");
-            button_passwordhide.Location = new Point(534, 238);
-            button_passwordhide.Margin = new Padding(4);
-            button_passwordhide.Name = "button_passwordhide";
-            button_passwordhide.Size = new Size(50, 50);
-            button_passwordhide.TabIndex = 14;
-            button_passwordhide.UseVisualStyleBackColor = true;
-            button_passwordhide.Click += button_passwordhide_Click;
-            // 
-            // button_passwordshow
-            // 
-            button_passwordshow.Image = (Image)resources.GetObject("button_passwordshow.Image");
-            button_passwordshow.Location = new Point(534, 238);
-            button_passwordshow.Margin = new Padding(4);
-            button_passwordshow.Name = "button_passwordshow";
-            button_passwordshow.Size = new Size(50, 50);
-            button_passwordshow.TabIndex = 15;
-            button_passwordshow.UseVisualStyleBackColor = true;
-            button_passwordshow.Click += button_passwordshow_Click;
-            // 
-            // Login
-            // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.White;
-            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
-            BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(1175, 589);
-            Controls.Add(button_passwordshow);
-            Controls.Add(button_passwordhide);
-            Controls.Add(pictureBox1);
-            Controls.Add(pictureBox2);
-            Controls.Add(linkLabel2);
-            Controls.Add(linkLabel1);
-            Controls.Add(textBox2);
-            Controls.Add(textBox1);
-            Controls.Add(button1);
-            Controls.Add(label4);
-            Controls.Add(label3);
-            Margin = new Padding(4);
-            Name = "Login";
-            Text = "Login";
-            Load += Login_Load;
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ResumeLayout(false);
-            PerformLayout();
-        }
+            this.panelCard = new AccountUI.RoundedPanel();
 
-        #endregion
-        private Label label3;
-        private Label label4;
-        private Button button1;
-        private TextBox textBox1;
-        private TextBox textBox2;
-        private LinkLabel linkLabel1;
-        private LinkLabel linkLabel2;
-        private PictureBox pictureBox2;
-        private PictureBox pictureBox1;
-        private Button button_passwordhide;
-        private Button button_passwordshow;
+            this.panelIcon = new System.Windows.Forms.Panel();
+            this.panelKnightBg = new AccountUI.RoundedPanel();
+            this.picKnight = new System.Windows.Forms.PictureBox();
+            this.lblChess = new System.Windows.Forms.Label();
+            this.lblOnline = new System.Windows.Forms.Label();
+
+            this.lblWelcome = new System.Windows.Forms.Label();
+
+            this.pnlUser = new System.Windows.Forms.Panel();
+            this.picUser = new System.Windows.Forms.PictureBox();
+            this.txtUser = new System.Windows.Forms.TextBox();
+
+            this.pnlPass = new System.Windows.Forms.Panel();
+            this.picLock = new System.Windows.Forms.PictureBox();
+            this.picEye = new System.Windows.Forms.PictureBox();
+            this.txtPass = new System.Windows.Forms.TextBox();
+
+            this.btnLogin = new System.Windows.Forms.Button();
+            this.linkForgot = new System.Windows.Forms.LinkLabel();
+            this.linkCreate = new System.Windows.Forms.LinkLabel();
+
+            this.panelCard.SuspendLayout();
+            this.panelIcon.SuspendLayout();
+            this.panelKnightBg.SuspendLayout();
+            this.pnlUser.SuspendLayout();
+            this.pnlPass.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picKnight)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picUser)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picLock)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picEye)).BeginInit();
+            this.SuspendLayout();
+
+            // ===== FORM =====
+            this.ClientSize = new System.Drawing.Size(1200, 720);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Chess Online - Login";
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.BackgroundImage = Properties.Resources.Bg;
+            this.BackgroundImageLayout = ImageLayout.Stretch;
+
+            // ===== CARD =====
+            this.panelCard.Size = new System.Drawing.Size(430, 540);
+            this.panelCard.CornerRadius = 32;
+            this.panelCard.BackColor = System.Drawing.Color.FromArgb(18, 25, 40);
+            this.panelCard.Location = new System.Drawing.Point(
+                (this.ClientSize.Width - 430) / 2,
+                (this.ClientSize.Height - 540) / 2
+            );
+
+            // ===== LOGO CONTAINER (giống mẫu) =====
+            this.panelIcon.Size = new System.Drawing.Size(330, 90);
+            this.panelIcon.BackColor = System.Drawing.Color.Transparent;
+            // 430 - 330 = 100 → lệch 50 mỗi bên
+            this.panelIcon.Location = new System.Drawing.Point(50, 32);
+
+            // --- ô vuông nền của knight ---
+            this.panelKnightBg.Size = new System.Drawing.Size(60, 60);
+            this.panelKnightBg.CornerRadius = 14;
+            this.panelKnightBg.BackColor = System.Drawing.Color.FromArgb(40, 46, 64);
+            this.panelKnightBg.Location = new System.Drawing.Point(0, 15);
+
+            this.picKnight.Dock = DockStyle.Fill;
+            this.picKnight.SizeMode = PictureBoxSizeMode.Zoom;
+
+            this.panelKnightBg.Controls.Add(this.picKnight);
+
+            // --- chữ CHESS ---
+            this.lblChess.AutoSize = true;
+            this.lblChess.Text = "CHESS";
+            this.lblChess.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
+            this.lblChess.ForeColor = System.Drawing.Color.White;
+            this.lblChess.Location = new System.Drawing.Point(80, 18);
+
+            // --- chữ ONLINE ---
+            this.lblOnline.AutoSize = true;
+            this.lblOnline.Text = "ONLINE";
+            this.lblOnline.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblOnline.ForeColor = System.Drawing.Color.FromArgb(190, 195, 205);
+            this.lblOnline.Location = new System.Drawing.Point(83, 50);
+
+            this.panelIcon.Controls.Add(this.panelKnightBg);
+            this.panelIcon.Controls.Add(this.lblChess);
+            this.panelIcon.Controls.Add(this.lblOnline);
+
+            // ===== WELCOME =====
+            this.lblWelcome.AutoSize = true;
+            this.lblWelcome.Text = "Welcome Back";
+            this.lblWelcome.ForeColor = System.Drawing.Color.FromArgb(235, 238, 245);
+            this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
+            this.lblWelcome.Location = new System.Drawing.Point(
+                (this.panelCard.Width - 260) / 2,
+                140
+            );
+
+            // ===== USER INPUT =====
+            this.pnlUser.Size = new System.Drawing.Size(320, 52);
+            this.pnlUser.BackColor = System.Drawing.Color.FromArgb(35, 45, 65);
+            this.pnlUser.Location = new System.Drawing.Point(55, 215);
+
+            this.picUser.Size = new System.Drawing.Size(28, 28);
+            this.picUser.SizeMode = PictureBoxSizeMode.Zoom;
+            this.picUser.Location = new System.Drawing.Point(
+                14,
+                (this.pnlUser.Height - this.picUser.Height) / 2
+            );
+
+            this.txtUser.BorderStyle = BorderStyle.None;
+            this.txtUser.Font = new System.Drawing.Font("Segoe UI", 11.25F);
+            this.txtUser.BackColor = this.pnlUser.BackColor;
+            this.txtUser.ForeColor = System.Drawing.Color.Gainsboro;
+            this.txtUser.Width = 250;
+            this.txtUser.Location = new System.Drawing.Point(
+                56,
+                (this.pnlUser.Height - this.txtUser.Height) / 2 - 1
+            );
+
+            this.pnlUser.Controls.Add(this.picUser);
+            this.pnlUser.Controls.Add(this.txtUser);
+
+            // ===== PASSWORD INPUT =====
+            this.pnlPass.Size = new System.Drawing.Size(320, 52);
+            this.pnlPass.BackColor = System.Drawing.Color.FromArgb(35, 45, 65);
+            this.pnlPass.Location = new System.Drawing.Point(55, 280);
+
+            this.picLock.Size = new System.Drawing.Size(28, 28);
+            this.picLock.SizeMode = PictureBoxSizeMode.Zoom;
+            this.picLock.Location = new System.Drawing.Point(
+                14,
+                (this.pnlPass.Height - this.picLock.Height) / 2
+            );
+
+            this.txtPass.BorderStyle = BorderStyle.None;
+            this.txtPass.Font = new System.Drawing.Font("Segoe UI", 11.25F);
+            this.txtPass.BackColor = this.pnlPass.BackColor;
+            this.txtPass.ForeColor = System.Drawing.Color.Gainsboro;
+            this.txtPass.Width = 220;
+            this.txtPass.Location = new System.Drawing.Point(
+                56,
+                (this.pnlPass.Height - this.txtPass.Height) / 2 - 1
+            );
+
+            this.picEye.Size = new System.Drawing.Size(28, 28);
+            this.picEye.SizeMode = PictureBoxSizeMode.Zoom;
+            this.picEye.Cursor = Cursors.Hand;
+            this.picEye.Location = new System.Drawing.Point(
+                this.pnlPass.Width - this.picEye.Width - 14,
+                (this.pnlPass.Height - this.picEye.Height) / 2
+            );
+
+            this.pnlPass.Controls.Add(this.picLock);
+            this.pnlPass.Controls.Add(this.txtPass);
+            this.pnlPass.Controls.Add(this.picEye);
+
+            // ===== LOGIN BUTTON =====
+            this.btnLogin.Text = "LOGIN";
+            this.btnLogin.Size = new System.Drawing.Size(320, 48);
+            this.btnLogin.Location = new System.Drawing.Point(55, 350);
+            this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnLogin.BackColor = System.Drawing.Color.FromArgb(50, 130, 255);
+            this.btnLogin.ForeColor = System.Drawing.Color.White;
+            this.btnLogin.FlatStyle = FlatStyle.Flat;
+            this.btnLogin.FlatAppearance.BorderSize = 0;
+
+            // ===== LINKS =====
+            var linkNormal = System.Drawing.Color.FromArgb(180, 185, 195);
+            var linkActive = System.Drawing.Color.FromArgb(230, 235, 245);
+
+            this.linkForgot.AutoSize = true;
+            this.linkForgot.Text = "Forgot password?";
+            this.linkForgot.LinkColor = linkNormal;
+            this.linkForgot.ActiveLinkColor = linkActive;
+            this.linkForgot.Location = new System.Drawing.Point(165, 420);
+            this.linkForgot.LinkClicked += new LinkLabelLinkClickedEventHandler(this.linkForgot_LinkClicked);
+
+            this.linkCreate.AutoSize = true;
+            this.linkCreate.Text = "Create account";
+            this.linkCreate.LinkColor = System.Drawing.Color.FromArgb(100, 150, 255);
+            this.linkCreate.ActiveLinkColor = linkActive;
+            this.linkCreate.Location = new System.Drawing.Point(173, 450);
+            this.linkCreate.LinkClicked += new LinkLabelLinkClickedEventHandler(this.linkCreate_LinkClicked);
+
+            // ===== ADD TO CARD =====
+            this.panelCard.Controls.Add(this.panelIcon);
+            this.panelCard.Controls.Add(this.lblWelcome);
+            this.panelCard.Controls.Add(this.pnlUser);
+            this.panelCard.Controls.Add(this.pnlPass);
+            this.panelCard.Controls.Add(this.btnLogin);
+            this.panelCard.Controls.Add(this.linkForgot);
+            this.panelCard.Controls.Add(this.linkCreate);
+
+            // ===== ADD TO FORM =====
+            this.Controls.Add(this.panelCard);
+
+            this.panelCard.ResumeLayout(false);
+            this.panelCard.PerformLayout();
+            this.panelIcon.ResumeLayout(false);
+            this.panelIcon.PerformLayout();
+            this.panelKnightBg.ResumeLayout(false);
+            this.pnlUser.ResumeLayout(false);
+            this.pnlUser.PerformLayout();
+            this.pnlPass.ResumeLayout(false);
+            this.pnlPass.PerformLayout();
+            this.ResumeLayout(false);
+        }
     }
 }

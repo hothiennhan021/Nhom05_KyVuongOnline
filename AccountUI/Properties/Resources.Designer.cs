@@ -63,9 +63,59 @@ namespace AccountUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap BackGround {
+        internal static System.Drawing.Bitmap Bg {
             get {
-                object obj = ResourceManager.GetObject("BackGround", resourceCulture);
+                object obj = ResourceManager.GetObject("Bg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_eye_hidden {
+            get {
+                object obj = ResourceManager.GetObject("icon_eye_hidden", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_eye_open {
+            get {
+                object obj = ResourceManager.GetObject("icon_eye_open", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_knight {
+            get {
+                object obj = ResourceManager.GetObject("icon_knight", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_lock {
+            get {
+                object obj = ResourceManager.GetObject("icon_lock", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_user {
+            get {
+                object obj = ResourceManager.GetObject("icon_user", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -85,16 +135,6 @@ namespace AccountUI.Properties {
         internal static System.Drawing.Bitmap MatchFoundBG {
             get {
                 object obj = ResourceManager.GetObject("MatchFoundBG", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Password {
-            get {
-                object obj = ResourceManager.GetObject("Password", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
