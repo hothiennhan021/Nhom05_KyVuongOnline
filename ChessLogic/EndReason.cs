@@ -12,6 +12,9 @@ namespace ChessLogic
         Stalemate,
         FiftyMoveRule,
         InsufficientMaterial,
-        ThreefoldRepetition
+        ThreefoldRepetition,
+        MutualAgreement, // Hòa do thỏa thuận
+        Resignation     // đầu hàng
+
     }
 }

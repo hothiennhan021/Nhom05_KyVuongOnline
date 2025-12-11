@@ -354,6 +354,9 @@ namespace MyTcpServer
                 case "RESTART_NO":
                 case "LEAVE_GAME":
                 case "REQUEST_ANALYSIS":
+                case "RESIGN":          // Xin thua
+                case "DRAW_OFFER":      // Xin hòa
+                case "DRAW_ACCEPT":     // Đồng ý hòa
                     await GameManager.ProcessGameCommand(client, msg);
                     return null;
 

@@ -102,6 +102,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Text="Phòng Chat" Foreground="LightGray" FontWeight="Bold" Margin="0,0,0,10"/>
@@ -115,14 +116,75 @@
                     </FlowDocument>
                 </RichTextBox>
 
-                <Grid Grid.Row="2">
+                <Border x:Name="DrawRequestBorder" Grid.Row="1" VerticalAlignment="Bottom" Background="#E6222222" BorderBrush="#FFD700" BorderThickness="1" CornerRadius="5" Padding="10" Margin="5" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock x:Name="lblDrawTimer" Text="Đối thủ xin hòa (15s)" Foreground="White" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="Đồng ý" Width="70" Background="#4CAF50" Foreground="White" Margin="5" Click="BtnAcceptDraw_Click" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button Content="Từ chối" Width="70" Background="#F44336" Foreground="White" Margin="5" Click="BtnDeclineDraw_Click" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="2" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnDraw" Grid.Column="0" Content="Xin Hòa" Height="30" Margin="0,0,5,0" Background="#444" Foreground="White" BorderThickness="0" Click="btnDraw_Click" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="3" BorderBrush="#666" BorderThickness="1">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Button x:Name="btnResign" Grid.Column="1" Content="Đầu hàng" Height="30" Margin="5,0,0,0" Background="#800" Foreground="White" BorderThickness="0" Click="btnResign_Click" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="3" BorderBrush="#A00" BorderThickness="1">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBox x:Name="txtChatInput" Grid.Column="0" Height="30" Padding="5" Background="#303030" Foreground="White" BorderThickness="0" VerticalContentAlignment="Center" KeyDown="txtChatInput_KeyDown"/>
-                    <Button x:Name="btnSendChat" Grid.Column="1" Content="Gửi" Width="50" Height="30" Margin="5,0,0,0" Background="#404040" Foreground="White" BorderThickness="0" Click="btnSendChat_Click"/>
+                    <Button x:Name="btnSendChat" Grid.Column="1" Content="Gửi" Width="50" Height="30" Margin="5,0,0,0" Background="#404040" Foreground="White" BorderThickness="0" Click="btnSendChat_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
                 </Grid>
             </Grid>
         </Border>
