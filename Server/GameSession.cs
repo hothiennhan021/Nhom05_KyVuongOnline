@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using ChessLogic;
+using ChessLogic; // Namespace chứa các file bạn vừa gửi
 
 namespace MyTcpServer
 {
@@ -13,10 +13,13 @@ namespace MyTcpServer
         public ConnectedClient PlayerBlack { get; }
 
         private GameState _gameState;
-        private readonly ChessTimer _gameTimer;   // Dùng ChessTimer (từ ChessLogic)
+        private readonly ChessTimer _gameTimer;
         private readonly ChatRoom _chatRoom;
+
+        // Lưu lịch sử nước đi dạng UCI (vd: "e2e4") để gửi cho Client phân tích sau trận
         private readonly List<string> _moveHistory = new List<string>();
 
+        // Trạng thái yêu cầu tái đấu
         private bool _whiteWantsRematch = false;
         private bool _blackWantsRematch = false;
 
@@ -24,7 +27,7 @@ namespace MyTcpServer
         {
             SessionId = Guid.NewGuid().ToString();
 
-            // Random màu quân (logic giống file gốc)
+            // Random màu quân ngẫu nhiên cho công bằng
             if (new Random().Next(2) == 0)
             {
                 PlayerWhite = p1;
@@ -36,17 +39,21 @@ namespace MyTcpServer
                 PlayerBlack = p1;
             }
 
+            // Khởi tạo bàn cờ mới
             _gameState = new GameState(Player.White, Board.Initial());
-            _gameTimer = new ChessTimer(10); // 10 phút mỗi bên
+
+            // Khởi tạo đồng hồ (10 phút = 600 giây)
+            // ChessTimer của bạn nhận tham số là 'minutes' -> OK
+            _gameTimer = new ChessTimer(10);
             _gameTimer.TimeExpired += HandleTimeExpired;
 
             _chatRoom = new ChatRoom(PlayerWhite, PlayerBlack);
         }
 
-        // Cho GameManager kiểm tra
+        // Kiểm tra xem game đã kết thúc chưa (để GameManager dọn dẹp)
         public bool IsGameOver() => _gameState.IsGameOver();
 
-        // Bắt đầu ván cờ – giống file gốc
+        // --- BẮT ĐẦU VÁN CỜ ---
         public async Task StartGame()
         {
             _gameTimer.Start(Player.White);
@@ -55,169 +62,159 @@ namespace MyTcpServer
             int wTime = _gameTimer.WhiteRemaining;
             int bTime = _gameTimer.BlackRemaining;
 
-            await PlayerWhite.SendMessageAsync($"GAME_START|WHITE|{board}|{wTime}|{bTime}");
-            await PlayerBlack.SendMessageAsync($"GAME_START|BLACK|{board}|{wTime}|{bTime}");
+            // Ban đầu không có En Passant -> gửi "null"
+            string epString = "null";
+
+            // Format gói tin: GAME_START | MÀU | BÀN CỜ | TIME_W | TIME_B | EN_PASSANT_POS
+            await PlayerWhite.SendMessageAsync($"GAME_START|WHITE|{board}|{wTime}|{bTime}|{epString}");
+            await PlayerBlack.SendMessageAsync($"GAME_START|BLACK|{board}|{wTime}|{bTime}|{epString}");
 
             Console.WriteLine($"[Game Started] {PlayerWhite.Username} vs {PlayerBlack.Username}");
         }
 
-        // =======================
-        //  HANDLE MOVE – LOGIC GỐC
-        // =======================
+        // --- XỬ LÝ NƯỚC ĐI (CORE LOGIC) ---
         public async Task HandleMove(ConnectedClient client, string moveString)
         {
             try
             {
-                // 1. Xác định player đang đi
                 Player player = (client == PlayerWhite) ? Player.White : Player.Black;
+                if (player != _gameState.CurrentPlayer) return;
 
-                // Kiểm tra đúng lượt
-                if (player != _gameState.CurrentPlayer)
-                {
-                    Console.WriteLine($"[Block] {client.Username} đi sai lượt.");
-                    return;
-                }
-
-                // 2. Parse chuỗi lệnh
-                // Format: MOVE|r1|c1|r2|c2|[promotionType]
                 var parts = moveString.Split('|');
                 if (parts.Length < 5) return;
 
-                int r1 = int.Parse(parts[1]);
-                int c1 = int.Parse(parts[2]);
-                int r2 = int.Parse(parts[3]);
-                int c2 = int.Parse(parts[4]);
-
+                int r1 = int.Parse(parts[1]); int c1 = int.Parse(parts[2]);
+                int r2 = int.Parse(parts[3]); int c2 = int.Parse(parts[4]);
                 Position from = new Position(r1, c1);
                 Position to = new Position(r2, c2);
 
-                // 3. Lấy quân và toàn bộ nước đi hợp lệ của quân đó
                 Pieces piece = _gameState.Board[from];
                 if (piece == null || piece.Color != player) return;
 
                 IEnumerable<Move> moves = _gameState.MovesForPiece(from);
-
                 Move move = null;
 
-                // --- XỬ LÝ PHONG CẤP (PROMOTION) ---
-                // Nếu client gửi thêm type (VD: 4 = Queen)
-                if (parts.Length == 6)
+                if (parts.Length == 6) // Phong cấp
                 {
-                    int typeId = int.Parse(parts[5]);
-                    PieceType promoType = (PieceType)typeId;
-
-                    // Tìm đúng PawnPromotion (đúng đích + đúng loại quân muốn phong)
-                    move = moves
-                        .OfType<PawnPromotion>()
-                        .FirstOrDefault(m => m.ToPos == to && m.newType == promoType);
-                    // Lưu ý: thuộc tính 'newType' trong PawnPromotion phải là public/protected như file gốc.
+                    PieceType promoType = (PieceType)int.Parse(parts[5]);
+                    move = moves.OfType<PawnPromotion>().FirstOrDefault(m => m.ToPos == to && m.newType == promoType);
                 }
-                else
+                else // Nước đi thường (bao gồm En Passant)
                 {
-                    // Nước đi thường (bao gồm cả nhập thành, bắt tốt qua đường...)
-                    // Loại trừ PawnPromotion để tránh phong sai loại
+                    // Lọc bỏ PawnPromotion để tránh nhầm lẫn
                     move = moves.FirstOrDefault(m => m.ToPos == to && !(m is PawnPromotion));
                 }
 
-                // Không tìm được move hợp lệ
                 if (move == null || !move.IsLegal(_gameState.Board))
                 {
-                    Console.WriteLine("Nước đi không hợp lệ hoặc không tìm thấy trên Server.");
+                    Console.WriteLine($"[Illegal] {client.Username}: {moveString}");
                     return;
                 }
 
-                // 4. Thực hiện nước đi & đổi lượt
+                // Thực hiện nước đi
                 _gameState.MakeMove(move);
                 _gameTimer.SwitchTurn();
+                _moveHistory.Add(UciConverter.MoveToUci(move));
 
-                // Ghi lịch sử ván cờ bằng UCI (cho phân tích trận)
-                string uciString = UciConverter.MoveToUci(move);
-                _moveHistory.Add(uciString);
+                // --- LẤY TỌA ĐỘ EN PASSANT ĐỂ GỬI CLIENT ---
+                // (Nếu Đen vừa đi 2 bước, thì Board sẽ lưu SkipPosition cho quân Đen)
+                // Chúng ta lấy SkipPosition của đối thủ (người vừa đi xong)
+                Position? epPos = _gameState.Board.GetPawnSkipPosition(_gameState.CurrentPlayer.Opponent());
 
-                // 5. Gửi UPDATE cho cả 2 bên
-                string boardStr = Serialization.BoardToString(_gameState.Board);
-                string curPlayer = _gameState.CurrentPlayer.ToString().ToUpper(); // "WHITE"/"BLACK"
-
-                await Broadcast($"UPDATE|{boardStr}|{curPlayer}|{_gameTimer.WhiteRemaining}|{_gameTimer.BlackRemaining}");
-
-                // 6. Kiểm tra kết thúc ván
-                if (_gameState.IsGameOver())
+                string epString = "null";
+                if (epPos != null)
                 {
-                    _gameTimer.Stop();
-                    Player winner = _gameState.Result.Winner;
-
-                    string wStr =
-                        (winner == Player.White) ? "White" :
-                        (winner == Player.Black) ? "Black" :
-                        "Draw";
-
-                    string reason = _gameState.Result.Reason.ToString();
-
-                    await Broadcast($"GAME_OVER_FULL|{wStr}|{reason}");
+                    epString = $"{epPos.Row},{epPos.Column}"; // Ví dụ: "2,3"
                 }
+
+                string boardStr = Serialization.BoardToString(_gameState.Board);
+                string curPlayer = _gameState.CurrentPlayer.ToString().ToUpper();
+
+                // Gửi: UPDATE | BOARD | TURN | W_TIME | B_TIME | EP_POS
+                await Broadcast($"UPDATE|{boardStr}|{curPlayer}|{_gameTimer.WhiteRemaining}|{_gameTimer.BlackRemaining}|{epString}");
+
+                CheckGameOver();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Move Error] {ex.Message}\n{ex.StackTrace}");
+                Console.WriteLine($"[Error] {ex.Message}");
             }
         }
 
-        // =======================
-        //  PHÂN TÍCH TRẬN – LOGIC GỐC
-        // =======================
-        public async Task HandleAnalysisRequest(ConnectedClient client)
+        private async void CheckGameOver()
         {
-            // Chỉ cho 2 người trong ván yêu cầu
-            if (client != PlayerWhite && client != PlayerBlack) return;
+            if (_gameState.IsGameOver())
+            {
+                _gameTimer.Stop();
+                Player winner = _gameState.Result.Winner;
 
-            // Ghép thành chuỗi kiểu: "e2e4 e7e5 g1f3 ..."
-            string data = string.Join(" ", _moveHistory);
+                string wStr = (winner == Player.White) ? "White" :
+                              (winner == Player.Black) ? "Black" : "Draw";
 
-            await client.SendMessageAsync($"ANALYSIS_DATA|{data}");
+                string reason = _gameState.Result.Reason.ToString();
+
+                await Broadcast($"GAME_OVER_FULL|{wStr}|{reason}");
+            }
         }
 
-        // =======================
-        //  LỆNH HỆ THỐNG (giống gốc)
-        // =======================
+        // --- CÁC LỆNH HỆ THỐNG ---
         public async Task HandleGameCommand(ConnectedClient client, string command)
         {
-            if (command == "REQUEST_RESTART")
-            {
-                if (client == PlayerWhite) _whiteWantsRematch = true;
-                else _blackWantsRematch = true;
+            ConnectedClient opp = (client == PlayerWhite) ? PlayerBlack : PlayerWhite;
 
-                ConnectedClient opp = (client == PlayerWhite) ? PlayerBlack : PlayerWhite;
-
-                if (_whiteWantsRematch && _blackWantsRematch)
-                {
-                    await RestartGame();
-                }
-                else
-                {
-                    await opp.SendMessageAsync("ASK_RESTART");
-                }
-            }
-            else if (command == "RESTART_NO")
+            switch (command)
             {
-                _whiteWantsRematch = false;
-                _blackWantsRematch = false;
+                case "RESIGN":
+                    _gameTimer.Stop();
+                    string winnerColor = (client == PlayerWhite) ? "Black" : "White";
+                    await Broadcast($"GAME_OVER_FULL|{winnerColor}|Opponent Resigned");
+                    break;
 
-                ConnectedClient opp = (client == PlayerWhite) ? PlayerBlack : PlayerWhite;
-                await opp.SendMessageAsync("RESTART_DENIED");
-            }
-            else if (command == "LEAVE_GAME")
-            {
-                ConnectedClient opp = (client == PlayerWhite) ? PlayerBlack : PlayerWhite;
-                // GameManager sẽ lo dọn dẹp _activeGames, ở đây chỉ báo cho đối thủ
-                await opp.SendMessageAsync("OPPONENT_LEFT");
+                case "DRAW_OFFER":
+                    await opp.SendMessageAsync("DRAW_OFFER");
+                    break;
+
+                case "DRAW_ACCEPT":
+                    _gameTimer.Stop();
+                    await Broadcast("GAME_OVER_FULL|Draw|Mutual Agreement");
+                    break;
+
+                case "REQUEST_RESTART":
+                    if (client == PlayerWhite) _whiteWantsRematch = true;
+                    else _blackWantsRematch = true;
+
+                    if (_whiteWantsRematch && _blackWantsRematch)
+                    {
+                        await RestartGame();
+                    }
+                    else
+                    {
+                        await opp.SendMessageAsync("ASK_RESTART");
+                    }
+                    break;
+
+                case "RESTART_NO":
+                    _whiteWantsRematch = false;
+                    _blackWantsRematch = false;
+                    await opp.SendMessageAsync("RESTART_DENIED");
+                    break;
+
+                case "LEAVE_GAME":
+                    await opp.SendMessageAsync("OPPONENT_LEFT");
+                    break;
             }
         }
 
         private async Task RestartGame()
         {
+            Console.WriteLine($"[Rematch] {PlayerWhite.Username} vs {PlayerBlack.Username}");
+
             _gameState = new GameState(Player.White, Board.Initial());
+            _moveHistory.Clear();
+
             _gameTimer.Stop();
-            _gameTimer.Sync(600, 600); // reset 10 phút mỗi bên (600s)
+            _gameTimer.Sync(600, 600); // Reset 10 phút
+
             _whiteWantsRematch = false;
             _blackWantsRematch = false;
 
@@ -227,6 +224,7 @@ namespace MyTcpServer
         private void HandleTimeExpired(Player loser)
         {
             string winner = (loser == Player.White) ? "Black" : "White";
+            // Fire-and-forget task
             _ = Broadcast($"GAME_OVER_FULL|{winner}|TimeOut");
         }
 
@@ -235,10 +233,19 @@ namespace MyTcpServer
             await _chatRoom.SendMessage(sender, msg);
         }
 
+        public async Task HandleAnalysisRequest(ConnectedClient client)
+        {
+            if (client != PlayerWhite && client != PlayerBlack) return;
+            string data = string.Join(" ", _moveHistory);
+            await client.SendMessageAsync($"ANALYSIS_DATA|{data}");
+        }
+
         private async Task Broadcast(string msg)
         {
-            try { await PlayerWhite.SendMessageAsync(msg); } catch { }
-            try { await PlayerBlack.SendMessageAsync(msg); } catch { }
+            var tasks = new List<Task>();
+            if (PlayerWhite.Client.Connected) tasks.Add(PlayerWhite.SendMessageAsync(msg));
+            if (PlayerBlack.Client.Connected) tasks.Add(PlayerBlack.SendMessageAsync(msg));
+            await Task.WhenAll(tasks);
         }
     }
 }
