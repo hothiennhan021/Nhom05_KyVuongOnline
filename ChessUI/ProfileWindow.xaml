@@ -100,7 +100,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                            <TextBlock Text="Rank hiện tại" Foreground="#AAAAAA"/>
+                            <TextBlock Text="Elo hiện tại" Foreground="#AAAAAA"/>
                             <TextBlock x:Name="lblRank"
                                        FontSize="28"
                                        FontWeight="Bold"
@@ -108,7 +108,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                            <TextBlock Text="Rank cao nhất" Foreground="#AAAAAA"/>
+                            <TextBlock Text="Elo cao nhất" Foreground="#AAAAAA"/>
                             <TextBlock x:Name="lblHighestRank"
                                        FontSize="28"
                                        FontWeight="Bold"

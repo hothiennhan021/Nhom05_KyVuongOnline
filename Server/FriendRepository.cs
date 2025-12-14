@@ -70,7 +70,7 @@ namespace ChessData
 
                 // ⭐ FIX: dùng Rank thay Elo — đúng bảng Users
                 string sql = @"
-                    SELECT u.Username, u.Rank, u.IsOnline
+                    SELECT u.Username, u.Elo, u.IsOnline
                     FROM Friendships f
                     JOIN Users u 
                         ON (u.UserId = f.RequesterId OR u.UserId = f.ReceiverId)
@@ -84,7 +84,7 @@ namespace ChessData
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    list.Add($"{reader["Username"]}|{reader["Rank"]}|{reader["IsOnline"]}");
+                    list.Add($"{reader["Username"]}|{reader["Elo"]}|{reader["IsOnline"]}");
                 }
             }
 

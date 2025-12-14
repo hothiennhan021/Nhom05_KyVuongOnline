@@ -240,7 +240,7 @@ namespace MyTcpServer
                             return "ERROR|NO_PROFILE";
 
                         // PROFILE|ingame|rank|highest|wins|losses|minutes
-                        return $"PROFILE|{stats.IngameName}|{stats.Rank}|{stats.HighestRank}|{stats.Wins}|{stats.Losses}|{stats.TotalPlayTimeMinutes}";
+                        return $"PROFILE|{stats.IngameName}|{stats.Elo}|{stats.HighestRank}|{stats.Wins}|{stats.Losses}|{stats.TotalPlayTimeMinutes}";
                     }
 
                 case "GET_AVATAR":

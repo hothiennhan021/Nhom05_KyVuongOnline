@@ -52,7 +52,8 @@ namespace ChessUI
             TimeSpan t = TimeSpan.FromMinutes(int.Parse(p[6]));
             lblTotalTime.Text = t.ToString(@"hh\:mm\:ss");
 
-            string title = GetTitleByRank(int.Parse(p[2]));
+            int elo = int.Parse(p[2]);
+            string title = GetTitleByRank(elo);
             lblTitle.Text = title;
             lblTitle.Foreground = GetTitleColor(title);
         }
