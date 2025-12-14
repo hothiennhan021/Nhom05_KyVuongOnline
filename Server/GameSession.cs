@@ -12,9 +12,12 @@ namespace MyTcpServer
         public ConnectedClient PlayerWhite { get; }
         public ConnectedClient PlayerBlack { get; }
 
+        public event Action<GameSession, Player, string> OnGameEnded;
+
         private GameState _gameState;
         private readonly ChessTimer _gameTimer;
         private readonly ChatRoom _chatRoom;
+        private readonly string _connectionString = "Server=.;Database=ChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         // Lưu lịch sử nước đi dạng UCI (vd: "e2e4") để gửi cho Client phân tích sau trận
         private readonly List<string> _moveHistory = new List<string>();
@@ -65,9 +68,23 @@ namespace MyTcpServer
             // Ban đầu không có En Passant -> gửi "null"
             string epString = "null";
 
+            int whiteElo = 1200;
+            int blackElo = 1200;
+
+            // Dùng connectionString đã khai báo ở các bước trước
+            var userRepo = new ChessData.UserRepository(_connectionString);
+
+            var wStats = await userRepo.GetUserStatsAsync(PlayerWhite.Username);
+            if (wStats != null) whiteElo = wStats.Elo;
+
+            var bStats = await userRepo.GetUserStatsAsync(PlayerBlack.Username);
+            if (bStats != null) blackElo = bStats.Elo;
+
             // Format gói tin: GAME_START | MÀU | BÀN CỜ | TIME_W | TIME_B | EN_PASSANT_POS
-            await PlayerWhite.SendMessageAsync($"GAME_START|WHITE|{board}|{wTime}|{bTime}|{epString}");
-            await PlayerBlack.SendMessageAsync($"GAME_START|BLACK|{board}|{wTime}|{bTime}|{epString}");
+            Console.WriteLine($"[SEND] GAME_START ELO: W={whiteElo}, B={blackElo}");
+
+            await PlayerWhite.SendMessageAsync($"GAME_START|WHITE|{board}|{wTime}|{bTime}|{epString}|{whiteElo}|{blackElo}");
+            await PlayerBlack.SendMessageAsync($"GAME_START|BLACK|{board}|{wTime}|{bTime}|{epString}|{whiteElo}|{blackElo}");
 
             Console.WriteLine($"[Game Started] {PlayerWhite.Username} vs {PlayerBlack.Username}");
         }
@@ -152,6 +169,7 @@ namespace MyTcpServer
                               (winner == Player.Black) ? "Black" : "Draw";
 
                 string reason = _gameState.Result.Reason.ToString();
+                OnGameEnded?.Invoke(this, winner, reason);
 
                 await Broadcast($"GAME_OVER_FULL|{wStr}|{reason}");
             }
@@ -166,7 +184,12 @@ namespace MyTcpServer
             {
                 case "RESIGN":
                     _gameTimer.Stop();
+                   
+                    Player winnerPlayer = (client == PlayerWhite) ? Player.Black : Player.White;
+                    OnGameEnded?.Invoke(this, winnerPlayer, "Resignation");
+
                     string winnerColor = (client == PlayerWhite) ? "Black" : "White";
+
                     await Broadcast($"GAME_OVER_FULL|{winnerColor}|Opponent Resigned");
                     break;
 
@@ -176,6 +199,9 @@ namespace MyTcpServer
 
                 case "DRAW_ACCEPT":
                     _gameTimer.Stop();
+
+                    OnGameEnded?.Invoke(this, Player.None, "Mutual Agreement"); 
+
                     await Broadcast("GAME_OVER_FULL|Draw|Mutual Agreement");
                     break;
 
@@ -223,7 +249,11 @@ namespace MyTcpServer
 
         private void HandleTimeExpired(Player loser)
         {
+            Player winnerPlayer = (loser == Player.White) ? Player.Black : Player.White;
+            OnGameEnded?.Invoke(this, winnerPlayer, "TimeOut");
+
             string winner = (loser == Player.White) ? "Black" : "White";
+            
             // Fire-and-forget task
             _ = Broadcast($"GAME_OVER_FULL|{winner}|TimeOut");
         }

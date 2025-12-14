@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ChessLogic;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MyTcpServer
 {
@@ -117,6 +118,7 @@ namespace MyTcpServer
                     if (startGame)
                     {
                         var session = new GameSession(match.Player1, match.Player2);
+                        session.OnGameEnded += HandleGameEndLog;
                         _activeGames[match.Player1] = session;
                         _activeGames[match.Player2] = session;
                         await session.StartGame();
@@ -152,6 +154,7 @@ namespace MyTcpServer
                     return;
                 }
                 var session = new GameSession(creator, joiner);
+                session.OnGameEnded += HandleGameEndLog;
                 _activeGames[creator] = session;
                 _activeGames[joiner] = session;
                 await session.StartGame();
@@ -181,6 +184,40 @@ namespace MyTcpServer
                         _activeGames.TryRemove(session.PlayerBlack, out _);
                     }
                 }
+            }
+        }
+
+        // Thêm hàm này vào cuối class GameManager
+        // Đặt hàm này trong GameManager.cs
+        private static async void HandleGameEndLog(GameSession session, Player winner, string reason)
+        {
+            // Chuỗi kết nối (Thay bằng chuỗi kết nối của bạn)
+            string connectionString = "Server=.;Database=ChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            var userRepo = new ChessData.UserRepository(connectionString);
+
+            try
+            {
+                if (winner != Player.None)
+                {
+                    var winnerClient = (winner == Player.White) ? session.PlayerWhite : session.PlayerBlack;
+                    var loserClient = (winner == Player.White) ? session.PlayerBlack : session.PlayerWhite;
+
+                    // --- SỬA Ở ĐÂY: Dùng .Username thay vì .Client.Username ---
+                    await userRepo.UpdateGameResultAsync(winnerClient.Username, 25, 1);
+                    await userRepo.UpdateGameResultAsync(loserClient.Username, -25, -1);
+                }
+                else // Hòa
+                {
+                    // --- SỬA Ở ĐÂY: Dùng .Username thay vì .Client.Username ---
+                    await userRepo.UpdateGameResultAsync(session.PlayerWhite.Username, 0, 0);
+                    await userRepo.UpdateGameResultAsync(session.PlayerBlack.Username, 0, 0);
+                }
+
+                Console.WriteLine($"[Safe Log] Game {session.SessionId} result saved to DB.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DB Error] Failed to save result: {ex.Message}");
             }
         }
     }
