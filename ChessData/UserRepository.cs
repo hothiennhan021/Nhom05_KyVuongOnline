@@ -133,7 +133,7 @@ namespace ChessData
                 await conn.OpenAsync();
 
                 string sql = @"
-                    SELECT Username, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes
+                    SELECT Username, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes, Elo
                     FROM Users WHERE Username=@u";
 
                 using var cmd = new SqlCommand(sql, conn);
@@ -150,11 +150,13 @@ namespace ChessData
                     HighestRank = Convert.ToInt32(reader["HighestRank"]),
                     Wins = Convert.ToInt32(reader["Wins"]),
                     Losses = Convert.ToInt32(reader["Losses"]),
-                    TotalPlayTimeMinutes = Convert.ToInt32(reader["TotalPlayTimeMinutes"])
+                    TotalPlayTimeMinutes = reader["TotalPlayTimeMinutes"] == DBNull.Value ? 0 : Convert.ToInt32(reader["TotalPlayTimeMinutes"]),
+                    Elo = reader["Elo"] != DBNull.Value ? Convert.ToInt32(reader["Elo"]) : 1200
                 };
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[DB Error] GetUserStatsAsync({username}): {ex.Message}");
                 return null;
             }
         }
@@ -215,6 +217,43 @@ namespace ChessData
             catch
             {
                 return false;
+            }
+        }
+
+        // --- UPDATE GAME RESULT (ELO & STATS) ---
+        public async Task UpdateGameResultAsync(string username, int eloChange, int resultType)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // SỬA LẠI: Dùng cột [Elo] để cộng trừ điểm
+                string sql = @"
+            UPDATE Users 
+            SET 
+                Elo = Elo + @elo,  -- Sửa Rank -> Elo
+                Wins = Wins + (CASE WHEN @type = 1 THEN 1 ELSE 0 END),
+                Losses = Losses + (CASE WHEN @type = -1 THEN 1 ELSE 0 END),
+                
+                -- Cập nhật HighestRank dựa trên điểm Elo mới
+                HighestRank = CASE 
+                                WHEN (Elo + @elo) > ISNULL(HighestRank, 0) 
+                                THEN (Elo + @elo) 
+                                ELSE HighestRank 
+                              END
+            WHERE Username = @u";
+
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@elo", eloChange);
+                cmd.Parameters.AddWithValue("@type", resultType);
+                cmd.Parameters.AddWithValue("@u", username);
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DB Error] Update Result: {ex.Message}");
             }
         }
     }

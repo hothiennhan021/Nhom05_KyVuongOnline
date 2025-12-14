@@ -11,6 +11,10 @@ namespace ChessUI.Services
         public int WhiteTime { get; set; }
         public int BlackTime { get; set; }
         // [MỚI] Vị trí bắt tốt qua đường (nếu có)
+
+        public int WhiteElo { get; set; } = 1200;
+        public int BlackElo { get; set; } = 1200;
+
         public Position? EnPassantPos { get; set; }
     }
 
@@ -62,14 +66,28 @@ namespace ChessUI.Services
                 {
                     case "GAME_START":
                         // Format: GAME_START | COLOR | BOARD | W_TIME | B_TIME | EP_POS
+                        int whiteElo = 1200;
+                        int blackElo = 1200;
+
+                        if (parts.Length >= 8)
+                        {
+                            int.TryParse(parts[6], out whiteElo);
+                            int.TryParse(parts[7], out blackElo);
+                        }
+
                         var argsStart = new GameStartEventArgs
                         {
                             MyColor = (parts[1] == "WHITE") ? Player.White : Player.Black,
                             Board = Serialization.ParseBoardString(parts[2]),
                             WhiteTime = (parts.Length >= 5) ? int.Parse(parts[3]) : 0,
                             BlackTime = (parts.Length >= 5) ? int.Parse(parts[4]) : 0,
+
+                            WhiteElo = whiteElo,
+                            BlackElo = blackElo,
+
                             // [MỚI] Parse vị trí En Passant
                             EnPassantPos = (parts.Length >= 6) ? ParseEpString(parts[5]) : null
+
                         };
                         GameStarted?.Invoke(this, argsStart);
                         break;
