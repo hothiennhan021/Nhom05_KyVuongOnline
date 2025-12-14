@@ -11,35 +11,200 @@ namespace AccountUI
     {
         private bool showPass = false;
 
+        // ĐỊNH NGHĨA MÀU SẮC CHO DỄ NHÌN
+        private Color colorPlaceholder = Color.Silver; // Màu xám sáng (cho chữ gợi ý)
+        private Color colorText = Color.White;         // Màu trắng (cho chữ khi nhập)
+
         public Login()
         {
             InitializeComponent();
-            Load += Login_Load;
+            this.Load += Login_Load;
         }
 
         private void Login_Load(object sender, EventArgs e)
         {
-            // ===== ICON / RESOURCE =====
+            // ===== ICON RESOURCE =====
             picKnight.Image = Properties.Resources.icon_knight;
             picUser.Image = Properties.Resources.icon_user;
             picLock.Image = Properties.Resources.icon_lock;
             picEye.Image = Properties.Resources.icon_eye_open;
 
-            // ===== PLACEHOLDER MẶC ĐỊNH =====
-            txtUser.Text = "Username";
-            txtUser.ForeColor = Color.Gray;
+            // ===== SETUP GIAO DIỆN PLACEHOLDER BAN ĐẦU =====
 
+            // 1. Username
+            txtUser.Text = "Username";
+            txtUser.ForeColor = colorPlaceholder; // Dùng màu sáng hơn
+
+            // 2. Password 
             txtPass.Text = "Password";
-            txtPass.ForeColor = Color.Gray;
+            txtPass.ForeColor = colorPlaceholder; // Dùng màu sáng hơn
+
+            // QUAN TRỌNG: Để hiện chữ "Password" rõ ràng
+            txtPass.PasswordChar = '\0';
             txtPass.UseSystemPasswordChar = false;
 
-            // =====================================================================
-            //  LOGO: Ô VUÔNG KNIGHT + CHESS / ONLINE – TO, GIỮA, CÂN ĐẸP NHƯ MẪU
-            // =====================================================================
+            // ===== CÁC LOGIC VẼ GIAO DIỆN KHÁC (GIỮ NGUYÊN) =====
+            SetupLayout();
+            SetupEvents();
+        }
 
+        private void SetupEvents()
+        {
+            // --- XỬ LÝ SỰ KIỆN USERNAME ---
+            txtUser.Enter += (s, e) =>
+            {
+                if (txtUser.Text == "Username")
+                {
+                    txtUser.Text = "";
+                    txtUser.ForeColor = colorText; // Chuyển sang màu Trắng khi nhập
+                }
+            };
+
+            txtUser.Leave += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(txtUser.Text))
+                {
+                    txtUser.Text = "Username";
+                    txtUser.ForeColor = colorPlaceholder; // Về màu Xám sáng khi trống
+                }
+            };
+
+            // --- XỬ LÝ SỰ KIỆN PASSWORD ---
+            txtPass.Enter += (s, e) =>
+            {
+                if (txtPass.Text == "Password")
+                {
+                    txtPass.Text = "";
+                    txtPass.ForeColor = colorText; // Chuyển sang màu Trắng
+
+                    // Kích hoạt ẩn mật khẩu nếu chưa bấm hiện
+                    if (!showPass)
+                    {
+                        txtPass.UseSystemPasswordChar = true;
+                    }
+                }
+            };
+
+            txtPass.Leave += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(txtPass.Text))
+                {
+                    // Reset về trạng thái Placeholder
+                    txtPass.UseSystemPasswordChar = false;
+                    txtPass.PasswordChar = '\0'; // Xóa ký tự ẩn
+                    txtPass.Text = "Password";
+                    txtPass.ForeColor = colorPlaceholder; // Về màu Xám sáng
+
+                    showPass = false;
+                    picEye.Image = Properties.Resources.icon_eye_open;
+                }
+            };
+
+            // --- XỬ LÝ ICON MẮT ---
+            picEye.Click += (s, e) =>
+            {
+                if (txtPass.Text == "Password") return;
+
+                showPass = !showPass;
+
+                if (showPass)
+                {
+                    // Hiện mật khẩu
+                    txtPass.UseSystemPasswordChar = false;
+                    txtPass.PasswordChar = '\0';
+                    picEye.Image = Properties.Resources.icon_eye_hidden;
+                }
+                else
+                {
+                    // Ẩn mật khẩu
+                    txtPass.UseSystemPasswordChar = true;
+                    picEye.Image = Properties.Resources.icon_eye_open;
+                }
+            };
+
+            // --- BUTTON LOGIN ---
+            btnLogin.Click += async (s, e) => await DoLogin();
+            RoundControl(btnLogin, 24);
+        }
+
+        // =====================================================================
+        //  LOGIC ĐĂNG NHẬP
+        // =====================================================================
+        private async Task DoLogin()
+        {
+            string tentk = txtUser.Text.Trim();
+            string matkhau = txtPass.Text;
+
+            if (string.IsNullOrWhiteSpace(tentk) || tentk == "Username")
+            {
+                MessageBox.Show("Vui lòng nhập tên tài khoản!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(matkhau) || matkhau == "Password")
+            {
+                MessageBox.Show("Vui lòng nhập mật khẩu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            btnLogin.Enabled = false;
+            btnLogin.Text = "Đang xử lý...";
+
+            try
+            {
+                await ClientManager.ConnectToServerAsync("127.0.0.1", 8888);
+                string request = $"LOGIN|{tentk}|{matkhau}";
+                await ClientManager.Instance.SendAsync(request);
+
+                string response = await Task.Run(() => ClientManager.Instance.WaitForMessage());
+
+                if (string.IsNullOrEmpty(response))
+                {
+                    MessageBox.Show("Server không phản hồi.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ResetButtonLogin();
+                    return;
+                }
+
+                var parts = response.Split('|');
+                if (parts[0] == "LOGIN_SUCCESS")
+                {
+                    ClientManager.Username = tentk;
+                    MessageBox.Show("Đăng nhập thành công!", "Thông báo");
+                    this.Hide();
+                    using (var mainmenu = new MainMenu())
+                    {
+                        mainmenu.ShowDialog();
+                    }
+                    this.Close();
+                }
+                else
+                {
+                    string msg = parts.Length > 1 ? parts[1] : "Sai tài khoản hoặc mật khẩu.";
+                    MessageBox.Show(msg, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ClientManager.Disconnect();
+                    ResetButtonLogin();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetButtonLogin();
+            }
+        }
+
+        private void ResetButtonLogin()
+        {
+            btnLogin.Enabled = true;
+            btnLogin.Text = "LOGIN";
+        }
+
+        // =====================================================================
+        //  LAYOUT HELPER
+        // =====================================================================
+        private void SetupLayout()
+        {
             int iconSize = 72;
             panelKnightBg.Size = new Size(iconSize, iconSize);
-
             picKnight.Dock = DockStyle.Fill;
             picKnight.SizeMode = PictureBoxSizeMode.Zoom;
 
@@ -48,35 +213,21 @@ namespace AccountUI
             lblChess.AutoSize = true;
             lblOnline.AutoSize = true;
 
-            int gapHorizontal = 12;   // icon <-> CHESS
-            int gapVertical = 2;    // CHESS <-> ONLINE
-
+            int gapHorizontal = 12;
+            int gapVertical = 2;
             int textWidth = Math.Max(lblChess.Width, lblOnline.Width);
             int textHeight = lblChess.Height + gapVertical + lblOnline.Height;
-
             int blockWidth = iconSize + gapHorizontal + textWidth;
             int blockHeight = Math.Max(iconSize, textHeight);
 
             panelIcon.Size = new Size(blockWidth, blockHeight);
             panelIcon.Left = (panelCard.Width - panelIcon.Width) / 2;
-
-            panelKnightBg.Location = new Point(
-                0,
-                (panelIcon.Height - panelKnightBg.Height) / 2
-            );
+            panelKnightBg.Location = new Point(0, (panelIcon.Height - panelKnightBg.Height) / 2);
 
             int textStartX = panelKnightBg.Right + gapHorizontal;
             int textStartY = (panelIcon.Height - textHeight) / 2;
-
             lblChess.Location = new Point(textStartX, textStartY);
-            lblOnline.Location = new Point(
-                textStartX + (lblChess.Width - lblOnline.Width) / 2,
-                lblChess.Bottom + gapVertical
-            );
-
-            // =====================================================================
-            //  CĂN GIỮA CÁC PHẦN CÒN LẠI TRÊN CARD
-            // =====================================================================
+            lblOnline.Location = new Point(textStartX + (lblChess.Width - lblOnline.Width) / 2, lblChess.Bottom + gapVertical);
 
             lblWelcome.AutoSize = true;
             linkForgot.AutoSize = true;
@@ -88,82 +239,13 @@ namespace AccountUI
             btnLogin.Left = (panelCard.Width - btnLogin.Width) / 2;
             linkForgot.Left = (panelCard.Width - linkForgot.Width) / 2;
             linkCreate.Left = (panelCard.Width - linkCreate.Width) / 2;
-
-            // =====================================================================
-            //  PLACEHOLDER USER / PASSWORD
-            // =====================================================================
-
-            txtUser.GotFocus += (s, _) =>
-            {
-                if (txtUser.Text == "Username")
-                {
-                    txtUser.Text = "";
-                    txtUser.ForeColor = Color.White;
-                }
-            };
-            txtUser.LostFocus += (s, _) =>
-            {
-                if (string.IsNullOrWhiteSpace(txtUser.Text))
-                {
-                    txtUser.Text = "Username";
-                    txtUser.ForeColor = Color.Gray;
-                }
-            };
-
-            txtPass.GotFocus += (s, _) =>
-            {
-                if (txtPass.Text == "Password")
-                {
-                    txtPass.Text = "";
-                    txtPass.ForeColor = Color.White;
-                    txtPass.UseSystemPasswordChar = true;
-                }
-            };
-            txtPass.LostFocus += (s, _) =>
-            {
-                if (string.IsNullOrWhiteSpace(txtPass.Text))
-                {
-                    txtPass.UseSystemPasswordChar = false;
-                    txtPass.Text = "Password";
-                    txtPass.ForeColor = Color.Gray;
-
-                    showPass = false;
-                    picEye.Image = Properties.Resources.icon_eye_open;
-                }
-            };
-
-            // =====================================================================
-            //  TOGGLE ICON MẮT
-            // =====================================================================
-
-            picEye.Click += (s, _) =>
-            {
-                if (txtPass.Text == "Password")
-                    return;
-
-                showPass = !showPass;
-                txtPass.UseSystemPasswordChar = !showPass;
-                picEye.Image = showPass
-                    ? Properties.Resources.icon_eye_hidden
-                    : Properties.Resources.icon_eye_open;
-            };
-
-            // =====================================================================
-            //  NÚT LOGIN – LOGIC GIỐNG FILE GỐC (CHỈ ĐỔI TÊN CONTROL)
-            // =====================================================================
-
-            btnLogin.Click += async (s, _) => await DoLogin();
-
-            RoundControl(btnLogin, 24);
         }
 
         private void RoundControl(Control control, int radius)
         {
             if (control.Width <= 0 || control.Height <= 0) return;
-
             Rectangle rect = new Rectangle(0, 0, control.Width, control.Height);
             int d = radius * 2;
-
             using (GraphicsPath path = new GraphicsPath())
             {
                 path.AddArc(rect.X, rect.Y, d, d, 180, 90);
@@ -175,98 +257,14 @@ namespace AccountUI
             }
         }
 
-        // ====== LOGIC ĐĂNG NHẬP TỪ FILE GỐC (PORT LẠI SANG txtUser / txtPass / btnLogin) ======
-        private async Task DoLogin()
-        {
-            string tentk = txtUser.Text.Trim();
-            string matkhau = txtPass.Text; // giữ nguyên như file gốc
-
-            // giống file gốc: chỉ check username (nhưng dùng placeholder mới "Username")
-            if (string.IsNullOrWhiteSpace(tentk) || tentk == "Username")
-            {
-                MessageBox.Show("Vui lòng nhập tên tài khoản!");
-                return;
-            }
-
-            btnLogin.Enabled = false;
-            btnLogin.Text = "Đang xử lý...";
-
-            try
-            {
-                await ClientManager.ConnectToServerAsync("127.0.0.1", 8888);
-
-                string request = $"LOGIN|{tentk}|{matkhau}";
-                await ClientManager.Instance.SendAsync(request);
-
-                string response = await Task.Run(() => ClientManager.Instance.WaitForMessage());
-
-                if (string.IsNullOrEmpty(response))
-                {
-                    MessageBox.Show("Lỗi: Server không phản hồi hoặc mất kết nối.");
-                    btnLogin.Enabled = true;
-                    btnLogin.Text = "LOGIN";
-                    return;
-                }
-
-                var parts = response.Split('|');
-                var command = parts[0];
-
-                if (command == "LOGIN_SUCCESS")
-                {
-                    ClientManager.Username = tentk;
-
-                    try
-                    {
-                        bool connected = ClientSocket.Connect("127.0.0.1", 8888);
-                        if (connected)
-                        {
-                            ClientSocket.SendAndReceive($"LOGIN|{tentk}|{matkhau}");
-                        }
-                    }
-                    catch { }
-
-                    MessageBox.Show("Đăng nhập thành công!", "Thông báo");
-                    this.Hide();
-                    using (var mainmenu = new MainMenu())
-                    {
-                        mainmenu.ShowDialog();
-                    }
-                    this.Close();
-                }
-                else
-                {
-                    string msg = parts.Length > 1 ? parts[1] : "Lỗi đăng nhập";
-                    MessageBox.Show(msg);
-                    ClientManager.Disconnect();
-                    btnLogin.Enabled = true;
-                    btnLogin.Text = "LOGIN";
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi kết nối: " + ex.Message);
-                btnLogin.Enabled = true;
-                btnLogin.Text = "LOGIN";
-            }
-        }
-
-        // 2 link mở form giống file gốc (chỉ khác tên biến)
         private void linkForgot_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            using (var dlg = new Recovery())
-            {
-                dlg.StartPosition = FormStartPosition.CenterParent;
-                dlg.ShowDialog(this);
-            }
+            using (var dlg = new Recovery()) { dlg.StartPosition = FormStartPosition.CenterParent; dlg.ShowDialog(this); }
         }
 
         private void linkCreate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            using (var dlg = new Signup())
-            {
-                dlg.StartPosition = FormStartPosition.CenterParent;
-                dlg.ShowDialog(this);
-            }
+            using (var dlg = new Signup()) { dlg.StartPosition = FormStartPosition.CenterParent; dlg.ShowDialog(this); }
         }
     }
 }

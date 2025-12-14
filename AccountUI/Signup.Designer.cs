@@ -9,7 +9,6 @@ namespace AccountUI
 
         private RoundedPanel cardPanel;
 
-        // Header
         private Panel panelHeader;
         private RoundedPanel panelKnightBg;
         private PictureBox logoPictureBox;
@@ -17,7 +16,6 @@ namespace AccountUI
         private Label labelBrandSub;
         private Label labelTitle;
 
-        // Panels input
         private RoundedPanel panelUsername;
         private RoundedPanel panelEmail;
         private RoundedPanel panelOtp;
@@ -26,14 +24,13 @@ namespace AccountUI
         private RoundedPanel panelPassword;
         private RoundedPanel panelConfirmPassword;
 
-        // Controls
-        private TextBox textBox1;      // Username
+        private TextBox textBox1;
         private TextBox txtEmail;
         private TextBox txtOtp;
         private TextBox txtFullName;
         private DateTimePicker dtpBirthday;
-        private TextBox textBox3;      // Password
-        private TextBox textBox4;      // Confirm password
+        private TextBox textBox3;
+        private TextBox textBox4;
 
         private Button btnSendOtp;
         private Button btnVerifyOtp;
@@ -356,7 +353,7 @@ namespace AccountUI
             textBox3.ForeColor = Color.FromArgb(180, 182, 196);
             textBox3.Location = new Point(14, 13);
             textBox3.Name = "textBox3";
-            textBox3.Size = new Size(285, 26);
+            textBox3.Size = new Size(220, 26);
             textBox3.TabIndex = 0;
             textBox3.Text = "Mật Khẩu";
             textBox3.Enter += textBox3_Enter;
@@ -364,12 +361,14 @@ namespace AccountUI
             // 
             // button_passwordshow
             // 
+            button_passwordshow.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             button_passwordshow.BackColor = Color.FromArgb(35, 45, 65);
+            button_passwordshow.Cursor = Cursors.Hand;
             button_passwordshow.FlatAppearance.BorderSize = 0;
             button_passwordshow.FlatStyle = FlatStyle.Flat;
-            button_passwordshow.Location = new Point(285, 48);
+            button_passwordshow.Location = new Point(247, 10);
             button_passwordshow.Name = "button_passwordshow";
-            button_passwordshow.Size = new Size(24, 24);
+            button_passwordshow.Size = new Size(28, 28);
             button_passwordshow.TabIndex = 1;
             button_passwordshow.TabStop = false;
             button_passwordshow.UseVisualStyleBackColor = false;
@@ -377,12 +376,14 @@ namespace AccountUI
             // 
             // button_passwordhide
             // 
+            button_passwordhide.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             button_passwordhide.BackColor = Color.FromArgb(35, 45, 65);
+            button_passwordhide.Cursor = Cursors.Hand;
             button_passwordhide.FlatAppearance.BorderSize = 0;
             button_passwordhide.FlatStyle = FlatStyle.Flat;
-            button_passwordhide.Location = new Point(285, 48);
+            button_passwordhide.Location = new Point(247, 10);
             button_passwordhide.Name = "button_passwordhide";
-            button_passwordhide.Size = new Size(24, 24);
+            button_passwordhide.Size = new Size(28, 28);
             button_passwordhide.TabIndex = 2;
             button_passwordhide.TabStop = false;
             button_passwordhide.UseVisualStyleBackColor = false;
@@ -409,7 +410,7 @@ namespace AccountUI
             textBox4.ForeColor = Color.FromArgb(180, 182, 196);
             textBox4.Location = new Point(14, 13);
             textBox4.Name = "textBox4";
-            textBox4.Size = new Size(285, 26);
+            textBox4.Size = new Size(220, 26);
             textBox4.TabIndex = 0;
             textBox4.Text = "Xác Nhận Mật Khẩu";
             textBox4.Enter += textBox4_Enter;
@@ -417,12 +418,14 @@ namespace AccountUI
             // 
             // button_passwordshow2
             // 
+            button_passwordshow2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             button_passwordshow2.BackColor = Color.FromArgb(35, 45, 65);
+            button_passwordshow2.Cursor = Cursors.Hand;
             button_passwordshow2.FlatAppearance.BorderSize = 0;
             button_passwordshow2.FlatStyle = FlatStyle.Flat;
-            button_passwordshow2.Location = new Point(285, 48);
+            button_passwordshow2.Location = new Point(247, 10);
             button_passwordshow2.Name = "button_passwordshow2";
-            button_passwordshow2.Size = new Size(24, 24);
+            button_passwordshow2.Size = new Size(28, 28);
             button_passwordshow2.TabIndex = 1;
             button_passwordshow2.TabStop = false;
             button_passwordshow2.UseVisualStyleBackColor = false;
@@ -430,12 +433,14 @@ namespace AccountUI
             // 
             // button_passwordhide2
             // 
+            button_passwordhide2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             button_passwordhide2.BackColor = Color.FromArgb(35, 45, 65);
+            button_passwordhide2.Cursor = Cursors.Hand;
             button_passwordhide2.FlatAppearance.BorderSize = 0;
             button_passwordhide2.FlatStyle = FlatStyle.Flat;
-            button_passwordhide2.Location = new Point(285, 48);
+            button_passwordhide2.Location = new Point(247, 10);
             button_passwordhide2.Name = "button_passwordhide2";
-            button_passwordhide2.Size = new Size(24, 24);
+            button_passwordhide2.Size = new Size(28, 28);
             button_passwordhide2.TabIndex = 2;
             button_passwordhide2.TabStop = false;
             button_passwordhide2.UseVisualStyleBackColor = false;
