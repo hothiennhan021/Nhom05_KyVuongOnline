@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using ChessClient;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
 
 namespace AccountUI
 {
@@ -12,117 +17,111 @@ namespace AccountUI
         }
 
         // 1. Sự kiện khi Form vừa mở lên -> Tự động tải danh sách
-        private void FriendForm_Load(object sender, EventArgs e)
+        private async void FriendForm_Load(object sender, EventArgs e)
         {
-            LoadFriendList();
-            LoadFriendRequests();
+            await LoadFriendListAsync();
+            await LoadFriendRequestsAsync();
         }
+
 
         // 2. Hàm hỗ trợ: Tải danh sách bạn bè từ Server
-        // Hàm tải danh sách bạn bè (Clean Version)
-        private void LoadFriendList()
+        private async Task LoadFriendListAsync()
         {
             try
             {
-                string response = ClientSocket.SendAndReceive("FRIEND_GET_LIST");
+                string response = await SendAndWaitAsync("FRIEND_GET_LIST", "FRIEND_LIST|");
+                if (response == null) return;
 
-                if (response != null && response.StartsWith("FRIEND_LIST|"))
+                lbFriends.Items.Clear();
+
+                int firstSplitIndex = response.IndexOf('|');
+                if (firstSplitIndex == -1) return;
+
+                string data = response.Substring(firstSplitIndex + 1)
+                                      .Replace("\0", "")
+                                      .Trim()
+                                      .TrimEnd(';');
+
+                if (string.IsNullOrWhiteSpace(data)) return;
+
+                var tempList = new List<string>();
+                foreach (var item in data.Split(';'))
                 {
-                    lbFriends.Items.Clear();
-
-                    int firstSplitIndex = response.IndexOf('|');
-                    if (firstSplitIndex == -1) return;
-
-                    // Cắt header và làm sạch chuỗi
-                    string data = response.Substring(firstSplitIndex + 1)
-                                          .Replace("\0", "")
-                                          .Trim()
-                                          .TrimEnd(';');
-
-                    if (string.IsNullOrWhiteSpace(data)) return;
-
-                    string[] listFriends = data.Split(';');
-
-
-                    // 1. Tạo danh sách tạm để chứa dữ liệu
-                    var tempList = new List<string>();
-
-                    foreach (string item in listFriends)
+                    if (string.IsNullOrWhiteSpace(item)) continue;
+                    var info = item.Split('|');
+                    if (info.Length >= 2)
                     {
-                        if (string.IsNullOrWhiteSpace(item)) continue;
-                        string[] info = item.Split('|');
-                        if (info.Length >= 2)
-                        {
-                            // Format chuẩn: "Name|Elo|OnlineStatus"
-                            string name = info[0];
-                            string elo = info[1];
-                            string status = (info.Length > 2) ? info[2].ToLower() : "false";
-
-                            // Thêm vào list tạm
-                            tempList.Add($"{name}|{elo}|{status}");
-                        }
-                    }
-
-                    // 2. SẮP XẾP DANH SÁCH (Magic nằm ở đây)
-                    // Logic: Online trước (descending), sau đó đến Elo cao
-                    var sortedList = tempList.OrderByDescending(x => x.Split('|')[2] == "true") // True lên đầu
-                                             .ThenByDescending(x => int.Parse(x.Split('|')[1])) // Elo cao lên nhì
-                                             .ToList();
-
-                    // 3. Đưa vào ListBox
-                    lbFriends.Items.Clear();
-                    foreach (var item in sortedList)
-                    {
-                        lbFriends.Items.Add(item);
+                        string name = info[0];
+                        string elo = info[1];
+                        string status = (info.Length > 2) ? info[2].ToLower() : "false";
+                        tempList.Add($"{name}|{elo}|{status}");
                     }
                 }
-            }
 
-            catch { /* Lờ lỗi để không làm phiền người dùng */ }
-        }
+                var sortedList = tempList
+                    .OrderByDescending(x => x.Split('|')[2] == "true")
+                    .ThenByDescending(x => int.Parse(x.Split('|')[1]))
+                    .ToList();
 
-        // Hàm tải lời mời (Clean Version)
-        private void LoadFriendRequests()
-        {
-            try
-            {
-                string response = ClientSocket.SendAndReceive("FRIEND_GET_REQUESTS");
-
-                if (response != null && response.StartsWith("FRIEND_REQUESTS|"))
-                {
-                    lbRequests.Items.Clear();
-
-                    int firstSplitIndex = response.IndexOf('|');
-                    if (firstSplitIndex == -1) return;
-
-                    string data = response.Substring(firstSplitIndex + 1)
-                                          .Replace("\0", "")
-                                          .Trim()
-                                          .TrimEnd(';');
-
-                    if (string.IsNullOrWhiteSpace(data)) return;
-
-                    string[] reqs = data.Split(';');
-                    foreach (var r in reqs)
-                    {
-                        if (!string.IsNullOrWhiteSpace(r))
-                        {
-                            // r dạng: "1|trung123"
-                            lbRequests.Items.Add(r);
-                        }
-                    }
-                }
+                lbFriends.Items.Clear();
+                foreach (var item in sortedList) lbFriends.Items.Add(item);
             }
             catch { }
         }
+
+
+        // Hàm tải lời mời 
+        private async Task LoadFriendRequestsAsync()
+        {
+            try
+            {
+                string response = await SendAndWaitAsync("FRIEND_GET_REQUESTS", "FRIEND_REQUESTS|");
+                if (response == null) return;
+
+                lbRequests.Items.Clear();
+
+                int firstSplitIndex = response.IndexOf('|');
+                if (firstSplitIndex == -1) return;
+
+                string data = response.Substring(firstSplitIndex + 1)
+                                      .Replace("\0", "")
+                                      .Trim()
+                                      .TrimEnd(';');
+
+                if (string.IsNullOrWhiteSpace(data)) return;
+
+                foreach (var r in data.Split(';'))
+                    if (!string.IsNullOrWhiteSpace(r)) lbRequests.Items.Add(r);
+            }
+            catch { }
+        }
+
+        private async Task<string> SendAndWaitAsync(string cmd, string expectedPrefix, int timeoutMs = 3000)
+        {
+            await ClientManager.Instance.SendAsync(cmd);
+
+            var sw = Stopwatch.StartNew();
+            while (sw.ElapsedMilliseconds < timeoutMs)
+            {
+                string msg = ClientManager.Instance.WaitForMessage(200);
+                if (msg == "TIMEOUT") continue;
+                if (string.IsNullOrWhiteSpace(msg)) return null;
+
+                msg = msg.Replace("\0", "").Trim();
+                if (msg.StartsWith(expectedPrefix)) return msg;
+            }
+            return null;
+        }
+
+
 
         // --- CÁC NÚT BẤM (BUTTON EVENTS) ---
 
         // Nút LÀM MỚI (Refresh)
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            LoadFriendList();
-            LoadFriendRequests();
+            LoadFriendListAsync();
+            LoadFriendRequestsAsync();
         }
 
         // Nút GỬI LỜI MỜI (Search & Add)
@@ -182,14 +181,14 @@ namespace AccountUI
                 // Gửi lệnh đồng ý
                 string response = ClientSocket.SendAndReceive($"FRIEND_ACCEPT|{reqId}");
 
-                // [FIX] Kiểm tra lỏng hơn: Chỉ cần chứa từ khóa "OK" hoặc "SUCCESS" là được
+                // Chỉ cần chứa từ khóa "OK" hoặc "SUCCESS" là được
                 if (response.Contains("OK") || response.Contains("SUCCESS") || response.Contains("FRIEND_ACCEPTED") || response.Contains("FRIEND_REQUESTS"))
                 {
                     MessageBox.Show("Đã chấp nhận kết bạn!");
 
                     // Tải lại danh sách ngay lập tức
-                    LoadFriendList();
-                    LoadFriendRequests();
+                    LoadFriendListAsync();
+                    LoadFriendRequestsAsync();
                 }
                 else
                 {
@@ -203,12 +202,12 @@ namespace AccountUI
 
         private void btnRefreshRequest_Click(object sender, EventArgs e)
         {
-            LoadFriendRequests();
+            LoadFriendRequestsAsync();
         }
 
         private void btnRefresh_Click_1(object sender, EventArgs e)
         {
-            LoadFriendList();
+            LoadFriendListAsync();
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
@@ -222,12 +221,11 @@ namespace AccountUI
             // Lấy dòng chữ đang chọn
             string selectedText = lbFriends.SelectedItem.ToString();
 
-            // [FIX] Logic lấy tên chuẩn xác nhất:
             // 1. Xóa bỏ các icon (nếu lỡ có) và khoảng trắng thừa
             string cleanText = selectedText.Replace("🟢", "").Replace("⚪", "").Trim();
 
             // 2. Cắt lấy Tên (Lấy phần trước dấu mở ngoặc "(" hoặc dấu gạch "|")
-            // Ví dụ: "trung123 (Elo..." -> Lấy "trung123"
+           
             string friendName = cleanText.Split(new char[] { '(', '|' })[0].Trim();
 
             // Hỏi xác nhận
@@ -241,11 +239,11 @@ namespace AccountUI
             {
                 string response = ClientSocket.SendAndReceive($"FRIEND_REMOVE|{friendName}");
 
-                // [FIX] Chấp nhận mọi từ khóa báo hiệu thành công
+               
                 if (response.Contains("SUCCESS") || response.Contains("OK") || response.Contains("REMOVED"))
                 {
                     MessageBox.Show("Đã xóa thành công!");
-                    LoadFriendList(); // Tải lại danh sách
+                    LoadFriendListAsync(); // Tải lại danh sách
                 }
                 else
                 {
@@ -355,61 +353,6 @@ namespace AccountUI
 
             // Vẽ viền focus
             e.DrawFocusRectangle();
-        }
-
-
-        private void lbFriends_DoubleClick(object sender, EventArgs e)
-        {
-            // 1. Kiểm tra xem có đang chọn dòng nào không (Chống lỗi click vào vùng trắng)
-            if (lbFriends.SelectedItem == null || lbFriends.SelectedIndex == -1) return;
-
-            try
-            {
-                // 2. Lấy dữ liệu thô từ dòng đang chọn
-                // Dữ liệu đang có dạng: "HungNguyen|1200|true"
-                string rawData = lbFriends.SelectedItem.ToString();
-                string[] parts = rawData.Split('|');
-
-                // Lấy tên và trạng thái
-                string friendName = parts[0];
-                string isOnline = (parts.Length > 2) ? parts[2] : "false";
-
-                // 3. Logic Nâng cao: Chỉ cho thách đấu nếu đang Online
-                if (isOnline != "true")
-                {
-                    MessageBox.Show(
-                        $"Người chơi {friendName} đang Offline, không thể thách đấu!",
-                        "Thông báo",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    return;
-                }
-
-                // 4. Hỏi xác nhận (UX tốt hơn là gửi luôn)
-                DialogResult result = MessageBox.Show(
-                    $"Bạn có muốn gửi lời mời thách đấu tới {friendName}?",
-                    "Thách đấu",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    // --- GỬI LỆNH LÊN SERVER ---
-                    // Bạn thay dòng này bằng code gửi tin của bạn nhé
-                    // Bạn thay dòng này bằng code gửi tin của bạn nhé
-                    ClientSocket.SendAndReceive($"CHALLENGE|{friendName}");
-
-                    // Tạm thời hiện thông báo giả lập
-                    MessageBox.Show($"Đã gửi lời mời tới {friendName}! Đang chờ họ đồng ý...", "Thành công");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Phòng hờ lỗi cắt chuỗi
-            }
-        }
-
-
+        }      
     }
-
 }

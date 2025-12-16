@@ -68,7 +68,7 @@ namespace ChessData
             {
                 conn.Open();
 
-                // ⭐ FIX: dùng Rank thay Elo — đúng bảng Users
+
                 string sql = @"
                     SELECT u.Username, u.Elo, u.IsOnline
                     FROM Friendships f
@@ -122,7 +122,7 @@ namespace ChessData
         }
 
         // ==============================================================
-        // 4. Đồng ý kết bạn (⭐ BẢN FIX QUAN TRỌNG)
+        // 4. Đồng ý kết bạn
         // ==============================================================
         public void AcceptFriend(int requestId)
         {
