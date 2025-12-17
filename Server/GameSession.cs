@@ -71,7 +71,6 @@ namespace MyTcpServer
             int whiteElo = 1200;
             int blackElo = 1200;
 
-            // Dùng connectionString đã khai báo ở các bước trước
             var userRepo = new ChessData.UserRepository(_connectionString);
 
             var wStats = await userRepo.GetUserStatsAsync(PlayerWhite.Username);
@@ -83,8 +82,10 @@ namespace MyTcpServer
             // Format gói tin: GAME_START | MÀU | BÀN CỜ | TIME_W | TIME_B | EN_PASSANT_POS
             Console.WriteLine($"[SEND] GAME_START ELO: W={whiteElo}, B={blackElo}");
 
-            await PlayerWhite.SendMessageAsync($"GAME_START|WHITE|{board}|{wTime}|{bTime}|{epString}|{whiteElo}|{blackElo}");
-            await PlayerBlack.SendMessageAsync($"GAME_START|BLACK|{board}|{wTime}|{bTime}|{epString}|{whiteElo}|{blackElo}");
+            await PlayerWhite.SendMessageAsync($"GAME_START|WHITE|{board}|{wTime}|{bTime}|{epString}|{whiteElo}|{blackElo}|{PlayerWhite.Username}|{PlayerBlack.Username}");
+
+            await PlayerBlack.SendMessageAsync($"GAME_START|BLACK|{board}|{wTime}|{bTime}|{epString}|{whiteElo}|{blackElo}|{PlayerWhite.Username}|{PlayerBlack.Username}");
+
 
             Console.WriteLine($"[Game Started] {PlayerWhite.Username} vs {PlayerBlack.Username}");
         }

@@ -63,8 +63,8 @@
             <Border Grid.Row="0" Background="#303030" CornerRadius="5" Padding="10" Margin="0,0,0,5">
                 <Grid>
                     <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock x:Name="lblBlackPlayerName" Text="Opponent" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                        <TextBlock x:Name="lblBlackElo" Foreground="Gray" FontSize="12"/>
+                        <TextBlock x:Name="lblOpponentName" Foreground="White" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock x:Name="lblOpponentElo" Foreground="Gray" FontSize="12"/>
                     </StackPanel>
                     <Border Background="Black" CornerRadius="3" Padding="10,5" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock x:Name="lblBlackTime" Text="05:00" Foreground="White" FontSize="24" FontFamily="Consolas" FontWeight="Bold"/>
@@ -86,8 +86,8 @@
             <Border Grid.Row="2" Background="#303030" CornerRadius="5" Padding="10" Margin="0,5,0,0">
                 <Grid>
                     <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock x:Name="lblWhitePlayerName" Text="You" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                        <TextBlock x:Name="lblWhiteElo" Foreground="Gray" FontSize="12"/>
+                        <TextBlock x:Name="lblYourName" Foreground="White" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock x:Name="lblYourElo" Foreground="Gray" FontSize="12"/>
                     </StackPanel>
                     <Border Background="Black" CornerRadius="3" Padding="10,5" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock x:Name="lblWhiteTime" Text="05:00" Foreground="White" FontSize="24" FontFamily="Consolas" FontWeight="Bold"/>

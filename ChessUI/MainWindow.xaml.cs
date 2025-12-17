@@ -88,9 +88,20 @@ namespace ChessUI
                     _hasOfferedDraw = false;
                     btnDraw.IsEnabled = true;
                     btnDraw.Content = "Xin Hòa";
-                    lblWhiteElo.Text = $"Elo: {e.WhiteElo}";
-                    lblBlackElo.Text = $"Elo: {e.BlackElo}";
+
+                    // Gán đúng Elo và username cho "bạn" và "đối thủ"
+                    string myName = (_myColor == Player.White) ? e.WhiteName : e.BlackName;
+                    string oppName = (_myColor == Player.White) ? e.BlackName : e.WhiteName;
+
+                    int myElo = (_myColor == Player.White) ? e.WhiteElo : e.BlackElo;
+                    int oppElo = (_myColor == Player.White) ? e.BlackElo : e.WhiteElo;
+
+                    lblYourName.Text = myName;
+                    lblOpponentName.Text = oppName;
+                    lblYourElo.Text = $"Elo: {myElo}";
+                    lblOpponentElo.Text = $"Elo: {oppElo}";
                 });
+
 
                 DrawBoard(_localGameState.Board);
                 SetCursor(_localGameState.CurrentPlayer);

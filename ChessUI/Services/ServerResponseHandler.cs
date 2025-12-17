@@ -15,6 +15,10 @@ namespace ChessUI.Services
         public int WhiteElo { get; set; } = 1200;
         public int BlackElo { get; set; } = 1200;
 
+        public string? WhiteName { get; set; }
+        public string? BlackName { get; set; }
+
+
         public Position? EnPassantPos { get; set; }
     }
 
@@ -74,6 +78,14 @@ namespace ChessUI.Services
                             int.TryParse(parts[6], out whiteElo);
                             int.TryParse(parts[7], out blackElo);
                         }
+                        string? whiteName = null;
+                        string? blackName = null;
+
+                        if (parts.Length >= 10)
+                        {
+                            whiteName = parts[8];
+                            blackName = parts[9];
+                        }
 
                         var argsStart = new GameStartEventArgs
                         {
@@ -84,7 +96,8 @@ namespace ChessUI.Services
 
                             WhiteElo = whiteElo,
                             BlackElo = blackElo,
-
+                            WhiteName = whiteName,
+                            BlackName = blackName,
                             // [MỚI] Parse vị trí En Passant
                             EnPassantPos = (parts.Length >= 6) ? ParseEpString(parts[5]) : null
 

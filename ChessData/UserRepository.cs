@@ -68,7 +68,7 @@ namespace ChessData
                 string insertSql =
                     @"INSERT INTO Users 
                       (Username, PasswordHash, Email, FullName, Birthday, IngameName, Rank, HighestRank, Wins, Losses, TotalPlayTimeMinutes, IsOnline) 
-                      VALUES (@u, @p, @e, @f, @b, @in, 800, 800, 0, 0, 0, 0)";
+                      VALUES (@u, @p, @e, @f, @b, @in, 1200, 1200, 0, 0, 0, 0)";
 
                 using (var cmd = new SqlCommand(insertSql, conn))
                 {
