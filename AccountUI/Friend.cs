@@ -30,7 +30,7 @@ namespace AccountUI
             string response = await SendAndWaitAsync("FRIEND_GET_LIST", "FRIEND_LIST|", 4000);
             if (string.IsNullOrWhiteSpace(response)) return;
 
-            // parse y như code cũ của bạn
+
             lbFriends.Items.Clear();
 
             int firstSplitIndex = response.IndexOf('|');
@@ -104,7 +104,6 @@ namespace AccountUI
                 msg = msg.Replace("\0", "").Trim();
                 if (msg.StartsWith(expectedPrefix)) return msg;
 
-                // nếu cần, bạn có thể handle thêm CHALLENGE_REQUEST ở đây
             }
             return null;
         }
@@ -122,7 +121,7 @@ namespace AccountUI
         }
 
         // Nút GỬI LỜI MỜI (Search & Add)
-        private void btnSearch_Click(object sender, EventArgs e)
+        private async void btnSearch_Click(object sender, EventArgs e)
         {
             string name = txtSearch.Text.Trim();
             if (string.IsNullOrEmpty(name))
@@ -131,32 +130,30 @@ namespace AccountUI
                 return;
             }
 
-            // Gửi lệnh tìm kiếm lên Server
-            string response = ClientSocket.SendAndReceive($"FRIEND_SEARCH|{name}");
+            string msg = await SendAndWaitAsync($"FRIEND_SEARCH|{name}", "FRIEND_SEARCH_", 4000);
+            if (msg == null)
+            {
+                MessageBox.Show("Timeout khi gửi lời mời kết bạn.");
+                return;
+            }
 
-            // Xử lý các trường hợp Server trả về
-            if (response.Contains("SUCCESS"))
+            if (msg == "FRIEND_SEARCH_SUCCESS")
             {
                 MessageBox.Show($"Đã gửi lời mời kết bạn tới {name} thành công!");
-                txtSearch.Clear(); // Xóa ô nhập cho sạch
+                txtSearch.Clear();
             }
-            else if (response.Contains("NOT_FOUND"))
-            {
+            else if (msg == "FRIEND_SEARCH_NOT_FOUND")
                 MessageBox.Show("Không tìm thấy người chơi này.");
-            }
-            else if (response.Contains("SELF_ERROR"))
-            {
+            else if (msg == "FRIEND_SEARCH_SELF_ERROR")
                 MessageBox.Show("Bạn không thể tự kết bạn với chính mình.");
-            }
-            else if (response.Contains("EXISTED"))
-            {
+            else if (msg == "FRIEND_SEARCH_EXISTED")
                 MessageBox.Show("Người này đã là bạn hoặc đã có lời mời đang chờ.");
-            }
+            else if (msg == "FRIEND_SEARCH_NOT_LOGGED_IN")
+                MessageBox.Show("Bạn chưa đăng nhập hoặc phiên làm việc đã mất.");
             else
-            {
-                MessageBox.Show("Lỗi từ Server: " + response);
-            }
+                MessageBox.Show("Lỗi từ Server: " + msg);
         }
+
 
         // Nút ĐỒNG Ý KẾT BẠN (Accept)
         private void btnAccept_Click(object sender, EventArgs e)
@@ -207,7 +204,7 @@ namespace AccountUI
             LoadFriendListAsync();
         }
 
-        private void btnRemove_Click(object sender, EventArgs e)
+        private async void btnRemove_Click(object sender, EventArgs e)
         {
             if (lbFriends.SelectedItem == null)
             {
@@ -215,40 +212,47 @@ namespace AccountUI
                 return;
             }
 
-            // Lấy dòng chữ đang chọn
             string selectedText = lbFriends.SelectedItem.ToString();
-
-
-            // 1. Xóa bỏ các icon (nếu lỡ có) và khoảng trắng thừa
             string cleanText = selectedText.Replace("🟢", "").Replace("⚪", "").Trim();
-
-            // 2. Cắt lấy Tên (Lấy phần trước dấu mở ngoặc "(" hoặc dấu gạch "|")
-            // Ví dụ: "trung123 (Elo..." -> Lấy "trung123"
             string friendName = cleanText.Split(new char[] { '(', '|' })[0].Trim();
 
-            // Hỏi xác nhận
-            DialogResult confirm = MessageBox.Show(
+            var confirm = MessageBox.Show(
                 $"Bạn có chắc chắn muốn xóa '{friendName}' khỏi danh sách?",
                 "Xác nhận xóa",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-            if (confirm == DialogResult.Yes)
-            {
-                string response = ClientSocket.SendAndReceive($"FRIEND_REMOVE|{friendName}");
+            if (confirm != DialogResult.Yes) return;
 
-                // [FIX] Chấp nhận mọi từ khóa báo hiệu thành công
-                if (response.Contains("SUCCESS") || response.Contains("OK") || response.Contains("REMOVED"))
+            // Gửi bằng connection đã login (ClientManager)
+            await ClientManager.Instance.SendAsync($"FRIEND_REMOVE|{friendName}");
+
+            // chờ đúng response của remove
+            var sw = Stopwatch.StartNew();
+            while (sw.ElapsedMilliseconds < 4000)
+            {
+                string msg = ClientManager.Instance.WaitForMessage(200);
+                if (msg == "TIMEOUT") continue;
+                if (string.IsNullOrWhiteSpace(msg)) break;
+
+                msg = msg.Replace("\0", "").Trim();
+
+                if (msg.StartsWith("FRIEND_REMOVED"))
                 {
                     MessageBox.Show("Đã xóa thành công!");
-                    LoadFriendListAsync();
+                    await LoadFriendListAsync();
+                    return;
                 }
-                else
+                if (msg.StartsWith("FRIEND_REMOVE_FAIL"))
                 {
-                    MessageBox.Show("Lỗi: " + response);
+                    MessageBox.Show("Lỗi: FRIEND_REMOVE_FAIL");
+                    return;
                 }
             }
+
+            MessageBox.Show("Lỗi: Timeout khi xóa bạn");
         }
+
         private void tabControl1_DrawItem(object sender, DrawItemEventArgs e)
         {
             // 1. Lấy TabPage đang vẽ
@@ -356,13 +360,13 @@ namespace AccountUI
 
         private void lbFriends_DoubleClick(object sender, EventArgs e)
         {
-            // 1. Kiểm tra xem có đang chọn dòng nào không (Chống lỗi click vào vùng trắng)
+            // 1. Kiểm tra xem có đang chọn dòng nào không
             if (lbFriends.SelectedItem == null || lbFriends.SelectedIndex == -1) return;
 
             try
             {
                 // 2. Lấy dữ liệu thô từ dòng đang chọn
-                // Dữ liệu đang có dạng: "HungNguyen|1200|true"
+
                 string rawData = lbFriends.SelectedItem.ToString();
                 string[] parts = rawData.Split('|');
 
@@ -370,7 +374,7 @@ namespace AccountUI
                 string friendName = parts[0];
                 string isOnline = (parts.Length > 2) ? parts[2] : "false";
 
-                // 3. Logic Nâng cao: Chỉ cho thách đấu nếu đang Online
+             
                 if (isOnline != "true")
                 {
                     MessageBox.Show(
@@ -381,7 +385,7 @@ namespace AccountUI
                     return;
                 }
 
-                // 4. Hỏi xác nhận (UX tốt hơn là gửi luôn)
+                //  Hỏi xác nhận (UX tốt hơn là gửi luôn)
                 DialogResult result = MessageBox.Show(
                     $"Bạn có muốn gửi lời mời thách đấu tới {friendName}?",
                     "Thách đấu",

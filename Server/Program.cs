@@ -344,15 +344,25 @@ namespace MyTcpServer
                     }
 
                 // ======================================================
-                //                   FRIEND SYSTEM
+                //                   FRIEND SYSTEM 
                 // ======================================================
 
-                //  FRIEND_SEARCH|username
-                // → Mặc định: Gửi lời mời kết bạn
+
                 case "FRIEND_SEARCH":
+                    {
+                        if (client.UserId <= 0) return "FRIEND_SEARCH_NOT_LOGGED_IN";
+
+                        string result = _friendRepo.SendFriendRequest(client.UserId, parts[1]);
+
+                        return "FRIEND_SEARCH_" + result;
+                    }
+
+
+                case "FRIEND_SEND":
                     {
                         return _friendRepo.SendFriendRequest(client.UserId, parts[1]);
                     }
+
                 // GET FRIEND LIST
                 case "FRIEND_LIST":
                 case "FRIEND_GET_LIST":
