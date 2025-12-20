@@ -227,8 +227,6 @@ namespace ChessData
             {
                 using var conn = new SqlConnection(_connectionString);
                 await conn.OpenAsync();
-
-                // SỬA LẠI: Dùng cột [Elo] để cộng trừ điểm
                 string sql = @"
             UPDATE Users 
             SET 
@@ -256,5 +254,42 @@ namespace ChessData
                 Console.WriteLine($"[DB Error] Update Result: {ex.Message}");
             }
         }
+
+        // SET LEADERBOARD 
+        public async Task<List<(string Username, int Elo, int Wins, int Losses)>> GetLeaderboardAsync(int top)
+        {
+            var result = new List<(string, int, int, int)>();
+
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            string sql = @"
+                 SELECT TOP (@top)
+                    Username,
+                    Elo,
+                    Wins,
+                    Losses
+                FROM Users
+                ORDER BY Elo DESC, Wins DESC
+            ";
+
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@top", top);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                result.Add((
+                    reader.GetString(0),
+                    reader.GetInt32(1),
+                    reader.GetInt32(2),
+                    reader.GetInt32(3)
+                ));
+            }
+
+            return result;
+        }
+
+
     }
 }

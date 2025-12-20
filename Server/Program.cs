@@ -392,6 +392,30 @@ namespace MyTcpServer
                         bool ok = _friendRepo.RemoveFriend(client.UserId, parts[1]);
                         return ok ? "FRIEND_REMOVED" : "FRIEND_REMOVE_FAIL";
                     }
+                // ======================================================
+                //                    LEADERBOARD
+                // ======================================================
+                case "LEADERBOARD_GET":
+                    {
+                        // LEADERBOARD_GET|top
+                        int top = 20;
+                        if (parts.Length > 1)
+                            int.TryParse(parts[1], out top);
+
+                        if (top <= 0) top = 20;
+                        if (top > 100) top = 100;
+
+                        var list = await _userRepo.GetLeaderboardAsync(top);
+
+                        // Format:
+                        // LEADERBOARD|username,elo,wins,losses;username,elo,wins,losses;...
+                        string payload = string.Join(";",
+                            list.Select(u => $"{u.Username},{u.Elo},{u.Wins},{u.Losses}")
+                        );
+
+                        return "LEADERBOARD|" + payload;
+                    }
+
 
                 // ======================================================
                 //                MATCHMAKING (TÌM TRẬN)
