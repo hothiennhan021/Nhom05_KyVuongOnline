@@ -447,5 +447,26 @@ namespace AccountUI
                 MessageBox.Show("Hãy dùng nút Đăng xuất.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
+        private void PicLeaderboard_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var win = new ChessUI.LeaderboardWindow(); // WPF window bạn đã tạo
+                try
+                {
+                    // set owner để nó đứng trước MainMenu (không bắt buộc)
+                    var helper = new System.Windows.Interop.WindowInteropHelper(win);
+                    helper.Owner = this.Handle;
+                }
+                catch { }
+
+                win.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Không thể mở Leaderboard. Lỗi: " + ex.Message);
+            }
+        }
     }
 }

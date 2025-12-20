@@ -39,7 +39,9 @@ namespace AccountUI
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainMenu));
             panelCard = new RoundedPanel();
+            PicLeaderboard = new PictureBox();
             panelIcon = new Panel();
             panelKnightBg = new RoundedPanel();
             picKnight = new PictureBox();
@@ -49,209 +51,29 @@ namespace AccountUI
             btnProfile = new Button();
             btnFriend = new Button();
             button1 = new Button();
-            btnCancelMatch = new Button();
             btnCreateRoom = new Button();
             btnJoinRoom = new Button();
-            button4 = new Button();
-
             pnlCreatedId = new Panel();
             txtCreatedRoomId = new TextBox();
-
             pnlJoinId = new Panel();
             txtRoomId = new TextBox();
-
+            btnCancelMatch = new Button();
             labelRoom = new Label();
-
+            button4 = new Button();
             panelCard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)PicLeaderboard).BeginInit();
             panelIcon.SuspendLayout();
             panelKnightBg.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)picKnight).BeginInit();
             pnlCreatedId.SuspendLayout();
             pnlJoinId.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(picKnight)).BeginInit();
             SuspendLayout();
-
-            // ===== FORM =====
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1200, 720);
-            StartPosition = FormStartPosition.CenterScreen;
-            Text = "Chess Online - Main Menu";
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
-            BackgroundImage = Properties.Resources.Bg;
-            BackgroundImageLayout = ImageLayout.Stretch;
-
-            // ===== CARD =====
-            panelCard.Size = new Size(480, 640);
-            panelCard.CornerRadius = 32;
+            // 
+            // panelCard
+            // 
             panelCard.BackColor = Color.FromArgb(18, 25, 40);
-            panelCard.Location = new Point((ClientSize.Width - panelCard.Width) / 2, (ClientSize.Height - panelCard.Height) / 2);
-
-            // ===== LOGO =====
-            panelIcon.Size = new Size(330, 90);
-            panelIcon.BackColor = Color.Transparent;
-            panelIcon.Location = new Point(75, 28);
-
-            panelKnightBg.Size = new Size(60, 60);
-            panelKnightBg.CornerRadius = 14;
-            panelKnightBg.BackColor = Color.FromArgb(40, 46, 64);
-            panelKnightBg.Location = new Point(0, 15);
-            picKnight.Dock = DockStyle.Fill;
-            picKnight.SizeMode = PictureBoxSizeMode.Zoom;
-            panelKnightBg.Controls.Add(picKnight);
-
-            lblChess.AutoSize = true;
-            lblChess.Text = "CHESS";
-            lblChess.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            lblChess.ForeColor = Color.White;
-            lblChess.Location = new Point(80, 18);
-
-            lblOnline.AutoSize = true;
-            lblOnline.Text = "ONLINE";
-            lblOnline.Font = new Font("Segoe UI", 9F);
-            lblOnline.ForeColor = Color.FromArgb(190, 195, 205);
-            lblOnline.Location = new Point(83, 50);
-
-            panelIcon.Controls.Add(panelKnightBg);
-            panelIcon.Controls.Add(lblChess);
-            panelIcon.Controls.Add(lblOnline);
-
-            // ===== TITLE (Y=115 - Sát lên một chút) =====
-            lblTitle.AutoSize = true;
-            lblTitle.Text = "Main Menu";
-            lblTitle.ForeColor = Color.FromArgb(235, 238, 245);
-            lblTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
-            lblTitle.Location = new Point(150, 115);
-
-            // ===== BUTTONS (Y Start=175, Pitch=58) =====
-            Font btnFont = new Font("Segoe UI", 12F, FontStyle.Bold);
-            int btnX = 60;
-            int btnW = 360;
-            int btnH = 48;
-
-            // 1. Profile (Y: 175 - Cách Title nhiều hơn)
-            btnProfile.Text = "Hồ sơ người chơi";
-            btnProfile.Size = new Size(btnW, btnH);
-            btnProfile.Location = new Point(btnX, 175);
-            btnProfile.Font = btnFont;
-            btnProfile.BackColor = Color.FromArgb(50, 130, 255);
-            btnProfile.ForeColor = Color.White;
-            btnProfile.FlatStyle = FlatStyle.Flat;
-            btnProfile.FlatAppearance.BorderSize = 0;
-            btnProfile.Click += btnProfile_Click;
-
-            // 2. Friend (Y: 233)
-            btnFriend.Text = "Bạn bè";
-            btnFriend.Size = new Size(btnW, btnH);
-            btnFriend.Location = new Point(btnX, 233);
-            btnFriend.Font = btnFont;
-            btnFriend.BackColor = Color.FromArgb(35, 45, 65);
-            btnFriend.ForeColor = Color.White;
-            btnFriend.FlatStyle = FlatStyle.Flat;
-            btnFriend.FlatAppearance.BorderSize = 0;
-            btnFriend.Click += btnFriend_Click;
-
-            // 3. Match (Y: 291)
-            button1.Text = "Ghép Trận Ngẫu Nhiên";
-            button1.Size = new Size(btnW, btnH);
-            button1.Location = new Point(btnX, 291);
-            button1.Font = btnFont;
-            button1.BackColor = Color.FromArgb(35, 45, 65);
-            button1.ForeColor = Color.White;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.FlatAppearance.BorderSize = 0;
-            button1.Click += button1_Click;
-
-            // 4. Create (Y: 349)
-            btnCreateRoom.Text = "Tạo Phòng";
-            btnCreateRoom.Size = new Size(btnW, btnH);
-            btnCreateRoom.Location = new Point(btnX, 349);
-            btnCreateRoom.Font = btnFont;
-            btnCreateRoom.BackColor = Color.FromArgb(35, 45, 65);
-            btnCreateRoom.ForeColor = Color.White;
-            btnCreateRoom.FlatStyle = FlatStyle.Flat;
-            btnCreateRoom.FlatAppearance.BorderSize = 0;
-            btnCreateRoom.Click += btnCreateRoom_Click;
-
-            // 5. Join (Y: 407)
-            btnJoinRoom.Text = "Tìm / Vào Phòng";
-            btnJoinRoom.Size = new Size(btnW, btnH);
-            btnJoinRoom.Location = new Point(btnX, 407);
-            btnJoinRoom.Font = btnFont;
-            btnJoinRoom.BackColor = Color.FromArgb(35, 45, 65);
-            btnJoinRoom.ForeColor = Color.White;
-            btnJoinRoom.FlatStyle = FlatStyle.Flat;
-            btnJoinRoom.FlatAppearance.BorderSize = 0;
-            btnJoinRoom.Click += btnJoinRoom_Click;
-
-            // ===== PANELS (Y: 470) =====
-            int panelY = 470;
-
-            // Created ID
-            pnlCreatedId.Size = new Size(360, 52);
-            pnlCreatedId.BackColor = Color.FromArgb(35, 45, 65);
-            pnlCreatedId.Location = new Point(btnX, panelY);
-            pnlCreatedId.Visible = false;
-
-            txtCreatedRoomId.BorderStyle = BorderStyle.None;
-            txtCreatedRoomId.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            txtCreatedRoomId.BackColor = pnlCreatedId.BackColor;
-            // Màu CYAN đã set ở code C#, nhưng set ở đây để design view cũng thấy
-            txtCreatedRoomId.ForeColor = Color.Cyan;
-            txtCreatedRoomId.Width = 340;
-            txtCreatedRoomId.Location = new Point(10, 14);
-            txtCreatedRoomId.TextAlign = HorizontalAlignment.Center;
-            pnlCreatedId.Controls.Add(txtCreatedRoomId);
-
-            // Join ID
-            pnlJoinId.Size = new Size(360, 52);
-            pnlJoinId.BackColor = Color.FromArgb(35, 45, 65);
-            pnlJoinId.Location = new Point(btnX, panelY);
-            pnlJoinId.Visible = false;
-
-            txtRoomId.BorderStyle = BorderStyle.None;
-            txtRoomId.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            txtRoomId.BackColor = pnlJoinId.BackColor;
-            txtRoomId.ForeColor = Color.White;
-            txtRoomId.Width = 340;
-            txtRoomId.Location = new Point(10, 16);
-            txtRoomId.TextAlign = HorizontalAlignment.Center;
-            pnlJoinId.Controls.Add(txtRoomId);
-
-            // ===== CANCEL BUTTON (Y: 532) =====
-            // Nằm dưới panel một chút
-            btnCancelMatch.Text = "Hủy ghép";
-            btnCancelMatch.Size = new Size(360, 42);
-            btnCancelMatch.Location = new Point(btnX, 532);
-            btnCancelMatch.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnCancelMatch.BackColor = Color.FromArgb(170, 60, 60);
-            btnCancelMatch.ForeColor = Color.White;
-            btnCancelMatch.FlatStyle = FlatStyle.Flat;
-            btnCancelMatch.FlatAppearance.BorderSize = 0;
-            btnCancelMatch.Visible = false;
-            btnCancelMatch.Click += btnCancelMatch_Click;
-
-            // Label Status
-            labelRoom.BackColor = Color.Transparent;
-            labelRoom.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            labelRoom.ForeColor = Color.FromArgb(245, 220, 90);
-            labelRoom.Size = new Size(360, 24);
-            labelRoom.Location = new Point(btnX, 575);
-            labelRoom.TextAlign = ContentAlignment.MiddleCenter;
-
-            // ===== LOGOUT (Y ~ 586) =====
-            // Khoảng cách từ đáy nút Hủy (532 + 42 = 574) đến đây là 12px. An toàn.
-            button4.Text = "Đăng xuất";
-            button4.Size = new Size(120, 38);
-            button4.Location = new Point(panelCard.Width - 120 - 18, panelCard.Height - 38 - 16);
-            button4.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            button4.BackColor = Color.FromArgb(40, 46, 64);
-            button4.ForeColor = Color.White;
-            button4.FlatStyle = FlatStyle.Flat;
-            button4.FlatAppearance.BorderSize = 0;
-            button4.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            button4.Click += button4_Click;
-
-            // ===== ADD CONTROLS =====
+            panelCard.Controls.Add(PicLeaderboard);
+            panelCard.Controls.Add(button4);
             panelCard.Controls.Add(panelIcon);
             panelCard.Controls.Add(lblTitle);
             panelCard.Controls.Add(btnProfile);
@@ -259,27 +81,278 @@ namespace AccountUI
             panelCard.Controls.Add(button1);
             panelCard.Controls.Add(btnCreateRoom);
             panelCard.Controls.Add(btnJoinRoom);
-
             panelCard.Controls.Add(pnlCreatedId);
             panelCard.Controls.Add(pnlJoinId);
             panelCard.Controls.Add(btnCancelMatch);
-
             panelCard.Controls.Add(labelRoom);
-            panelCard.Controls.Add(button4);
-
+            panelCard.CornerRadius = 32;
+            panelCard.Location = new Point(284, 261);
+            panelCard.Name = "panelCard";
+            panelCard.Size = new Size(480, 640);
+            panelCard.TabIndex = 0;
+            // 
+            // PicLeaderboard
+            // 
+            PicLeaderboard.Image = (Image)resources.GetObject("PicLeaderboard.Image");
+            PicLeaderboard.Location = new Point(388, 115);
+            PicLeaderboard.Name = "PicLeaderboard";
+            PicLeaderboard.Size = new Size(32, 59);
+            PicLeaderboard.TabIndex = 12;
+            PicLeaderboard.TabStop = false;
+            PicLeaderboard.Click += PicLeaderboard_Click;
+            // 
+            // panelIcon
+            // 
+            panelIcon.BackColor = Color.Transparent;
+            panelIcon.Controls.Add(panelKnightBg);
+            panelIcon.Controls.Add(lblChess);
+            panelIcon.Controls.Add(lblOnline);
+            panelIcon.Location = new Point(75, 28);
+            panelIcon.Name = "panelIcon";
+            panelIcon.Size = new Size(330, 90);
+            panelIcon.TabIndex = 0;
+            // 
+            // panelKnightBg
+            // 
+            panelKnightBg.BackColor = Color.FromArgb(40, 46, 64);
+            panelKnightBg.Controls.Add(picKnight);
+            panelKnightBg.CornerRadius = 14;
+            panelKnightBg.Location = new Point(0, 15);
+            panelKnightBg.Name = "panelKnightBg";
+            panelKnightBg.Size = new Size(60, 60);
+            panelKnightBg.TabIndex = 0;
+            // 
+            // picKnight
+            // 
+            picKnight.Dock = DockStyle.Fill;
+            picKnight.Location = new Point(0, 0);
+            picKnight.Name = "picKnight";
+            picKnight.Size = new Size(60, 60);
+            picKnight.SizeMode = PictureBoxSizeMode.Zoom;
+            picKnight.TabIndex = 0;
+            picKnight.TabStop = false;
+            // 
+            // lblChess
+            // 
+            lblChess.AutoSize = true;
+            lblChess.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            lblChess.ForeColor = Color.White;
+            lblChess.Location = new Point(80, 18);
+            lblChess.Name = "lblChess";
+            lblChess.Size = new Size(86, 32);
+            lblChess.TabIndex = 1;
+            lblChess.Text = "CHESS";
+            // 
+            // lblOnline
+            // 
+            lblOnline.AutoSize = true;
+            lblOnline.Font = new Font("Segoe UI", 9F);
+            lblOnline.ForeColor = Color.FromArgb(190, 195, 205);
+            lblOnline.Location = new Point(83, 50);
+            lblOnline.Name = "lblOnline";
+            lblOnline.Size = new Size(49, 15);
+            lblOnline.TabIndex = 2;
+            lblOnline.Text = "ONLINE";
+            // 
+            // lblTitle
+            // 
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(235, 238, 245);
+            lblTitle.Location = new Point(150, 115);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(179, 41);
+            lblTitle.TabIndex = 1;
+            lblTitle.Text = "Main Menu";
+            // 
+            // btnProfile
+            // 
+            btnProfile.BackColor = Color.FromArgb(50, 130, 255);
+            btnProfile.FlatAppearance.BorderSize = 0;
+            btnProfile.FlatStyle = FlatStyle.Flat;
+            btnProfile.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnProfile.ForeColor = Color.White;
+            btnProfile.Location = new Point(60, 175);
+            btnProfile.Name = "btnProfile";
+            btnProfile.Size = new Size(360, 48);
+            btnProfile.TabIndex = 2;
+            btnProfile.Text = "Hồ sơ người chơi";
+            btnProfile.UseVisualStyleBackColor = false;
+            btnProfile.Click += btnProfile_Click;
+            // 
+            // btnFriend
+            // 
+            btnFriend.BackColor = Color.FromArgb(35, 45, 65);
+            btnFriend.FlatAppearance.BorderSize = 0;
+            btnFriend.FlatStyle = FlatStyle.Flat;
+            btnFriend.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnFriend.ForeColor = Color.White;
+            btnFriend.Location = new Point(60, 233);
+            btnFriend.Name = "btnFriend";
+            btnFriend.Size = new Size(360, 48);
+            btnFriend.TabIndex = 3;
+            btnFriend.Text = "Bạn bè";
+            btnFriend.UseVisualStyleBackColor = false;
+            btnFriend.Click += btnFriend_Click;
+            // 
+            // button1
+            // 
+            button1.BackColor = Color.FromArgb(35, 45, 65);
+            button1.FlatAppearance.BorderSize = 0;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            button1.ForeColor = Color.White;
+            button1.Location = new Point(60, 291);
+            button1.Name = "button1";
+            button1.Size = new Size(360, 48);
+            button1.TabIndex = 4;
+            button1.Text = "Ghép Trận Ngẫu Nhiên";
+            button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
+            // 
+            // btnCreateRoom
+            // 
+            btnCreateRoom.BackColor = Color.FromArgb(35, 45, 65);
+            btnCreateRoom.FlatAppearance.BorderSize = 0;
+            btnCreateRoom.FlatStyle = FlatStyle.Flat;
+            btnCreateRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnCreateRoom.ForeColor = Color.White;
+            btnCreateRoom.Location = new Point(60, 349);
+            btnCreateRoom.Name = "btnCreateRoom";
+            btnCreateRoom.Size = new Size(360, 48);
+            btnCreateRoom.TabIndex = 5;
+            btnCreateRoom.Text = "Tạo Phòng";
+            btnCreateRoom.UseVisualStyleBackColor = false;
+            btnCreateRoom.Click += btnCreateRoom_Click;
+            // 
+            // btnJoinRoom
+            // 
+            btnJoinRoom.BackColor = Color.FromArgb(35, 45, 65);
+            btnJoinRoom.FlatAppearance.BorderSize = 0;
+            btnJoinRoom.FlatStyle = FlatStyle.Flat;
+            btnJoinRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnJoinRoom.ForeColor = Color.White;
+            btnJoinRoom.Location = new Point(60, 407);
+            btnJoinRoom.Name = "btnJoinRoom";
+            btnJoinRoom.Size = new Size(360, 48);
+            btnJoinRoom.TabIndex = 6;
+            btnJoinRoom.Text = "Tìm / Vào Phòng";
+            btnJoinRoom.UseVisualStyleBackColor = false;
+            btnJoinRoom.Click += btnJoinRoom_Click;
+            // 
+            // pnlCreatedId
+            // 
+            pnlCreatedId.BackColor = Color.FromArgb(35, 45, 65);
+            pnlCreatedId.Controls.Add(txtCreatedRoomId);
+            pnlCreatedId.Location = new Point(60, 470);
+            pnlCreatedId.Name = "pnlCreatedId";
+            pnlCreatedId.Size = new Size(360, 52);
+            pnlCreatedId.TabIndex = 7;
+            pnlCreatedId.Visible = false;
+            // 
+            // txtCreatedRoomId
+            // 
+            txtCreatedRoomId.BackColor = Color.FromArgb(35, 45, 65);
+            txtCreatedRoomId.BorderStyle = BorderStyle.None;
+            txtCreatedRoomId.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            txtCreatedRoomId.ForeColor = Color.Cyan;
+            txtCreatedRoomId.Location = new Point(10, 14);
+            txtCreatedRoomId.Name = "txtCreatedRoomId";
+            txtCreatedRoomId.Size = new Size(340, 25);
+            txtCreatedRoomId.TabIndex = 0;
+            txtCreatedRoomId.TextAlign = HorizontalAlignment.Center;
+            // 
+            // pnlJoinId
+            // 
+            pnlJoinId.BackColor = Color.FromArgb(35, 45, 65);
+            pnlJoinId.Controls.Add(txtRoomId);
+            pnlJoinId.Location = new Point(60, 470);
+            pnlJoinId.Name = "pnlJoinId";
+            pnlJoinId.Size = new Size(360, 52);
+            pnlJoinId.TabIndex = 8;
+            pnlJoinId.Visible = false;
+            // 
+            // txtRoomId
+            // 
+            txtRoomId.BackColor = Color.FromArgb(35, 45, 65);
+            txtRoomId.BorderStyle = BorderStyle.None;
+            txtRoomId.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            txtRoomId.ForeColor = Color.White;
+            txtRoomId.Location = new Point(10, 16);
+            txtRoomId.Name = "txtRoomId";
+            txtRoomId.Size = new Size(340, 22);
+            txtRoomId.TabIndex = 0;
+            txtRoomId.TextAlign = HorizontalAlignment.Center;
+            // 
+            // btnCancelMatch
+            // 
+            btnCancelMatch.BackColor = Color.FromArgb(170, 60, 60);
+            btnCancelMatch.FlatAppearance.BorderSize = 0;
+            btnCancelMatch.FlatStyle = FlatStyle.Flat;
+            btnCancelMatch.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnCancelMatch.ForeColor = Color.White;
+            btnCancelMatch.Location = new Point(60, 532);
+            btnCancelMatch.Name = "btnCancelMatch";
+            btnCancelMatch.Size = new Size(360, 42);
+            btnCancelMatch.TabIndex = 9;
+            btnCancelMatch.Text = "Hủy ghép";
+            btnCancelMatch.UseVisualStyleBackColor = false;
+            btnCancelMatch.Visible = false;
+            btnCancelMatch.Click += btnCancelMatch_Click;
+            // 
+            // labelRoom
+            // 
+            labelRoom.BackColor = Color.Transparent;
+            labelRoom.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            labelRoom.ForeColor = Color.FromArgb(245, 220, 90);
+            labelRoom.Location = new Point(60, 575);
+            labelRoom.Name = "labelRoom";
+            labelRoom.Size = new Size(360, 24);
+            labelRoom.TabIndex = 10;
+            labelRoom.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // button4
+            // 
+            button4.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            button4.BackColor = Color.FromArgb(40, 46, 64);
+            button4.FlatAppearance.BorderSize = 0;
+            button4.FlatStyle = FlatStyle.Flat;
+            button4.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            button4.ForeColor = Color.White;
+            button4.Location = new Point(300, 599);
+            button4.Name = "button4";
+            button4.Size = new Size(120, 38);
+            button4.TabIndex = 11;
+            button4.Text = "Đăng xuất";
+            button4.UseVisualStyleBackColor = false;
+            button4.Click += button4_Click;
+            // 
+            // MainMenu
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackgroundImage = Properties.Resources.Bg;
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(1200, 964);
             Controls.Add(panelCard);
-
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            Name = "MainMenu";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Chess Online - Main Menu";
             panelCard.ResumeLayout(false);
             panelCard.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)PicLeaderboard).EndInit();
             panelIcon.ResumeLayout(false);
             panelIcon.PerformLayout();
             panelKnightBg.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)picKnight).EndInit();
             pnlCreatedId.ResumeLayout(false);
             pnlCreatedId.PerformLayout();
             pnlJoinId.ResumeLayout(false);
             pnlJoinId.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(picKnight)).EndInit();
             ResumeLayout(false);
         }
+        private PictureBox PicLeaderboard;
     }
 }
