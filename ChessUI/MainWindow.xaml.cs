@@ -41,10 +41,14 @@ namespace ChessUI
         private int _drawCountDown = 15;
         private bool _hasOfferedDraw = false;
 
+        //màu bàn cờ
+        private readonly Brush ColorLight = (Brush)new BrushConverter().ConvertFrom("#DDE7F0");
+        private readonly Brush ColorDark = (Brush)new BrushConverter().ConvertFrom("#4B7399");
+
         public MainWindow(string gameStartMessage)
         {
             InitializeComponent();
-            LoadBoardImageSafe();
+            //LoadBoardImageSafe();
             InitializedBoard();
 
             _networkClient = ClientManager.Instance;
@@ -349,11 +353,32 @@ namespace ChessUI
 
         private void InitializedBoard()
         {
-            for (int r = 0; r < 8; r++) for (int c = 0; c < 8; c++)
+            // Dọn dẹp trước khi vẽ
+            BoardSquareGrid.Children.Clear();
+            PieceGrid.Children.Clear();
+            HighlightGrid.Children.Clear();
+
+            for (int r = 0; r < 8; r++)
+            {
+                for (int c = 0; c < 8; c++)
                 {
-                    Image i = new Image(); pieceImages[r, c] = i; PieceGrid.Children.Add(i);
-                    Rectangle h = new Rectangle(); highlights[r, c] = h; HighlightGrid.Children.Add(h);
+                    // 1. VẼ Ô MÀU (Logic mới)
+                    Rectangle bgSquare = new Rectangle();
+                    bool isLightSquare = (r + c) % 2 == 0;
+                    bgSquare.Fill = isLightSquare ? ColorLight : ColorDark;
+                    BoardSquareGrid.Children.Add(bgSquare);
+
+                    // 2. TẠO ẢNH QUÂN CỜ (Logic cũ)
+                    Image i = new Image();
+                    pieceImages[r, c] = i;
+                    PieceGrid.Children.Add(i);
+
+                    // 3. TẠO HIGHLIGHT (Logic cũ)
+                    Rectangle h = new Rectangle();
+                    highlights[r, c] = h;
+                    HighlightGrid.Children.Add(h);
                 }
+            }
         }
 
         private void LoadBoardImageSafe()
