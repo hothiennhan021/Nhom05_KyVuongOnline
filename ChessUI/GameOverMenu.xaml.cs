@@ -18,26 +18,62 @@ namespace ChessUI
         // Hàm hiển thị thông tin (MainWindow sẽ gọi hàm này)
         public void ShowGameOver(string winner, string reason)
         {
-            // Cập nhật Text người thắng
+            // 1. Xử lý hiển thị Người thắng
             if (winner == "Draw")
             {
-                WinnerText.Text = "HÒA CỜ (DRAW)";
+                WinnerText.Text = "HÒA CỜ";
+                WinnerText.Foreground = System.Windows.Media.Brushes.LightGray;
             }
             else
             {
                 string winnerName = (winner == "White") ? "TRẮNG" : "ĐEN";
                 WinnerText.Text = $"{winnerName} THẮNG";
+
+                // Đổi màu chữ tùy theo bên thắng (Trắng -> Trắng, Đen -> Xám/Đỏ tùy ý)
+                WinnerText.Foreground = (winner == "White")
+                    ? System.Windows.Media.Brushes.White
+                    : System.Windows.Media.Brushes.Gray;
             }
 
-            // Cập nhật Lý do
-            ReasonText.Text = $"Lý do: {reason}";
+            // 2. Dịch lý do sang Tiếng Việt
+            string vietnameseReason = TranslateReason(reason);
+            ReasonText.Text = vietnameseReason;
 
-            // Mở khóa nút Chơi lại (đề phòng bị disable từ ván trước)
+            // 3. Reset trạng thái nút Chơi lại
             if (BtnRestart != null)
             {
                 BtnRestart.IsEnabled = true;
                 BtnRestart.Content = "CHƠI LẠI";
                 BtnRestart.Opacity = 1.0;
+            }
+        }
+
+        // Hàm phụ trợ để dịch các thuật ngữ cờ vua
+        private string TranslateReason(string reason)
+        {
+            switch (reason)
+            {
+                case "Checkmate":
+                    return "Chiếu bí";
+                case "Stalemate":
+                    return "Hòa pat (Hết nước đi)";
+                case "Resignation":
+                case "Resign":
+                    return "Đối thủ đầu hàng";
+                case "Timeout":
+                case "Time Out":
+                    return "Hết giờ";
+                case "Insufficient Material":
+                    return "Không đủ quân chiếu bí";
+                case "Threefold Repetition":
+                    return "Lặp lại 3 lần";
+                case "50-Move Rule":
+                    return "Luật 50 nước đi";
+                case "Draw Agreement":
+                    return "Thỏa thuận hòa";
+                default:
+                    // Nếu không khớp từ nào thì hiển thị nguyên gốc
+                    return reason;
             }
         }
 
@@ -52,7 +88,7 @@ namespace ChessUI
             }
         }
 
-        // --- CÁC SỰ KIỆN CLICK (Phải khớp với XAML) ---
+        // --- CÁC SỰ KIỆN CLICK ---
 
         private void Restart_Click(object sender, RoutedEventArgs e)
         {
@@ -63,9 +99,9 @@ namespace ChessUI
         {
             OptionSelected?.Invoke(Option.Exit);
         }
+
         private void Analyze_Click(object sender, RoutedEventArgs e)
         {
-            // Báo ra ngoài là người dùng chọn Phân tích
             OptionSelected?.Invoke(Option.Analyze);
         }
     }

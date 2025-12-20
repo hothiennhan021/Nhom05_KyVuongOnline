@@ -30,20 +30,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
         </Style>
-
-        <Style TargetType="Button" x:Key="ButtonStyle">
-            <Setter Property="FontFamily" Value="Segoe UI Light"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="Background" Value="{StaticResource StrokeColor}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ButtonColor}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="5"/>
-                </Style>
-            </Style.Resources>
-        </Style>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -77,6 +63,9 @@
                     <Grid.Background>
                         <SolidColorBrush Color="#202020"/>
                     </Grid.Background>
+
+                    <UniformGrid x:Name="BoardSquareGrid" Rows="8" Columns="8"/>
+
                     <UniformGrid x:Name="HighlightGrid" Rows="8" Columns="8"/>
                     <UniformGrid x:Name="PieceGrid" Rows="8" Columns="8" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <Canvas x:Name="ArrowCanvas" IsHitTestVisible="False" Width="600" Height="600"/>
@@ -191,17 +180,16 @@
 
         <ContentControl x:Name="MenuContainer"
                         Grid.ColumnSpan="3"
-                        Grid.RowSpan="3"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"
                         Panel.ZIndex="100"/>
 
         <local:GameOverMenu x:Name="MenuOverlay" 
+                            Visibility="Collapsed"
                             Grid.RowSpan="3" 
                             Grid.ColumnSpan="3"
-                            Visibility="Collapsed" 
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center"
-                            Panel.ZIndex="99"/>
+                            Panel.ZIndex="200"/>
     </Grid>
 </Window>
