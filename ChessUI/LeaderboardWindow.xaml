@@ -159,7 +159,9 @@
 
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource CardBorder}">
+                            <Border Style="{StaticResource CardBorder}"
+                                    Cursor="Hand"
+                                    MouseLeftButtonUp="Row_Click">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="62"/>

@@ -58,6 +58,25 @@ namespace ChessUI
                 MessageBox.Show("Leaderboard error: " + ex.Message);
             }
         }
+
+        private void Row_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is not System.Windows.FrameworkElement fe) return;
+            if (fe.DataContext is not LeaderboardRow row) return;
+
+            try
+            {
+                var win = new ChessUI.ProfileWindow(row.Username);
+                win.Owner = this;      // cho nó nổi lên đúng cửa sổ
+                win.ShowDialog();      // ProfileWindow tự gọi GET_PROFILE|username + GET_AVATAR|username
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Không mở được hồ sơ người chơi. Lỗi: " + ex.Message);
+            }
+        }
+
+
         private List<LeaderboardRow> ParseLeaderboard(string msg)
         {
             // LEADERBOARD|u1,1500,10,5;u2,1400,8,6
