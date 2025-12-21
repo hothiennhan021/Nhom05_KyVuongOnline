@@ -24,6 +24,9 @@
                 <Grid.Background>
                     <SolidColorBrush Color="#202020"/>
                 </Grid.Background>
+
+                <UniformGrid x:Name="BoardSquareGrid" Rows="8" Columns="8"/>
+
                 <UniformGrid x:Name="PieceGrid" Rows="8" Columns="8"/>
                 <Canvas x:Name="ArrowCanvas" Width="600" Height="600" IsHitTestVisible="False"/>
             </Grid>
@@ -80,8 +83,8 @@
 
             <Border Grid.Row="1" Background="#252525" CornerRadius="5" Margin="0,0,0,10">
                 <ListView x:Name="lstMoves" Background="Transparent" Foreground="White" 
-          SelectionMode="Single" 
-          SelectionChanged="lstMoves_SelectionChanged">
+                          SelectionMode="Single" 
+                          SelectionChanged="lstMoves_SelectionChanged">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="#" DisplayMemberBinding="{Binding TurnNumber}" Width="30"/>
@@ -91,9 +94,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" Cursor="Hand" MouseLeftButtonUp="WhiteMove_Clicked">
                                             <TextBlock Text="{Binding WhiteMove}" FontWeight="Bold" Width="40" Foreground="White" VerticalAlignment="Center"/>
-
                                             <Image Source="{Binding WhiteIcon}" Width="16" Height="16" Margin="5,0"/>
-
                                             <TextBlock Text="{Binding WhiteEval}" Foreground="{Binding WhiteColor}" FontSize="11" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -105,9 +106,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" Cursor="Hand" MouseLeftButtonUp="BlackMove_Clicked">
                                             <TextBlock Text="{Binding BlackMove}" FontWeight="Bold" Width="40" Foreground="White" VerticalAlignment="Center"/>
-
                                             <Image Source="{Binding BlackIcon}" Width="16" Height="16" Margin="5,0"/>
-
                                             <TextBlock Text="{Binding BlackEval}" Foreground="{Binding BlackColor}" FontSize="11" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </DataTemplate>

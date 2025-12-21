@@ -28,57 +28,50 @@ namespace ChessUI
 
         private readonly Image[,] _pieceImages = new Image[8, 8];
 
+        // --- MÀU BÀN CỜ (ĐỒNG BỘ VỚI MAINWINDOW) ---
+        private readonly Brush ColorLight = (Brush)new BrushConverter().ConvertFrom("#DDE7F0");
+        private readonly Brush ColorDark = (Brush)new BrushConverter().ConvertFrom("#4B7399");
+
         // --- CONSTRUCTOR ---
         public AnalysisWindow(List<string> moves)
         {
             InitializeComponent();
             _uciMoves = moves;
 
-            // 1. Load Board Image Safely
-            LoadBoardImageSafe();
-
-            // 2. Initialize UI Grid
-            InitBoardUI();
-
-            // 3. Initialize List
+            // LoadBoardImageSafe(); // <--- VÔ HIỆU HÓA LOAD ẢNH CŨ
+            InitBoardUI();           // <--- CẬP NHẬT LOGIC VẼ MÀU
             InitMoveList();
-
-            // 4. Load Start Position
             LoadBoardAt(-1);
-
-            // 5. Start Background Analysis
             RunAnalysis();
         }
 
         // --- UI INITIALIZATION ---
         private void LoadBoardImageSafe()
         {
-            try
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                using (var stream = assembly.GetManifestResourceStream("ChessUI.Assets.Board.png"))
-                {
-                    if (stream != null)
-                    {
-                        var bitmap = new BitmapImage();
-                        bitmap.BeginInit(); bitmap.StreamSource = stream; bitmap.CacheOption = BitmapCacheOption.OnLoad; bitmap.EndInit();
-                        BoardGrid.Background = new ImageBrush(bitmap);
-                    }
-                    else BoardGrid.Background = new SolidColorBrush(Color.FromRgb(32, 32, 32));
-                }
-            }
-            catch { BoardGrid.Background = new SolidColorBrush(Color.FromRgb(32, 32, 32)); }
+            // Code cũ, không dùng nữa
         }
+
         private void AnalysisWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _isClosing = true; // Đánh dấu là đang đóng để dừng các luồng chạy ngầm
+            _isClosing = true;
         }
+
         private void InitBoardUI()
         {
+            BoardSquareGrid.Children.Clear();
+            PieceGrid.Children.Clear();
+
             for (int r = 0; r < 8; r++)
             {
                 for (int c = 0; c < 8; c++)
                 {
+                    // 1. VẼ Ô MÀU (LOGIC MỚI)
+                    Rectangle bgSquare = new Rectangle();
+                    bool isLightSquare = (r + c) % 2 == 0;
+                    bgSquare.Fill = isLightSquare ? ColorLight : ColorDark;
+                    BoardSquareGrid.Children.Add(bgSquare);
+
+                    // 2. TẠO ẢNH QUÂN CỜ (LOGIC CŨ)
                     Image img = new Image();
                     _pieceImages[r, c] = img;
                     PieceGrid.Children.Add(img);
@@ -86,6 +79,7 @@ namespace ChessUI
             }
         }
 
+        // ... [GIỮ NGUYÊN CÁC HÀM CÒN LẠI KHÔNG THAY ĐỔI] ...
         private void InitMoveList()
         {
             _moveRecords.Clear();
@@ -107,41 +101,30 @@ namespace ChessUI
             lstMoves.ItemsSource = _moveRecords;
         }
 
-        // --- BOARD LOGIC ---
         private void LoadBoardAt(int index)
         {
             _currentIndex = index;
-
-            // Reconstruct GameState
             GameState tempState = new GameState(Player.White, Board.Initial());
             for (int i = 0; i <= index; i++)
             {
                 Move m = ParseHelper.ParseUci(tempState, _uciMoves[i]);
                 if (m != null) tempState.MakeMove(m);
             }
-
-            // Draw Pieces
             for (int r = 0; r < 8; r++)
                 for (int c = 0; c < 8; c++)
                     _pieceImages[r, c].Source = Images.GetImage(tempState.Board[r, c]);
 
-            // Draw Arrow
             if (_cache.ContainsKey(index)) DrawArrow(_cache[index].Result.move);
             else ArrowCanvas.Children.Clear();
 
-            // Sync List Selection
             SyncListSelection();
         }
 
-        // --- ANALYSIS LOGIC ---
         private async void RunAnalysis()
         {
             GameState tempState = new GameState(Player.White, Board.Initial());
-
-            // Analyze Start Pos
             await AnalyzeAndCache(-1, tempState.Board.ToFenString(Player.White));
 
-            // Analyze Moves
             for (int i = 0; i < _uciMoves.Count; i++)
             {
                 if (_isClosing) return;
@@ -170,23 +153,19 @@ namespace ChessUI
 
         private void UpdateListRecord(int i)
         {
-            if (_isClosing) return; // Không làm gì nếu đang đóng
+            if (_isClosing) return;
             if (!_cache.ContainsKey(i)) return;
 
-            // Get Current Data
             var currRes = _cache[i].Result;
             int? currCp = currRes.centipawns;
             int? currMate = currRes.mate;
             Dispatcher.Invoke(() =>
             {
-                if (_isClosing) return; // Kiểm tra lần nữa bên trong UI Thread
+                if (_isClosing) return;
 
                 var rec = _moveRecords[i / 2];
-                // ... (Code gán giá trị vào UI) ...
-
                 lstMoves.Items.Refresh();
             });
-            // Get Prev Data
             int? prevCp = 0;
             int? prevMate = null;
 
@@ -197,13 +176,11 @@ namespace ChessUI
             }
             else if (i == 0) prevCp = 0;
 
-            // Classify
             bool isWhiteTurn = (i % 2 == 0);
             var quality = MoveClassifier.Classify(prevCp, prevMate, currCp, currMate, isWhiteTurn);
             string color = MoveClassifier.GetColorHex(quality);
             string iconPath = MoveClassifier.GetIconPath(quality);
 
-            // Update UI
             Dispatcher.Invoke(() =>
             {
                 var rec = _moveRecords[i / 2];
@@ -215,8 +192,6 @@ namespace ChessUI
                 }
                 else
                 {
-                    // --- SỬA LỖI TẠI ĐÂY ---
-                    // Lấy giá trị số thực ra khỏi Nullable trước khi chia
                     double scoreVal = currCp.GetValueOrDefault();
                     displayScore = (scoreVal > 0 ? "+" : "") + (scoreVal / 100.0).ToString("0.0");
                 }
@@ -239,7 +214,6 @@ namespace ChessUI
 
         private void CalculateStats()
         {
-            // Counter Variables (Use 'Count' suffix to avoid conflict with UI names)
             int wBrilliantCount = 0, wBestCount = 0, wMistakeCount = 0, wBlunderCount = 0;
             int bBrilliantCount = 0, bBestCount = 0, bMistakeCount = 0, bBlunderCount = 0;
 
@@ -283,7 +257,6 @@ namespace ChessUI
                 }
             }
 
-            // Update UI TextBlocks
             Dispatcher.Invoke(() =>
             {
                 if (_isClosing) return;
@@ -299,7 +272,6 @@ namespace ChessUI
             });
         }
 
-        // --- EVENT HANDLERS ---
         private void WhiteMove_Clicked(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.DataContext is MoveRecord rec)
@@ -337,7 +309,6 @@ namespace ChessUI
             if (_currentIndex < _uciMoves.Count - 1) LoadBoardAt(_currentIndex + 1);
         }
 
-        // --- HELPERS ---
         private void SyncListSelection()
         {
             if (_currentIndex == -1) return;
