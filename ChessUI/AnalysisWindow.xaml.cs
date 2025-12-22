@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -24,7 +24,7 @@ namespace ChessUI
         private Dictionary<int, MoveAnalysis> _cache = new Dictionary<int, MoveAnalysis>();
         private bool _isClosing = false;
         private List<MoveRecord> _moveRecords = new List<MoveRecord>();
-        private int _currentIndex = -1; // -1: Vị trí bắt đầu
+        private int _currentIndex = -1; // -1: Start position
 
         private readonly Image[,] _pieceImages = new Image[8, 8];
 
