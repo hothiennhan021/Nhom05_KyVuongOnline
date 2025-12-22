@@ -50,6 +50,7 @@ namespace AccountUI
             SuspendLayout();
 
             // ==== FORM ====
+
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(1152, 720);
@@ -57,7 +58,9 @@ namespace AccountUI
             Text = "Quên mật khẩu";
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            BackColor = Color.Black;
+            BackgroundImage = Properties.Resources.Bg;
+            BackgroundImageLayout = ImageLayout.Stretch;
+
 
             // ==== CARD BO TRÒN ====
             panelCard.CornerRadius = 26;

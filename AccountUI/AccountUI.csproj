@@ -8,32 +8,12 @@
 	<UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <NuGetAuditMode>all</NuGetAuditMode>
+    <ApplicationIcon>icon_knight.ico</ApplicationIcon>
+    <AssemblyName>Kỳ Vương Online</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="SignupAssets\bg_signup_wide.png" />
-    <None Remove="SignupAssets\btn_signup_gradient.png" />
-    <None Remove="SignupAssets\icon_eye.png" />
-    <None Remove="SignupAssets\icon_eye_off.png" />
-    <None Remove="SignupAssets\logo_knight_white_192.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="SignupAssets\bg_signup_wide.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SignupAssets\btn_signup_gradient.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SignupAssets\icon_eye.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SignupAssets\icon_eye_off.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SignupAssets\logo_knight_white_192.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="icon_knight.ico" />
   </ItemGroup>
 
   <ItemGroup>
