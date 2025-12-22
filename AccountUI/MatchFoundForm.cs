@@ -10,15 +10,15 @@ namespace AccountUI
     public partial class MatchFoundForm : Form
     {
         // ================= CẤU HÌNH =================
-        private const int TOTAL_TIME_MS = 15000; // 15 giây
+        private const int TOTAL_TIME_MS = 15000; // 15 giây đếm ngược
         private int _currentTimeMs = TOTAL_TIME_MS;
 
         private bool _actionTaken = false;
         private SoundPlayer _musicPlayer;
 
-        // Màu sắc giống trong ảnh
-        private readonly Color HexCyan = Color.FromArgb(0, 200, 255); // Màu xanh sáng
-        private readonly Color HexBgCircle = Color.FromArgb(20, 30, 45); // Màu nền tối bên trong
+        // Màu sắc chủ đạo (Giữ nguyên màu xanh Cyan công nghệ)
+        private readonly Color HexCyan = Color.FromArgb(0, 200, 255);
+        private readonly Color HexBgCircle = Color.FromArgb(20, 30, 45);
 
         public event Action Accepted;
         public event Action Declined;
@@ -27,30 +27,29 @@ namespace AccountUI
         {
             InitializeComponent();
 
-            // Cấu hình Form
+            // Cấu hình Form không viền, hiện giữa
             this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent; // Hiện giữa form cha
+            this.StartPosition = FormStartPosition.CenterParent;
             this.DoubleBuffered = true;
             this.BackColor = HexBgCircle;
 
-            // Đảm bảo Form hình vuông để ra hình tròn đẹp
+            // Đảm bảo Form hình vuông
             if (this.Width != this.Height)
             {
                 int size = Math.Max(this.Width, this.Height);
                 this.Size = new Size(size, size);
             }
 
-            // --- CẮT FORM THÀNH HÌNH TRÒN (QUAN TRỌNG) ---
+            // --- CẮT FORM THÀNH HÌNH TRÒN ---
             try
             {
                 GraphicsPath path = new GraphicsPath();
-                // Cắt toàn bộ form thành hình tròn
                 path.AddEllipse(0, 0, this.Width, this.Height);
                 this.Region = new Region(path);
             }
             catch { }
 
-            // Phát nhạc
+            // Phát âm thanh thông báo
             PlaySoundSafe();
 
             // Timer chạy nhanh (50ms) để vòng tròn xoay mượt
@@ -97,26 +96,23 @@ namespace AccountUI
             catch { }
         }
 
-        // --- VẼ GIAO DIỆN (VẼ VÒNG TRÒN PROGRESS) ---
+        // --- VẼ GIAO DIỆN (VÒNG TRÒN ĐẾM NGƯỢC) ---
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
 
-            // Bật khử răng cưa để hình tròn mịn
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            int thickness = 8; // Độ dày viền xanh
-            // Tính toán để vẽ viền sát mép nhưng không bị cắt mất
+            int thickness = 8; // Độ dày viền
             int margin = 2;
             int diameter = this.Width - (margin * 2);
             int x = margin;
             int y = margin;
 
             // 1. Vẽ viền mờ (Background Ring)
-            using (Pen p = new Pen(Color.FromArgb(50, 255, 255, 255), thickness)) // Màu trắng mờ
+            using (Pen p = new Pen(Color.FromArgb(50, 255, 255, 255), thickness))
             {
-                // Thụt vào 1 chút để bằng với vòng xanh
                 e.Graphics.DrawEllipse(p, x + thickness / 2, y + thickness / 2, diameter - thickness, diameter - thickness);
             }
 
@@ -126,11 +122,10 @@ namespace AccountUI
 
             using (Pen p = new Pen(HexCyan, thickness))
             {
-                p.StartCap = LineCap.Round; // Đầu bo tròn
-                p.EndCap = LineCap.Round;   // Đuôi bo tròn
+                p.StartCap = LineCap.Round;
+                p.EndCap = LineCap.Round;
 
-                // Vẽ cung tròn (-90 là bắt đầu từ đỉnh 12h)
-                // rect phải trừ đi độ dày bút vẽ để nằm gọn trong form
+                // Vẽ cung tròn xoay ngược chiều kim đồng hồ (-90 độ là hướng 12h)
                 e.Graphics.DrawArc(p, x + thickness / 2, y + thickness / 2, diameter - thickness, diameter - thickness, -90, sweepAngle);
             }
         }
@@ -140,16 +135,15 @@ namespace AccountUI
             if (_actionTaken) return;
 
             _currentTimeMs -= 50;
-            this.Invalidate(); // Vẽ lại để vòng tròn xoay
+            this.Invalidate(); // Vẽ lại form
 
             if (_currentTimeMs <= 0)
             {
-                HandleAction(false); // Hết giờ -> Từ chối
+                HandleAction(false); // Hết giờ -> Tự động từ chối
             }
         }
 
         // --- XỬ LÝ NÚT BẤM ---
-
         private void btnAccept_Click(object sender, EventArgs e)
         {
             HandleAction(true);
@@ -157,13 +151,10 @@ namespace AccountUI
 
         private void btnDecline_Click(object sender, EventArgs e)
         {
-            // Tắt nhạc ngay khi bấm
             StopMusic();
-
             try { timerCountdown?.Stop(); } catch { }
 
             MessageBox.Show("Bạn đã từ chối trận đấu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
             HandleAction(false);
         }
 
@@ -202,7 +193,7 @@ namespace AccountUI
             }
         }
 
-        // Hover Effect
+        // Hiệu ứng Hover nút Từ chối
         private void btnDecline_MouseEnter(object sender, EventArgs e)
         {
             try { if (sender is Button b) b.ForeColor = Color.Red; } catch { }

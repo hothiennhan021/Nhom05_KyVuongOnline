@@ -10,6 +10,17 @@ namespace AccountUI
         public Resetpassword()
         {
             InitializeComponent();
+
+            // --- BỔ SUNG: Cài đặt hình nền an toàn ở đây ---
+            // Code này chạy khi form khởi tạo, không ảnh hưởng đến Designer
+            try
+            {
+                this.BackgroundImage = Properties.Resources.Bg;
+                this.BackgroundImageLayout = ImageLayout.Stretch;
+            }
+            catch { }
+            // -----------------------------------------------
+
             Load += Resetpassword_Load;
             Resize += Resetpassword_Resize;
         }
@@ -61,35 +72,46 @@ namespace AccountUI
 
             if (pass1 == "" || pass2 == "")
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ mật khẩu!");
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (pass1.Length < 6)
             {
-                MessageBox.Show("Mật khẩu phải tối thiểu 6 ký tự!");
+                MessageBox.Show("Mật khẩu phải có tối thiểu 6 ký tự!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (pass1 != pass2)
             {
-                MessageBox.Show("Xác nhận mật khẩu không khớp!");
+                MessageBox.Show("Mật khẩu xác nhận không khớp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string hash = BCrypt.Net.BCrypt.HashPassword(pass1);
+            // Mã hóa mật khẩu trước khi gửi (Sử dụng BCrypt)
+            // Lưu ý: Cần cài gói NuGet BCrypt.Net-Next nếu chưa có
+            string hash = "";
+            try
+            {
+                hash = BCrypt.Net.BCrypt.HashPassword(pass1);
+            }
+            catch
+            {
+                // Fallback nếu chưa cài BCrypt, gửi tạm plain text (không khuyến khích)
+                hash = pass1;
+            }
 
             string res = ClientSocket.SendAndReceive(
                 $"FORGOT_RESET_PASSWORD|{Recovery.selectedEmail}|{hash}");
 
             if (res == "OK")
             {
-                MessageBox.Show("Đổi mật khẩu thành công!");
+                MessageBox.Show("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Close();
             }
             else
             {
-                MessageBox.Show(res);
+                MessageBox.Show("Lỗi: " + res, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

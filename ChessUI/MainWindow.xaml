@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChessUI"
         mc:Ignorable="d"
-        Title="Chess Online"
+        Title="Kỳ Vương Online"
         Closing="Window_Closing"
         WindowStartupLocation="CenterScreen"
         Background="#202020"
@@ -49,8 +49,8 @@
             <Border Grid.Row="0" Background="#303030" CornerRadius="5" Padding="10" Margin="0,0,0,5">
                 <Grid>
                     <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock x:Name="lblOpponentName" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                        <TextBlock x:Name="lblOpponentElo" Foreground="Gray" FontSize="12"/>
+                        <TextBlock x:Name="lblOpponentName" Foreground="White" FontWeight="Bold" FontSize="16" Text="Đối thủ"/>
+                        <TextBlock x:Name="lblOpponentElo" Foreground="Gray" FontSize="12" Text="Elo: ????"/>
                     </StackPanel>
                     <Border Background="Black" CornerRadius="3" Padding="10,5" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock x:Name="lblBlackTime" Text="05:00" Foreground="White" FontSize="24" FontFamily="Consolas" FontWeight="Bold"/>
@@ -65,7 +65,6 @@
                     </Grid.Background>
 
                     <UniformGrid x:Name="BoardSquareGrid" Rows="8" Columns="8"/>
-
                     <UniformGrid x:Name="HighlightGrid" Rows="8" Columns="8"/>
                     <UniformGrid x:Name="PieceGrid" Rows="8" Columns="8" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <Canvas x:Name="ArrowCanvas" IsHitTestVisible="False" Width="600" Height="600"/>
@@ -75,8 +74,8 @@
             <Border Grid.Row="2" Background="#303030" CornerRadius="5" Padding="10" Margin="0,5,0,0">
                 <Grid>
                     <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock x:Name="lblYourName" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                        <TextBlock x:Name="lblYourElo" Foreground="Gray" FontSize="12"/>
+                        <TextBlock x:Name="lblYourName" Foreground="White" FontWeight="Bold" FontSize="16" Text="Bạn"/>
+                        <TextBlock x:Name="lblYourElo" Foreground="Gray" FontSize="12" Text="Elo: ????"/>
                     </StackPanel>
                     <Border Background="Black" CornerRadius="3" Padding="10,5" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock x:Name="lblWhiteTime" Text="05:00" Foreground="White" FontSize="24" FontFamily="Consolas" FontWeight="Bold"/>
@@ -107,7 +106,7 @@
 
                 <Border x:Name="DrawRequestBorder" Grid.Row="1" VerticalAlignment="Bottom" Background="#E6222222" BorderBrush="#FFD700" BorderThickness="1" CornerRadius="5" Padding="10" Margin="5" Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock x:Name="lblDrawTimer" Text="Đối thủ xin hòa (15s)" Foreground="White" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBlock x:Name="lblDrawTimer" Text="Đối thủ muốn xin hòa (15s)" Foreground="White" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,5"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button Content="Đồng ý" Width="70" Background="#4CAF50" Foreground="White" Margin="5" Click="BtnAcceptDraw_Click" Cursor="Hand">
                                 <Button.Template>
@@ -147,7 +146,7 @@
                         </Button.Template>
                     </Button>
 
-                    <Button x:Name="btnResign" Grid.Column="1" Content="Đầu hàng" Height="30" Margin="5,0,0,0" Background="#800" Foreground="White" BorderThickness="0" Click="btnResign_Click" Cursor="Hand">
+                    <Button x:Name="btnResign" Grid.Column="1" Content="Đầu Hàng" Height="30" Margin="5,0,0,0" Background="#800" Foreground="White" BorderThickness="0" Click="btnResign_Click" Cursor="Hand">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="{TemplateBinding Background}" CornerRadius="3" BorderBrush="#A00" BorderThickness="1">

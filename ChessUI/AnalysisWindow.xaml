@@ -24,6 +24,8 @@
                 <Grid.Background>
                     <SolidColorBrush Color="#202020"/>
                 </Grid.Background>
+
+                <UniformGrid x:Name="BoardSquareGrid" Rows="8" Columns="8"/>
                 <UniformGrid x:Name="PieceGrid" Rows="8" Columns="8"/>
                 <Canvas x:Name="ArrowCanvas" Width="600" Height="600" IsHitTestVisible="False"/>
             </Grid>
@@ -53,25 +55,25 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Thống Kê" Foreground="White" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="White" Foreground="White" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="0" Grid.Column="3" Text="Black" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Trắng" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="3" Text="Đen" Foreground="White" HorizontalAlignment="Center"/>
 
-                    <TextBlock Grid.Row="1" Text="Brilliant" Foreground="#1AB5B8" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Text="Thiên Tài (!!)" Foreground="#1AB5B8" VerticalAlignment="Center"/>
                     <TextBlock x:Name="wBrilliant" Grid.Row="1" Grid.Column="1" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Image Source="Assets/Icons/brilliant.png" Grid.Row="1" Grid.Column="2" Width="20" Height="20"/>
                     <TextBlock x:Name="bBrilliant" Grid.Row="1" Grid.Column="3" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                    <TextBlock Grid.Row="2" Text="Best" Foreground="#6BC235" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="2" Text="Tốt Nhất" Foreground="#6BC235" VerticalAlignment="Center"/>
                     <TextBlock x:Name="wBest" Grid.Row="2" Grid.Column="1" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Image Source="Assets/Icons/best.png" Grid.Row="2" Grid.Column="2" Width="20" Height="20"/>
                     <TextBlock x:Name="bBest" Grid.Row="2" Grid.Column="3" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                    <TextBlock Grid.Row="3" Text="Mistake" Foreground="#FFA333" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="3" Text="Sai Lầm (?)" Foreground="#FFA333" VerticalAlignment="Center"/>
                     <TextBlock x:Name="wMistake" Grid.Row="3" Grid.Column="1" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Image Source="Assets/Icons/mistake.png" Grid.Row="3" Grid.Column="2" Width="20" Height="20"/>
                     <TextBlock x:Name="bMistake" Grid.Row="3" Grid.Column="3" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                    <TextBlock Grid.Row="4" Text="Blunder" Foreground="#FA412D" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="4" Text="Đi Sót (??)" Foreground="#FA412D" VerticalAlignment="Center"/>
                     <TextBlock x:Name="wBlunder" Grid.Row="4" Grid.Column="1" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Image Source="Assets/Icons/blunder.png" Grid.Row="4" Grid.Column="2" Width="20" Height="20"/>
                     <TextBlock x:Name="bBlunder" Grid.Row="4" Grid.Column="3" Text="-" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -86,7 +88,7 @@
                         <GridView>
                             <GridViewColumn Header="#" DisplayMemberBinding="{Binding TurnNumber}" Width="30"/>
 
-                            <GridViewColumn Header="White" Width="140">
+                            <GridViewColumn Header="Trắng" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" Cursor="Hand" MouseLeftButtonUp="WhiteMove_Clicked">
@@ -100,7 +102,7 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="Black" Width="140">
+                            <GridViewColumn Header="Đen" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" Cursor="Hand" MouseLeftButtonUp="BlackMove_Clicked">
@@ -119,8 +121,8 @@
             </Border>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="❮ Prev" Width="80" Height="30" Click="btnPrev_Click" Background="#444" Foreground="White" Margin="5"/>
-                <Button Content="Next ❯" Width="80" Height="30" Click="btnNext_Click" Background="#444" Foreground="White" Margin="5"/>
+                <Button Content="❮ Trước" Width="80" Height="30" Click="btnPrev_Click" Background="#444" Foreground="White" Margin="5"/>
+                <Button Content="Sau ❯" Width="80" Height="30" Click="btnNext_Click" Background="#444" Foreground="White" Margin="5"/>
             </StackPanel>
         </Grid>
     </Grid>

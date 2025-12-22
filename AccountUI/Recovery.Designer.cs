@@ -10,6 +10,7 @@ namespace AccountUI
         private RoundedPanel panelCard;
         private PictureBox pictureLogo;
         private Label lblAppName;
+        private Label lblOnline; // <--- ĐÃ THÊM: Label Online
         private Label lblTitle;
         private Label lblSubTitle;
         private Label lblEmail;
@@ -34,6 +35,7 @@ namespace AccountUI
             panelCard = new RoundedPanel();
             pictureLogo = new PictureBox();
             lblAppName = new Label();
+            lblOnline = new Label(); // <--- Khởi tạo
             lblTitle = new Label();
             lblSubTitle = new Label();
             lblEmail = new Label();
@@ -72,19 +74,27 @@ namespace AccountUI
             pictureLogo.SizeMode = PictureBoxSizeMode.Zoom;
             pictureLogo.Image = Properties.Resources.icon_knight;
 
-            // ==== CHESS ONLINE ====
+            // ==== TÊN ỨNG DỤNG: KỲ VƯƠNG ====
             lblAppName.AutoSize = true;
-            lblAppName.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblAppName.Font = new Font("Segoe UI", 16F, FontStyle.Bold); // Tăng size lên chút cho đẹp
             lblAppName.ForeColor = Color.White;
-            lblAppName.Location = new Point(104, 36);
-            lblAppName.Text = "CHESS ONLINE";
+            lblAppName.Location = new Point(100, 20); // Đẩy lên một chút
+            lblAppName.Text = "KỲ VƯƠNG";
 
-            // ==== TITLE ====
+            // ==== [MỚI] LABEL: TRỰC TUYẾN ====
+            lblOnline.AutoSize = true;
+            lblOnline.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblOnline.ForeColor = Color.DeepSkyBlue; // Màu xanh công nghệ
+            lblOnline.Location = new Point(104, 52); // Nằm ngay dưới chữ Kỳ Vương
+            lblOnline.Text = "ONLINE";
+            // =================================
+
+            // ==== TITLE: QUÊN MẬT KHẨU ====
             lblTitle.AutoSize = true;
             lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Location = new Point(32, 104);
-            lblTitle.Text = "Forgot Password";
+            lblTitle.Text = "QUÊN MẬT KHẨU";
 
             // ==== SUBTITLE ====
             lblSubTitle.AutoSize = true;
@@ -167,6 +177,7 @@ namespace AccountUI
             // ADD TO CARD
             panelCard.Controls.Add(pictureLogo);
             panelCard.Controls.Add(lblAppName);
+            panelCard.Controls.Add(lblOnline); // <--- Đã thêm vào Controls
             panelCard.Controls.Add(lblTitle);
             panelCard.Controls.Add(lblSubTitle);
             panelCard.Controls.Add(lblEmail);

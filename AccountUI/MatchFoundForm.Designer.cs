@@ -23,7 +23,7 @@
             this.SuspendLayout();
 
             // 
-            // lblTitle (Chữ MATCH FOUND)
+            // lblTitle (TIÊU ĐỀ: TÌM THẤY TRẬN)
             // 
             this.lblTitle.BackColor = System.Drawing.Color.Transparent;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
@@ -32,11 +32,11 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(350, 40);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "MATCH FOUND";
+            this.lblTitle.Text = "TÌM THẤY TRẬN"; // Đã Việt hóa
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             // 
-            // lblSub (Chữ nhỏ NetChess • Ranked)
+            // lblSub (PHỤ ĐỀ: Kỳ Vương • Xếp Hạng)
             // 
             this.lblSub.BackColor = System.Drawing.Color.Transparent;
             this.lblSub.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -45,11 +45,11 @@
             this.lblSub.Name = "lblSub";
             this.lblSub.Size = new System.Drawing.Size(350, 20);
             this.lblSub.TabIndex = 1;
-            this.lblSub.Text = "NetChess • Ranked";
+            this.lblSub.Text = "Kỳ Vương • Xếp Hạng"; // Đã Việt hóa và đồng bộ tên game
             this.lblSub.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             // 
-            // btnAccept (Nút ACCEPT)
+            // btnAccept (NÚT CHẤP NHẬN)
             // 
             this.btnAccept.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(40)))));
             this.btnAccept.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -60,16 +60,16 @@
             this.btnAccept.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAccept.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnAccept.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(200)))), ((int)(((byte)(255)))));
-            this.btnAccept.Location = new System.Drawing.Point(95, 220); // Đã căn giữa cho form 350
+            this.btnAccept.Location = new System.Drawing.Point(95, 220);
             this.btnAccept.Name = "btnAccept";
             this.btnAccept.Size = new System.Drawing.Size(160, 45);
             this.btnAccept.TabIndex = 2;
-            this.btnAccept.Text = "ACCEPT!";
+            this.btnAccept.Text = "CHẤP NHẬN!"; // Đã Việt hóa
             this.btnAccept.UseVisualStyleBackColor = false;
             this.btnAccept.Click += new System.EventHandler(this.btnAccept_Click);
 
             // 
-            // btnDecline (Nút Decline)
+            // btnDecline (NÚT TỪ CHỐI)
             // 
             this.btnDecline.BackColor = System.Drawing.Color.Transparent;
             this.btnDecline.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -77,13 +77,13 @@
             this.btnDecline.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnDecline.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnDecline.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDecline.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnDecline.Font = new System.Drawing.Font("Segoe UI", 9F); // Tăng size font lên 9 cho dễ đọc
             this.btnDecline.ForeColor = System.Drawing.Color.Gray;
-            this.btnDecline.Location = new System.Drawing.Point(125, 275); // Đã căn giữa
+            this.btnDecline.Location = new System.Drawing.Point(125, 275);
             this.btnDecline.Name = "btnDecline";
             this.btnDecline.Size = new System.Drawing.Size(100, 25);
             this.btnDecline.TabIndex = 3;
-            this.btnDecline.Text = "Decline";
+            this.btnDecline.Text = "Từ chối"; // Đã Việt hóa
             this.btnDecline.UseVisualStyleBackColor = false;
             this.btnDecline.Click += new System.EventHandler(this.btnDecline_Click);
             this.btnDecline.MouseEnter += new System.EventHandler(this.btnDecline_MouseEnter);
@@ -93,7 +93,7 @@
             // timerCountdown
             // 
             this.timerCountdown.Enabled = true;
-            this.timerCountdown.Interval = 50; // Chạy nhanh để vòng xoay mượt
+            this.timerCountdown.Interval = 50;
             this.timerCountdown.Tick += new System.EventHandler(this.timerCountdown_Tick);
 
             // 
@@ -111,7 +111,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "MatchFoundForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "MatchFoundForm";
+            this.Text = "Tìm Thấy Trận"; // Tên Form tiếng Việt
             this.TopMost = true;
             this.ResumeLayout(false);
         }
@@ -124,4 +124,4 @@
         private System.Windows.Forms.Button btnDecline;
         private System.Windows.Forms.Timer timerCountdown;
     }
-}
+}   

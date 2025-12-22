@@ -9,10 +9,8 @@
         WindowStyle="None"
         AllowsTransparency="True">
 
-    <!-- =================== RESOURCES (STYLE + EFFECT + ANIMATION) =================== -->
     <Window.Resources>
 
-        <!-- Fade In Animation -->
         <Storyboard x:Key="FadeInAnimation">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
                              From="0" To="1"
@@ -25,7 +23,6 @@
                              Duration="0:0:0.25" />
         </Storyboard>
 
-        <!-- Rounded Button -->
         <Style x:Key="RoundedButton" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -44,13 +41,11 @@
                         </Border>
 
                         <ControlTemplate.Triggers>
-                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" 
                                         Value="#6ab0ff"/>
                             </Trigger>
 
-                            <!-- Pressed -->
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" 
                                         Value="#2f85ff"/>
@@ -69,7 +64,6 @@
 
     </Window.Resources>
 
-    <!-- =================== POPUP CONTAINER =================== -->
     <Grid Opacity="0" RenderTransformOrigin="0.5,0.5">
         <Grid.RenderTransform>
             <ScaleTransform ScaleX="1" ScaleY="1"/>
@@ -81,7 +75,6 @@
             </EventTrigger>
         </Grid.Triggers>
 
-        <!-- BACKGROUND SHADOW -->
         <Border Background="#AA000000" CornerRadius="20" Padding="2">
             <Border.Effect>
                 <DropShadowEffect Color="Black"
@@ -90,7 +83,6 @@
                                   Opacity="0.7"/>
             </Border.Effect>
 
-            <!-- MAIN CONTENT -->
             <Border CornerRadius="18" BorderBrush="#4da3ff" BorderThickness="3" Background="#111111">
                 <StackPanel Margin="20" HorizontalAlignment="Center">
 

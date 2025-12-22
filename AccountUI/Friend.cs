@@ -4,7 +4,8 @@ using System.Windows.Forms;
 using ChessClient;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using System.Drawing;
+using System.Threading.Tasks;
 
 namespace AccountUI
 {
@@ -22,14 +23,11 @@ namespace AccountUI
             await LoadFriendRequestsAsync();
         }
 
-
         // 2. Hàm hỗ trợ: Tải danh sách bạn bè từ Server
-        // Hàm tải danh sách bạn bè
         private async Task LoadFriendListAsync()
         {
             string response = await SendAndWaitAsync("FRIEND_GET_LIST", "FRIEND_LIST|", 4000);
             if (string.IsNullOrWhiteSpace(response)) return;
-
 
             lbFriends.Items.Clear();
 
@@ -37,9 +35,9 @@ namespace AccountUI
             if (firstSplitIndex == -1) return;
 
             string data = response.Substring(firstSplitIndex + 1)
-                                  .Replace("\0", "")
-                                  .Trim()
-                                  .TrimEnd(';');
+                                .Replace("\0", "")
+                                .Trim()
+                                .TrimEnd(';');
 
             if (string.IsNullOrWhiteSpace(data)) return;
 
@@ -68,7 +66,6 @@ namespace AccountUI
             foreach (var item in sortedList) lbFriends.Items.Add(item);
         }
 
-
         // Hàm tải lời mời (Clean Version)
         private async Task LoadFriendRequestsAsync()
         {
@@ -81,15 +78,16 @@ namespace AccountUI
             if (firstSplitIndex == -1) return;
 
             string data = response.Substring(firstSplitIndex + 1)
-                                  .Replace("\0", "")
-                                  .Trim()
-                                  .TrimEnd(';');
+                                .Replace("\0", "")
+                                .Trim()
+                                .TrimEnd(';');
 
             if (string.IsNullOrWhiteSpace(data)) return;
 
             foreach (var r in data.Split(';'))
                 if (!string.IsNullOrWhiteSpace(r)) lbRequests.Items.Add(r);
         }
+
         private async Task<string> SendAndWaitAsync(string cmd, string expectedPrefix, int timeoutMs)
         {
             await ClientManager.Instance.SendAsync(cmd);
@@ -108,16 +106,12 @@ namespace AccountUI
             return null;
         }
 
-
-
-
         // --- CÁC NÚT BẤM (BUTTON EVENTS) ---
-
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadFriendListAsync();
-            LoadFriendRequestsAsync(); 
+            LoadFriendRequestsAsync();
         }
 
         // Nút GỬI LỜI MỜI (Search & Add)
@@ -133,7 +127,8 @@ namespace AccountUI
             string msg = await SendAndWaitAsync($"FRIEND_SEARCH|{name}", "FRIEND_SEARCH_", 4000);
             if (msg == null)
             {
-                MessageBox.Show("Timeout khi gửi lời mời kết bạn.");
+                // Đã sửa "Timeout" -> "Hết thời gian chờ"
+                MessageBox.Show("Hết thời gian chờ khi gửi lời mời kết bạn.");
                 return;
             }
 
@@ -151,9 +146,8 @@ namespace AccountUI
             else if (msg == "FRIEND_SEARCH_NOT_LOGGED_IN")
                 MessageBox.Show("Bạn chưa đăng nhập hoặc phiên làm việc đã mất.");
             else
-                MessageBox.Show("Lỗi từ Server: " + msg);
+                MessageBox.Show("Lỗi từ Máy chủ: " + msg);
         }
-
 
         // Nút ĐỒNG Ý KẾT BẠN (Accept)
         private void btnAccept_Click(object sender, EventArgs e)
@@ -186,6 +180,7 @@ namespace AccountUI
                 }
                 else
                 {
+                    // Có thể thêm thông báo lỗi tiếng Việt ở đây nếu cần
                 }
             }
             catch (Exception ex)
@@ -245,12 +240,14 @@ namespace AccountUI
                 }
                 if (msg.StartsWith("FRIEND_REMOVE_FAIL"))
                 {
-                    MessageBox.Show("Lỗi: FRIEND_REMOVE_FAIL");
+                    // Đã sửa thông báo lỗi sang tiếng Việt
+                    MessageBox.Show("Lỗi: Xóa bạn thất bại.");
                     return;
                 }
             }
 
-            MessageBox.Show("Lỗi: Timeout khi xóa bạn");
+            // Đã sửa "Timeout" -> "Hết thời gian chờ"
+            MessageBox.Show("Lỗi: Hết thời gian chờ khi xóa bạn.");
         }
 
         private void tabControl1_DrawItem(object sender, DrawItemEventArgs e)
@@ -273,7 +270,6 @@ namespace AccountUI
             TextRenderer.DrawText(e.Graphics, page.Text, Font, paddedBounds, textColor);
         }
 
-
         private void lbFriends_DrawItem(object sender, DrawItemEventArgs e)
         {
             // 1. Kiểm tra an toàn (Chống crash)
@@ -284,7 +280,8 @@ namespace AccountUI
 
             // Tách dữ liệu
             string[] parts = rawData.Split('|');
-            string name = parts.Length > 0 ? parts[0] : "Unknown";
+            // Đã sửa "Unknown" -> "Không rõ"
+            string name = parts.Length > 0 ? parts[0] : "Không rõ";
             string elo = parts.Length > 1 ? parts[1] : "0";
             bool isOnline = (parts.Length > 2 && parts[2] == "true");
 
@@ -357,7 +354,6 @@ namespace AccountUI
             e.DrawFocusRectangle();
         }
 
-
         private void lbFriends_DoubleClick(object sender, EventArgs e)
         {
             // 1. Kiểm tra xem có đang chọn dòng nào không
@@ -374,11 +370,12 @@ namespace AccountUI
                 string friendName = parts[0];
                 string isOnline = (parts.Length > 2) ? parts[2] : "false";
 
-             
+
                 if (isOnline != "true")
                 {
+                    // Đã sửa "Offline" -> "ngoại tuyến"
                     MessageBox.Show(
-                        $"Người chơi {friendName} đang Offline, không thể thách đấu!",
+                        $"Người chơi {friendName} đang ngoại tuyến, không thể thách đấu!",
                         "Thông báo",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -394,9 +391,7 @@ namespace AccountUI
 
                 if (result == DialogResult.Yes)
                 {
-
                     ClientSocket.SendAndReceive($"CHALLENGE|{friendName}");
-
                 }
             }
             catch (Exception ex)
@@ -404,8 +399,5 @@ namespace AccountUI
 
             }
         }
-
-
     }
-
 }

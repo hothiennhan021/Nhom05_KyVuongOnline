@@ -18,6 +18,7 @@ namespace AccountUI
         private bool _allowCloseProgrammatically = false;
         private MatchFoundForm _currentMatchForm;
 
+        // Việt hóa placeholder
         private const string PLACEHOLDER_JOIN = "Nhập ID Phòng";
 
         private enum UIMode
@@ -44,6 +45,9 @@ namespace AccountUI
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
+            // Việt hóa Tiêu đề Form khi Load
+            this.Text = "Kỳ Vương Trực Tuyến - Menu Chính";
+
             CenterCard();
             SetupLogo();
             SetupPlaceholders();
@@ -71,6 +75,7 @@ namespace AccountUI
             panelCard.Top = (this.ClientSize.Height - panelCard.Height) / 2;
         }
 
+        // --- CẬP NHẬT LOGO SANG TIẾNG VIỆT HOÀN TOÀN ---
         private void SetupLogo()
         {
             try
@@ -80,17 +85,34 @@ namespace AccountUI
             }
             catch { }
 
-            int iconSize = 60;
+            int iconSize = 70;
             panelKnightBg.Size = new Size(iconSize, iconSize);
             picKnight.Dock = DockStyle.Fill;
 
-            lblChess.Font = new Font("Segoe UI", 18f, FontStyle.Bold);
-            lblOnline.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            // 1. Chữ KỲ VƯƠNG
+            lblChess.Text = "KỲ VƯƠNG ONLINE";
+            lblChess.Font = new Font("Segoe UI", 24f, FontStyle.Bold);
+            lblChess.ForeColor = Color.White;
+            lblChess.AutoSize = true;
 
-            int gapHorizontal = 12;
-            int gapVertical = 2;
+            // 2. Chữ TRỰC TUYẾN (Thay cho ONLINE)
+            lblOnline.Text = "TRỰC TUYẾN";
+            lblOnline.Font = new Font("Segoe UI", 11f, FontStyle.Bold); // Giảm size một chút vì chữ tiếng Việt dài hơn
+            lblOnline.ForeColor = Color.DeepSkyBlue;
+            lblOnline.AutoSize = true;
+
+            // 3. Chữ MENU CHÍNH (Thay cho Main Menu)
+            lblTitle.Text = "SẢNH CHỜ";
+
+            int gapHorizontal = 16;
+            int gapVertical = -5;
+
+            lblChess.PerformLayout();
+            lblOnline.PerformLayout();
+
             int textWidth = Math.Max(lblChess.Width, lblOnline.Width);
             int textHeight = lblChess.Height + gapVertical + lblOnline.Height;
+
             int blockWidth = iconSize + gapHorizontal + textWidth;
             int blockHeight = Math.Max(iconSize, textHeight);
 
@@ -100,8 +122,12 @@ namespace AccountUI
 
             int textStartX = panelKnightBg.Right + gapHorizontal;
             int textStartY = (panelIcon.Height - textHeight) / 2;
+
             lblChess.Location = new Point(textStartX, textStartY);
-            lblOnline.Location = new Point(textStartX + (lblChess.Width - lblOnline.Width) / 2, lblChess.Bottom + gapVertical);
+
+            // Căn giữa chữ TRỰC TUYẾN so với KỲ VƯƠNG
+            int onlineX = textStartX + (lblChess.Width - lblOnline.Width) / 2;
+            lblOnline.Location = new Point(onlineX, lblChess.Bottom + gapVertical);
 
             lblTitle.Left = (panelCard.Width - lblTitle.Width) / 2;
         }
@@ -138,7 +164,6 @@ namespace AccountUI
             txtCreatedRoomId.Font = new Font("Segoe UI", 14f, FontStyle.Bold);
             txtCreatedRoomId.BackColor = Color.FromArgb(35, 45, 65);
             txtCreatedRoomId.Text = "";
-            // ĐỔI MÀU Ở ĐÂY: Xanh Ngọc (Cyan) sáng, dễ nhìn
             txtCreatedRoomId.ForeColor = Color.Cyan;
 
             labelRoom.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
@@ -259,7 +284,7 @@ namespace AccountUI
         private async void button1_Click(object sender, EventArgs e)
         {
             SetMode(UIMode.Matching);
-            await SendRequest("FIND_GAME", "Đang tìm đối thủ.", button1);
+            await SendRequest("FIND_GAME", "Đang tìm đối thủ...", button1);
         }
 
         private async void btnCreateRoom_Click(object sender, EventArgs e)
@@ -267,7 +292,7 @@ namespace AccountUI
             SetMode(UIMode.Creating);
             txtCreatedRoomId.Text = "Đang tạo...";
             labelRoom.Text = "";
-            await SendRequest("CREATE_ROOM", "Đang tạo phòng.", btnCreateRoom);
+            await SendRequest("CREATE_ROOM", "Đang tạo phòng...", btnCreateRoom);
         }
 
         private async void btnJoinRoom_Click(object sender, EventArgs e)
@@ -290,7 +315,8 @@ namespace AccountUI
             if (_isListening) return;
             if (!ClientManager.Instance.IsConnected)
             {
-                MessageBox.Show("Mất kết nối tới máy chủ!");
+                // Dùng từ 'Server' theo yêu cầu
+                MessageBox.Show("Mất kết nối tới Server!");
                 return;
             }
             try
@@ -320,7 +346,8 @@ namespace AccountUI
                         {
                             _isListening = false;
                             if (_isLoggingOut) return;
-                            this.Invoke((MethodInvoker)(() => { MessageBox.Show("Mất kết nối!"); CloseMatchFormIfAny(); ResetUI(); }));
+                            // Dùng từ 'Server'
+                            this.Invoke((MethodInvoker)(() => { MessageBox.Show("Mất kết nối tới Server!"); CloseMatchFormIfAny(); ResetUI(); }));
                             return;
                         }
 
@@ -350,7 +377,7 @@ namespace AccountUI
                         else if (message.StartsWith("MATCH_CANCELLED"))
                         {
                             _isListening = false;
-                            this.Invoke((MethodInvoker)(() => { CloseMatchFormIfAny(); MessageBox.Show("Hủy trận."); ResetUI(); }));
+                            this.Invoke((MethodInvoker)(() => { CloseMatchFormIfAny(); MessageBox.Show("Đã hủy trận."); ResetUI(); }));
                             return;
                         }
                         else if (message.StartsWith("ROOM_CREATED"))
@@ -360,7 +387,7 @@ namespace AccountUI
                             this.Invoke((MethodInvoker)(() =>
                             {
                                 SetMode(UIMode.Creating);
-                                txtCreatedRoomId.Text = "ID: " + id;
+                                txtCreatedRoomId.Text = "Mã phòng: " + id;
                                 btnCreateRoom.Text = "Đang chờ...";
                             }));
                         }
@@ -427,7 +454,7 @@ namespace AccountUI
 
         private void button4_Click(object sender, EventArgs e)
         {
-            var ask = MessageBox.Show("Bạn có muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var ask = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (ask != DialogResult.Yes) return;
             _isLoggingOut = true;
             _isListening = false;
@@ -444,7 +471,7 @@ namespace AccountUI
             if (e.CloseReason == CloseReason.UserClosing && !_allowCloseProgrammatically)
             {
                 e.Cancel = true;
-                MessageBox.Show("Hãy dùng nút Đăng xuất.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Vui lòng sử dụng nút Đăng xuất.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -452,10 +479,9 @@ namespace AccountUI
         {
             try
             {
-                var win = new ChessUI.LeaderboardWindow(); // WPF window bạn đã tạo
+                var win = new ChessUI.LeaderboardWindow();
                 try
                 {
-                    // set owner để nó đứng trước MainMenu (không bắt buộc)
                     var helper = new System.Windows.Interop.WindowInteropHelper(win);
                     helper.Owner = this.Handle;
                 }
@@ -465,8 +491,10 @@ namespace AccountUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Không thể mở Leaderboard. Lỗi: " + ex.Message);
+                MessageBox.Show("Không thể mở Bảng xếp hạng. Lỗi: " + ex.Message);
             }
         }
+
+       
     }
 }

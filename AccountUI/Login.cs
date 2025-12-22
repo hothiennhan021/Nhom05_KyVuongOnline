@@ -15,6 +15,10 @@ namespace AccountUI
         private Color colorPlaceholder = Color.Silver; // Màu xám sáng (cho chữ gợi ý)
         private Color colorText = Color.White;         // Màu trắng (cho chữ khi nhập)
 
+        // HẰNG SỐ CHUỖI ĐỂ TRÁNH GÕ SAI
+        private const string STR_TK = "Tên tài khoản";
+        private const string STR_MK = "Mật khẩu";
+
         public Login()
         {
             InitializeComponent();
@@ -23,37 +27,37 @@ namespace AccountUI
 
         private void Login_Load(object sender, EventArgs e)
         {
-            // ===== ICON RESOURCE =====
+            // ===== TÀI NGUYÊN BIỂU TƯỢNG =====
             picKnight.Image = Properties.Resources.icon_knight;
             picUser.Image = Properties.Resources.icon_user;
             picLock.Image = Properties.Resources.icon_lock;
             picEye.Image = Properties.Resources.icon_eye_open;
 
-            // ===== SETUP GIAO DIỆN PLACEHOLDER BAN ĐẦU =====
+            // ===== THIẾT LẬP GIAO DIỆN GỢI Ý BAN ĐẦU =====
 
-            // 1. Username
-            txtUser.Text = "Username";
+            // 1. Tên tài khoản
+            txtUser.Text = STR_TK;
             txtUser.ForeColor = colorPlaceholder; // Dùng màu sáng hơn
 
-            // 2. Password 
-            txtPass.Text = "Password";
+            // 2. Mật khẩu 
+            txtPass.Text = STR_MK;
             txtPass.ForeColor = colorPlaceholder; // Dùng màu sáng hơn
 
-            // QUAN TRỌNG: Để hiện chữ "Password" rõ ràng
+            // QUAN TRỌNG: Để hiện chữ "Mật khẩu" rõ ràng (không bị mã hóa thành dấu sao)
             txtPass.PasswordChar = '\0';
             txtPass.UseSystemPasswordChar = false;
 
-            // ===== CÁC LOGIC VẼ GIAO DIỆN KHÁC (GIỮ NGUYÊN) =====
+            // ===== CÁC LOGIC VẼ GIAO DIỆN KHÁC =====
             SetupLayout();
             SetupEvents();
         }
 
         private void SetupEvents()
         {
-            // --- XỬ LÝ SỰ KIỆN USERNAME ---
+            // --- XỬ LÝ SỰ KIỆN NHẬP TÊN TÀI KHOẢN ---
             txtUser.Enter += (s, e) =>
             {
-                if (txtUser.Text == "Username")
+                if (txtUser.Text == STR_TK)
                 {
                     txtUser.Text = "";
                     txtUser.ForeColor = colorText; // Chuyển sang màu Trắng khi nhập
@@ -64,15 +68,15 @@ namespace AccountUI
             {
                 if (string.IsNullOrWhiteSpace(txtUser.Text))
                 {
-                    txtUser.Text = "Username";
+                    txtUser.Text = STR_TK;
                     txtUser.ForeColor = colorPlaceholder; // Về màu Xám sáng khi trống
                 }
             };
 
-            // --- XỬ LÝ SỰ KIỆN PASSWORD ---
+            // --- XỬ LÝ SỰ KIỆN NHẬP MẬT KHẨU ---
             txtPass.Enter += (s, e) =>
             {
-                if (txtPass.Text == "Password")
+                if (txtPass.Text == STR_MK)
                 {
                     txtPass.Text = "";
                     txtPass.ForeColor = colorText; // Chuyển sang màu Trắng
@@ -89,10 +93,10 @@ namespace AccountUI
             {
                 if (string.IsNullOrWhiteSpace(txtPass.Text))
                 {
-                    // Reset về trạng thái Placeholder
+                    // Reset về trạng thái Gợi ý
                     txtPass.UseSystemPasswordChar = false;
                     txtPass.PasswordChar = '\0'; // Xóa ký tự ẩn
-                    txtPass.Text = "Password";
+                    txtPass.Text = STR_MK;
                     txtPass.ForeColor = colorPlaceholder; // Về màu Xám sáng
 
                     showPass = false;
@@ -100,10 +104,10 @@ namespace AccountUI
                 }
             };
 
-            // --- XỬ LÝ ICON MẮT ---
+            // --- XỬ LÝ BIỂU TƯỢNG MẮT (ẨN/HIỆN MẬT KHẨU) ---
             picEye.Click += (s, e) =>
             {
-                if (txtPass.Text == "Password") return;
+                if (txtPass.Text == STR_MK) return;
 
                 showPass = !showPass;
 
@@ -122,7 +126,7 @@ namespace AccountUI
                 }
             };
 
-            // --- BUTTON LOGIN ---
+            // --- NÚT ĐĂNG NHẬP ---
             btnLogin.Click += async (s, e) => await DoLogin();
             RoundControl(btnLogin, 24);
         }
@@ -135,13 +139,13 @@ namespace AccountUI
             string tentk = txtUser.Text.Trim();
             string matkhau = txtPass.Text;
 
-            if (string.IsNullOrWhiteSpace(tentk) || tentk == "Username")
+            if (string.IsNullOrWhiteSpace(tentk) || tentk == STR_TK)
             {
                 MessageBox.Show("Vui lòng nhập tên tài khoản!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(matkhau) || matkhau == "Password")
+            if (string.IsNullOrWhiteSpace(matkhau) || matkhau == STR_MK)
             {
                 MessageBox.Show("Vui lòng nhập mật khẩu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -152,7 +156,10 @@ namespace AccountUI
 
             try
             {
+                // Giữ nguyên Server theo yêu cầu
                 await ClientManager.ConnectToServerAsync("127.0.0.1", 8888);
+
+                // Lưu ý: Chuỗi gửi đi (LOGIN) là giao thức nên giữ nguyên tiếng Anh để Server hiểu
                 string request = $"LOGIN|{tentk}|{matkhau}";
                 await ClientManager.Instance.SendAsync(request);
 
@@ -160,7 +167,7 @@ namespace AccountUI
 
                 if (string.IsNullOrEmpty(response))
                 {
-                    MessageBox.Show("Server không phản hồi.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Server không phản hồi.", "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     ResetButtonLogin();
                     return;
                 }
@@ -195,11 +202,11 @@ namespace AccountUI
         private void ResetButtonLogin()
         {
             btnLogin.Enabled = true;
-            btnLogin.Text = "LOGIN";
+            btnLogin.Text = "ĐĂNG NHẬP";
         }
 
         // =====================================================================
-        //  LAYOUT HELPER
+        //  HỖ TRỢ GIAO DIỆN (LAYOUT)
         // =====================================================================
         private void SetupLayout()
         {
@@ -208,7 +215,8 @@ namespace AccountUI
             picKnight.Dock = DockStyle.Fill;
             picKnight.SizeMode = PictureBoxSizeMode.Zoom;
 
-            lblChess.Font = new Font("Segoe UI", 20f, FontStyle.Bold);
+            // Cập nhật Font cho tên mới
+            lblChess.Font = new Font("Segoe UI", 18f, FontStyle.Bold); // Giảm size chút vì chữ tiếng Việt dài hơn
             lblOnline.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
             lblChess.AutoSize = true;
             lblOnline.AutoSize = true;

@@ -109,9 +109,10 @@ namespace AccountUI
             cardPanel.Controls.Add(btnSignup);
             cardPanel.Controls.Add(button2);
             cardPanel.CornerRadius = 32;
-            cardPanel.Location = new Point(240, 60);
+            cardPanel.Location = new Point(300, 75);
+            cardPanel.Margin = new Padding(4);
             cardPanel.Name = "cardPanel";
-            cardPanel.Size = new Size(720, 600);
+            cardPanel.Size = new Size(900, 750);
             cardPanel.TabIndex = 0;
             // 
             // panelHeader
@@ -120,9 +121,10 @@ namespace AccountUI
             panelHeader.Controls.Add(panelKnightBg);
             panelHeader.Controls.Add(labelBrand);
             panelHeader.Controls.Add(labelBrandSub);
-            panelHeader.Location = new Point(195, 19);
+            panelHeader.Location = new Point(244, 24);
+            panelHeader.Margin = new Padding(4);
             panelHeader.Name = "panelHeader";
-            panelHeader.Size = new Size(330, 100);
+            panelHeader.Size = new Size(412, 125);
             panelHeader.TabIndex = 0;
             // 
             // panelKnightBg
@@ -130,17 +132,19 @@ namespace AccountUI
             panelKnightBg.BackColor = Color.FromArgb(40, 46, 64);
             panelKnightBg.Controls.Add(logoPictureBox);
             panelKnightBg.CornerRadius = 18;
-            panelKnightBg.Location = new Point(0, 14);
+            panelKnightBg.Location = new Point(0, 18);
+            panelKnightBg.Margin = new Padding(4);
             panelKnightBg.Name = "panelKnightBg";
-            panelKnightBg.Size = new Size(72, 72);
+            panelKnightBg.Size = new Size(90, 90);
             panelKnightBg.TabIndex = 0;
             // 
             // logoPictureBox
             // 
             logoPictureBox.Dock = DockStyle.Fill;
             logoPictureBox.Location = new Point(0, 0);
+            logoPictureBox.Margin = new Padding(4);
             logoPictureBox.Name = "logoPictureBox";
-            logoPictureBox.Size = new Size(72, 72);
+            logoPictureBox.Size = new Size(90, 90);
             logoPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
             logoPictureBox.TabIndex = 0;
             logoPictureBox.TabStop = false;
@@ -150,20 +154,22 @@ namespace AccountUI
             labelBrand.AutoSize = true;
             labelBrand.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
             labelBrand.ForeColor = Color.White;
-            labelBrand.Location = new Point(90, 18);
+            labelBrand.Location = new Point(112, 22);
+            labelBrand.Margin = new Padding(4, 0, 4, 0);
             labelBrand.Name = "labelBrand";
-            labelBrand.Size = new Size(123, 46);
+            labelBrand.Size = new Size(233, 54);
             labelBrand.TabIndex = 1;
-            labelBrand.Text = "CHESS";
+            labelBrand.Text = "KỲ VƯƠNG";
             // 
             // labelBrandSub
             // 
             labelBrandSub.AutoSize = true;
-            labelBrandSub.Font = new Font("Segoe UI", 10F);
-            labelBrandSub.ForeColor = Color.FromArgb(190, 195, 205);
-            labelBrandSub.Location = new Point(94, 50);
+            labelBrandSub.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            labelBrandSub.ForeColor = Color.DeepSkyBlue;
+            labelBrandSub.Location = new Point(118, 62);
+            labelBrandSub.Margin = new Padding(4, 0, 4, 0);
             labelBrandSub.Name = "labelBrandSub";
-            labelBrandSub.Size = new Size(71, 23);
+            labelBrandSub.Size = new Size(103, 32);
             labelBrandSub.TabIndex = 2;
             labelBrandSub.Text = "ONLINE";
             // 
@@ -171,11 +177,12 @@ namespace AccountUI
             // 
             labelTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
             labelTitle.ForeColor = Color.FromArgb(235, 238, 245);
-            labelTitle.Location = new Point(0, 142);
+            labelTitle.Location = new Point(0, 178);
+            labelTitle.Margin = new Padding(4, 0, 4, 0);
             labelTitle.Name = "labelTitle";
-            labelTitle.Size = new Size(720, 50);
+            labelTitle.Size = new Size(900, 62);
             labelTitle.TabIndex = 1;
-            labelTitle.Text = "Register";
+            labelTitle.Text = "ĐĂNG KÝ TÀI KHOẢN";
             labelTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // panelUsername
@@ -183,10 +190,11 @@ namespace AccountUI
             panelUsername.BackColor = Color.FromArgb(35, 45, 65);
             panelUsername.Controls.Add(textBox1);
             panelUsername.CornerRadius = 16;
-            panelUsername.Location = new Point(60, 195);
+            panelUsername.Location = new Point(75, 244);
+            panelUsername.Margin = new Padding(4);
             panelUsername.Name = "panelUsername";
-            panelUsername.Padding = new Padding(14, 10, 14, 10);
-            panelUsername.Size = new Size(600, 48);
+            panelUsername.Padding = new Padding(18, 12, 18, 12);
+            panelUsername.Size = new Size(750, 60);
             panelUsername.TabIndex = 2;
             // 
             // textBox1
@@ -196,9 +204,10 @@ namespace AccountUI
             textBox1.Dock = DockStyle.Fill;
             textBox1.Font = new Font("Segoe UI", 11.5F);
             textBox1.ForeColor = Color.FromArgb(180, 182, 196);
-            textBox1.Location = new Point(14, 10);
+            textBox1.Location = new Point(18, 12);
+            textBox1.Margin = new Padding(4);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(572, 26);
+            textBox1.Size = new Size(714, 31);
             textBox1.TabIndex = 0;
             textBox1.Text = "Tên Đăng Nhập";
             textBox1.Enter += textBox1_Enter;
@@ -209,10 +218,11 @@ namespace AccountUI
             panelEmail.BackColor = Color.FromArgb(35, 45, 65);
             panelEmail.Controls.Add(txtEmail);
             panelEmail.CornerRadius = 16;
-            panelEmail.Location = new Point(60, 251);
+            panelEmail.Location = new Point(75, 314);
+            panelEmail.Margin = new Padding(4);
             panelEmail.Name = "panelEmail";
-            panelEmail.Padding = new Padding(14, 10, 14, 10);
-            panelEmail.Size = new Size(600, 48);
+            panelEmail.Padding = new Padding(18, 12, 18, 12);
+            panelEmail.Size = new Size(750, 60);
             panelEmail.TabIndex = 3;
             // 
             // txtEmail
@@ -222,9 +232,10 @@ namespace AccountUI
             txtEmail.Dock = DockStyle.Fill;
             txtEmail.Font = new Font("Segoe UI", 11.5F);
             txtEmail.ForeColor = Color.FromArgb(180, 182, 196);
-            txtEmail.Location = new Point(14, 10);
+            txtEmail.Location = new Point(18, 12);
+            txtEmail.Margin = new Padding(4);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(572, 26);
+            txtEmail.Size = new Size(714, 31);
             txtEmail.TabIndex = 0;
             txtEmail.Text = "Email";
             txtEmail.Enter += textBox2_Enter;
@@ -235,10 +246,11 @@ namespace AccountUI
             panelOtp.BackColor = Color.FromArgb(35, 45, 65);
             panelOtp.Controls.Add(txtOtp);
             panelOtp.CornerRadius = 16;
-            panelOtp.Location = new Point(60, 307);
+            panelOtp.Location = new Point(75, 384);
+            panelOtp.Margin = new Padding(4);
             panelOtp.Name = "panelOtp";
-            panelOtp.Padding = new Padding(14, 10, 14, 10);
-            panelOtp.Size = new Size(285, 48);
+            panelOtp.Padding = new Padding(18, 12, 18, 12);
+            panelOtp.Size = new Size(356, 60);
             panelOtp.TabIndex = 4;
             // 
             // txtOtp
@@ -248,9 +260,10 @@ namespace AccountUI
             txtOtp.Dock = DockStyle.Fill;
             txtOtp.Font = new Font("Segoe UI", 11.5F);
             txtOtp.ForeColor = Color.FromArgb(180, 182, 196);
-            txtOtp.Location = new Point(14, 10);
+            txtOtp.Location = new Point(18, 12);
+            txtOtp.Margin = new Padding(4);
             txtOtp.Name = "txtOtp";
-            txtOtp.Size = new Size(257, 26);
+            txtOtp.Size = new Size(320, 31);
             txtOtp.TabIndex = 0;
             txtOtp.Text = "Nhập mã OTP";
             txtOtp.Enter += txtOtp_Enter;
@@ -263,9 +276,10 @@ namespace AccountUI
             btnSendOtp.FlatStyle = FlatStyle.Flat;
             btnSendOtp.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnSendOtp.ForeColor = Color.White;
-            btnSendOtp.Location = new Point(402, 307);
+            btnSendOtp.Location = new Point(502, 384);
+            btnSendOtp.Margin = new Padding(4);
             btnSendOtp.Name = "btnSendOtp";
-            btnSendOtp.Size = new Size(100, 48);
+            btnSendOtp.Size = new Size(125, 60);
             btnSendOtp.TabIndex = 5;
             btnSendOtp.Text = "Gửi OTP";
             btnSendOtp.UseVisualStyleBackColor = false;
@@ -278,9 +292,10 @@ namespace AccountUI
             btnVerifyOtp.FlatStyle = FlatStyle.Flat;
             btnVerifyOtp.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnVerifyOtp.ForeColor = Color.White;
-            btnVerifyOtp.Location = new Point(528, 307);
+            btnVerifyOtp.Location = new Point(660, 384);
+            btnVerifyOtp.Margin = new Padding(4);
             btnVerifyOtp.Name = "btnVerifyOtp";
-            btnVerifyOtp.Size = new Size(100, 48);
+            btnVerifyOtp.Size = new Size(125, 60);
             btnVerifyOtp.TabIndex = 6;
             btnVerifyOtp.Text = "Xác nhận";
             btnVerifyOtp.UseVisualStyleBackColor = false;
@@ -291,10 +306,11 @@ namespace AccountUI
             panelFullName.BackColor = Color.FromArgb(35, 45, 65);
             panelFullName.Controls.Add(txtFullName);
             panelFullName.CornerRadius = 16;
-            panelFullName.Location = new Point(60, 363);
+            panelFullName.Location = new Point(75, 454);
+            panelFullName.Margin = new Padding(4);
             panelFullName.Name = "panelFullName";
-            panelFullName.Padding = new Padding(14, 10, 14, 10);
-            panelFullName.Size = new Size(285, 48);
+            panelFullName.Padding = new Padding(18, 12, 18, 12);
+            panelFullName.Size = new Size(356, 60);
             panelFullName.TabIndex = 7;
             // 
             // txtFullName
@@ -304,9 +320,10 @@ namespace AccountUI
             txtFullName.Dock = DockStyle.Fill;
             txtFullName.Font = new Font("Segoe UI", 11.5F);
             txtFullName.ForeColor = Color.FromArgb(180, 182, 196);
-            txtFullName.Location = new Point(14, 10);
+            txtFullName.Location = new Point(18, 12);
+            txtFullName.Margin = new Padding(4);
             txtFullName.Name = "txtFullName";
-            txtFullName.Size = new Size(257, 26);
+            txtFullName.Size = new Size(320, 31);
             txtFullName.TabIndex = 0;
             txtFullName.Text = "Họ và Tên";
             txtFullName.Enter += TxtFullName_Enter;
@@ -317,10 +334,11 @@ namespace AccountUI
             panelBirthday.BackColor = Color.FromArgb(35, 45, 65);
             panelBirthday.Controls.Add(dtpBirthday);
             panelBirthday.CornerRadius = 16;
-            panelBirthday.Location = new Point(375, 363);
+            panelBirthday.Location = new Point(469, 454);
+            panelBirthday.Margin = new Padding(4);
             panelBirthday.Name = "panelBirthday";
-            panelBirthday.Padding = new Padding(14, 6, 14, 6);
-            panelBirthday.Size = new Size(285, 48);
+            panelBirthday.Padding = new Padding(18, 8, 18, 8);
+            panelBirthday.Size = new Size(356, 60);
             panelBirthday.TabIndex = 8;
             // 
             // dtpBirthday
@@ -328,9 +346,10 @@ namespace AccountUI
             dtpBirthday.Dock = DockStyle.Fill;
             dtpBirthday.Font = new Font("Segoe UI", 11.5F);
             dtpBirthday.Format = DateTimePickerFormat.Short;
-            dtpBirthday.Location = new Point(14, 6);
+            dtpBirthday.Location = new Point(18, 8);
+            dtpBirthday.Margin = new Padding(4);
             dtpBirthday.Name = "dtpBirthday";
-            dtpBirthday.Size = new Size(257, 33);
+            dtpBirthday.Size = new Size(320, 38);
             dtpBirthday.TabIndex = 0;
             // 
             // panelPassword
@@ -340,9 +359,10 @@ namespace AccountUI
             panelPassword.Controls.Add(button_passwordshow);
             panelPassword.Controls.Add(button_passwordhide);
             panelPassword.CornerRadius = 16;
-            panelPassword.Location = new Point(60, 419);
+            panelPassword.Location = new Point(75, 524);
+            panelPassword.Margin = new Padding(4);
             panelPassword.Name = "panelPassword";
-            panelPassword.Size = new Size(285, 48);
+            panelPassword.Size = new Size(356, 60);
             panelPassword.TabIndex = 9;
             // 
             // textBox3
@@ -351,9 +371,10 @@ namespace AccountUI
             textBox3.BorderStyle = BorderStyle.None;
             textBox3.Font = new Font("Segoe UI", 11.5F);
             textBox3.ForeColor = Color.FromArgb(180, 182, 196);
-            textBox3.Location = new Point(14, 13);
+            textBox3.Location = new Point(18, 16);
+            textBox3.Margin = new Padding(4);
             textBox3.Name = "textBox3";
-            textBox3.Size = new Size(220, 26);
+            textBox3.Size = new Size(275, 31);
             textBox3.TabIndex = 0;
             textBox3.Text = "Mật Khẩu";
             textBox3.Enter += textBox3_Enter;
@@ -366,9 +387,10 @@ namespace AccountUI
             button_passwordshow.Cursor = Cursors.Hand;
             button_passwordshow.FlatAppearance.BorderSize = 0;
             button_passwordshow.FlatStyle = FlatStyle.Flat;
-            button_passwordshow.Location = new Point(247, 10);
+            button_passwordshow.Location = new Point(309, 12);
+            button_passwordshow.Margin = new Padding(4);
             button_passwordshow.Name = "button_passwordshow";
-            button_passwordshow.Size = new Size(28, 28);
+            button_passwordshow.Size = new Size(35, 35);
             button_passwordshow.TabIndex = 1;
             button_passwordshow.TabStop = false;
             button_passwordshow.UseVisualStyleBackColor = false;
@@ -381,9 +403,10 @@ namespace AccountUI
             button_passwordhide.Cursor = Cursors.Hand;
             button_passwordhide.FlatAppearance.BorderSize = 0;
             button_passwordhide.FlatStyle = FlatStyle.Flat;
-            button_passwordhide.Location = new Point(247, 10);
+            button_passwordhide.Location = new Point(309, 12);
+            button_passwordhide.Margin = new Padding(4);
             button_passwordhide.Name = "button_passwordhide";
-            button_passwordhide.Size = new Size(28, 28);
+            button_passwordhide.Size = new Size(35, 35);
             button_passwordhide.TabIndex = 2;
             button_passwordhide.TabStop = false;
             button_passwordhide.UseVisualStyleBackColor = false;
@@ -397,9 +420,10 @@ namespace AccountUI
             panelConfirmPassword.Controls.Add(button_passwordshow2);
             panelConfirmPassword.Controls.Add(button_passwordhide2);
             panelConfirmPassword.CornerRadius = 16;
-            panelConfirmPassword.Location = new Point(375, 419);
+            panelConfirmPassword.Location = new Point(469, 524);
+            panelConfirmPassword.Margin = new Padding(4);
             panelConfirmPassword.Name = "panelConfirmPassword";
-            panelConfirmPassword.Size = new Size(285, 48);
+            panelConfirmPassword.Size = new Size(356, 60);
             panelConfirmPassword.TabIndex = 10;
             // 
             // textBox4
@@ -408,9 +432,10 @@ namespace AccountUI
             textBox4.BorderStyle = BorderStyle.None;
             textBox4.Font = new Font("Segoe UI", 11.5F);
             textBox4.ForeColor = Color.FromArgb(180, 182, 196);
-            textBox4.Location = new Point(14, 13);
+            textBox4.Location = new Point(18, 16);
+            textBox4.Margin = new Padding(4);
             textBox4.Name = "textBox4";
-            textBox4.Size = new Size(220, 26);
+            textBox4.Size = new Size(275, 31);
             textBox4.TabIndex = 0;
             textBox4.Text = "Xác Nhận Mật Khẩu";
             textBox4.Enter += textBox4_Enter;
@@ -423,9 +448,10 @@ namespace AccountUI
             button_passwordshow2.Cursor = Cursors.Hand;
             button_passwordshow2.FlatAppearance.BorderSize = 0;
             button_passwordshow2.FlatStyle = FlatStyle.Flat;
-            button_passwordshow2.Location = new Point(247, 10);
+            button_passwordshow2.Location = new Point(309, 12);
+            button_passwordshow2.Margin = new Padding(4);
             button_passwordshow2.Name = "button_passwordshow2";
-            button_passwordshow2.Size = new Size(28, 28);
+            button_passwordshow2.Size = new Size(35, 35);
             button_passwordshow2.TabIndex = 1;
             button_passwordshow2.TabStop = false;
             button_passwordshow2.UseVisualStyleBackColor = false;
@@ -438,9 +464,10 @@ namespace AccountUI
             button_passwordhide2.Cursor = Cursors.Hand;
             button_passwordhide2.FlatAppearance.BorderSize = 0;
             button_passwordhide2.FlatStyle = FlatStyle.Flat;
-            button_passwordhide2.Location = new Point(247, 10);
+            button_passwordhide2.Location = new Point(309, 12);
+            button_passwordhide2.Margin = new Padding(4);
             button_passwordhide2.Name = "button_passwordhide2";
-            button_passwordhide2.Size = new Size(28, 28);
+            button_passwordhide2.Size = new Size(35, 35);
             button_passwordhide2.TabIndex = 2;
             button_passwordhide2.TabStop = false;
             button_passwordhide2.UseVisualStyleBackColor = false;
@@ -454,9 +481,10 @@ namespace AccountUI
             btnSignup.FlatStyle = FlatStyle.Flat;
             btnSignup.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnSignup.ForeColor = Color.White;
-            btnSignup.Location = new Point(60, 475);
+            btnSignup.Location = new Point(75, 594);
+            btnSignup.Margin = new Padding(4);
             btnSignup.Name = "btnSignup";
-            btnSignup.Size = new Size(600, 48);
+            btnSignup.Size = new Size(750, 60);
             btnSignup.TabIndex = 11;
             btnSignup.Text = "Đăng ký";
             btnSignup.UseVisualStyleBackColor = false;
@@ -469,9 +497,10 @@ namespace AccountUI
             button2.FlatStyle = FlatStyle.Flat;
             button2.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             button2.ForeColor = Color.White;
-            button2.Location = new Point(280, 533);
+            button2.Location = new Point(75, 662);
+            button2.Margin = new Padding(4);
             button2.Name = "button2";
-            button2.Size = new Size(160, 40);
+            button2.Size = new Size(200, 50);
             button2.TabIndex = 12;
             button2.Text = "Quay lại";
             button2.UseVisualStyleBackColor = false;
@@ -479,15 +508,18 @@ namespace AccountUI
             // 
             // Signup
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1200, 720);
+            BackgroundImage = Properties.Resources.Bg;
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(1500, 900);
             Controls.Add(cardPanel);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Margin = new Padding(4);
             MaximizeBox = false;
             Name = "Signup";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Chess Online - Sign up";
+            Text = "Kỳ Vương Online - Đăng Ký";
             Load += Signup_Load;
             Resize += Signup_Resize;
             cardPanel.ResumeLayout(false);

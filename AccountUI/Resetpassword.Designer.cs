@@ -10,6 +10,7 @@ namespace AccountUI
         private RoundedPanel panelCard;
         private PictureBox pictureLogo;
         private Label lblAppName;
+        private Label lblOnline; // <--- Đã thêm Label Online
         private Label lblTitle;
         private Label lblSubTitle;
         private Label lblPass1;
@@ -33,6 +34,7 @@ namespace AccountUI
             panelCard = new RoundedPanel();
             pictureLogo = new PictureBox();
             lblAppName = new Label();
+            lblOnline = new Label(); // <--- Khởi tạo
             lblTitle = new Label();
             lblSubTitle = new Label();
             lblPass1 = new Label();
@@ -81,19 +83,27 @@ namespace AccountUI
             }
             catch { }
 
-            // APP NAME
+            // APP NAME: KỲ VƯƠNG
             lblAppName.AutoSize = true;
-            lblAppName.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblAppName.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             lblAppName.ForeColor = Color.White;
-            lblAppName.Location = new Point(104, 36);
-            lblAppName.Text = "CHESS ONLINE";
+            lblAppName.Location = new Point(100, 20);
+            lblAppName.Text = "KỲ VƯƠNG";
 
-            // TITLE
+            // LABEL: ONLINE
+            lblOnline.AutoSize = true;
+            lblOnline.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblOnline.ForeColor = Color.DeepSkyBlue;
+            lblOnline.Location = new Point(104, 52);
+            lblOnline.Text = "ONLINE"; // <--- Giữ nguyên tiếng Anh theo yêu cầu
+            // ----------------------------------------
+
+            // TITLE: ĐẶT LẠI MẬT KHẨU
             lblTitle.AutoSize = true;
             lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Location = new Point(32, 104);
-            lblTitle.Text = "Reset Password";
+            lblTitle.Text = "ĐẶT LẠI MẬT KHẨU"; // Đã Việt hóa
 
             // SUBTITLE
             lblSubTitle.AutoSize = true;
@@ -165,6 +175,7 @@ namespace AccountUI
             // ADD CONTROLS
             panelCard.Controls.Add(pictureLogo);
             panelCard.Controls.Add(lblAppName);
+            panelCard.Controls.Add(lblOnline); // <--- Add Control
             panelCard.Controls.Add(lblTitle);
             panelCard.Controls.Add(lblSubTitle);
             panelCard.Controls.Add(lblPass1);

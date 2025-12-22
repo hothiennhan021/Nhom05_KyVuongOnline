@@ -75,13 +75,13 @@ namespace AccountUI
             // ===== FORM =====
             this.ClientSize = new System.Drawing.Size(1200, 720);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "Chess Online - Login";
+            this.Text = "Kỳ Vương Online - Đăng nhập"; // Đã đổi tên
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.BackgroundImage = Properties.Resources.Bg;
             this.BackgroundImageLayout = ImageLayout.Stretch;
 
-            // ===== CARD =====
+            // ===== THẺ ĐĂNG NHẬP (CARD) =====
             this.panelCard.Size = new System.Drawing.Size(430, 540);
             this.panelCard.CornerRadius = 32;
             this.panelCard.BackColor = System.Drawing.Color.FromArgb(18, 25, 40);
@@ -90,13 +90,12 @@ namespace AccountUI
                 (this.ClientSize.Height - 540) / 2
             );
 
-            // ===== LOGO CONTAINER (giống mẫu) =====
+            // ===== LOGO CONTAINER =====
             this.panelIcon.Size = new System.Drawing.Size(330, 90);
             this.panelIcon.BackColor = System.Drawing.Color.Transparent;
-            // 430 - 330 = 100 → lệch 50 mỗi bên
             this.panelIcon.Location = new System.Drawing.Point(50, 32);
 
-            // --- ô vuông nền của knight ---
+            // --- Nền icon quân mã ---
             this.panelKnightBg.Size = new System.Drawing.Size(60, 60);
             this.panelKnightBg.CornerRadius = 14;
             this.panelKnightBg.BackColor = System.Drawing.Color.FromArgb(40, 46, 64);
@@ -104,30 +103,43 @@ namespace AccountUI
 
             this.picKnight.Dock = DockStyle.Fill;
             this.picKnight.SizeMode = PictureBoxSizeMode.Zoom;
-
             this.panelKnightBg.Controls.Add(this.picKnight);
 
-            // --- chữ CHESS ---
-            this.lblChess.AutoSize = true;
-            this.lblChess.Text = "CHESS";
-            this.lblChess.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
-            this.lblChess.ForeColor = System.Drawing.Color.White;
-            this.lblChess.Location = new System.Drawing.Point(80, 18);
+            // --- 1. TẠO BÓNG ĐỔ (Nằm lớp dưới) ---
+            // Label này sẽ có màu tối (hoặc màu Xanh đậm UIT) và nằm lệch 2 pixel
+            Label lblShadow = new Label();
+            lblShadow.Text = "KỲ VƯƠNG";
+            lblShadow.AutoSize = true;
+            lblShadow.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
+            // Màu bóng: Xám tối hoặc Xanh đậm (ví dụ Navy)
+            lblShadow.ForeColor = System.Drawing.Color.FromArgb(0, 50, 100);
+            lblShadow.Location = new System.Drawing.Point(73, 13); // Lệch +3 so với chữ chính
+            lblShadow.BackColor = System.Drawing.Color.Transparent; // Quan trọng để không bị che nền
+            this.Controls.Add(lblShadow); // Thêm vào form trước để nó nằm dưới
 
-            // --- chữ ONLINE ---
-            this.lblOnline.AutoSize = true;
-            this.lblOnline.Text = "ONLINE";
-            this.lblOnline.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblOnline.ForeColor = System.Drawing.Color.FromArgb(190, 195, 205);
-            this.lblOnline.Location = new System.Drawing.Point(83, 50);
+            // --- 2. TÊN GAME CHÍNH (Nằm lớp trên) ---
+            this.lblChess.AutoSize = true;
+            this.lblChess.Text = "KỲ VƯƠNG";
+            this.lblChess.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
+            this.lblChess.ForeColor = System.Drawing.Color.White;
+            this.lblChess.Location = new System.Drawing.Point(70, 10);
+            this.lblChess.BackColor = System.Drawing.Color.Transparent;
+            // Quan trọng: Đảm bảo chữ chính nằm đè lên bóng
+            this.lblChess.BringToFront();
+
+            // --- 3. CHỮ ONLINE ---
+            this.lblOnline.Text = "ONLINE  ●"; // Thêm dấu chấm tròn tạo điểm nhấn network
+            this.lblOnline.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Bold); // Dùng font Consolas cho chất "Code"
+            this.lblOnline.ForeColor = System.Drawing.Color.DeepSkyBlue;
+            this.lblOnline.Location = new System.Drawing.Point(75, 55);
 
             this.panelIcon.Controls.Add(this.panelKnightBg);
             this.panelIcon.Controls.Add(this.lblChess);
             this.panelIcon.Controls.Add(this.lblOnline);
 
-            // ===== WELCOME =====
+            // ===== CHÀO MỪNG =====
             this.lblWelcome.AutoSize = true;
-            this.lblWelcome.Text = "Welcome Back";
+            this.lblWelcome.Text = "ĐĂNG NHẬP"; // Đã đổi
             this.lblWelcome.ForeColor = System.Drawing.Color.FromArgb(235, 238, 245);
             this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
             this.lblWelcome.Location = new System.Drawing.Point(
@@ -135,7 +147,7 @@ namespace AccountUI
                 140
             );
 
-            // ===== USER INPUT =====
+            // ===== NHẬP TÀI KHOẢN =====
             this.pnlUser.Size = new System.Drawing.Size(320, 52);
             this.pnlUser.BackColor = System.Drawing.Color.FromArgb(35, 45, 65);
             this.pnlUser.Location = new System.Drawing.Point(55, 215);
@@ -160,7 +172,7 @@ namespace AccountUI
             this.pnlUser.Controls.Add(this.picUser);
             this.pnlUser.Controls.Add(this.txtUser);
 
-            // ===== PASSWORD INPUT =====
+            // ===== NHẬP MẬT KHẨU =====
             this.pnlPass.Size = new System.Drawing.Size(320, 52);
             this.pnlPass.BackColor = System.Drawing.Color.FromArgb(35, 45, 65);
             this.pnlPass.Location = new System.Drawing.Point(55, 280);
@@ -194,8 +206,8 @@ namespace AccountUI
             this.pnlPass.Controls.Add(this.txtPass);
             this.pnlPass.Controls.Add(this.picEye);
 
-            // ===== LOGIN BUTTON =====
-            this.btnLogin.Text = "LOGIN";
+            // ===== NÚT ĐĂNG NHẬP =====
+            this.btnLogin.Text = "ĐĂNG NHẬP"; // Đã đổi
             this.btnLogin.Size = new System.Drawing.Size(320, 48);
             this.btnLogin.Location = new System.Drawing.Point(55, 350);
             this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -204,25 +216,25 @@ namespace AccountUI
             this.btnLogin.FlatStyle = FlatStyle.Flat;
             this.btnLogin.FlatAppearance.BorderSize = 0;
 
-            // ===== LINKS =====
+            // ===== LIÊN KẾT (LINKS) =====
             var linkNormal = System.Drawing.Color.FromArgb(180, 185, 195);
             var linkActive = System.Drawing.Color.FromArgb(230, 235, 245);
 
             this.linkForgot.AutoSize = true;
-            this.linkForgot.Text = "Forgot password?";
+            this.linkForgot.Text = "Quên mật khẩu?"; // Đã đổi
             this.linkForgot.LinkColor = linkNormal;
             this.linkForgot.ActiveLinkColor = linkActive;
             this.linkForgot.Location = new System.Drawing.Point(165, 420);
             this.linkForgot.LinkClicked += new LinkLabelLinkClickedEventHandler(this.linkForgot_LinkClicked);
 
             this.linkCreate.AutoSize = true;
-            this.linkCreate.Text = "Create account";
+            this.linkCreate.Text = "Tạo tài khoản"; // Đã đổi
             this.linkCreate.LinkColor = System.Drawing.Color.FromArgb(100, 150, 255);
             this.linkCreate.ActiveLinkColor = linkActive;
             this.linkCreate.Location = new System.Drawing.Point(173, 450);
             this.linkCreate.LinkClicked += new LinkLabelLinkClickedEventHandler(this.linkCreate_LinkClicked);
 
-            // ===== ADD TO CARD =====
+            // ===== THÊM VÀO CARD =====
             this.panelCard.Controls.Add(this.panelIcon);
             this.panelCard.Controls.Add(this.lblWelcome);
             this.panelCard.Controls.Add(this.pnlUser);
@@ -231,7 +243,7 @@ namespace AccountUI
             this.panelCard.Controls.Add(this.linkForgot);
             this.panelCard.Controls.Add(this.linkCreate);
 
-            // ===== ADD TO FORM =====
+            // ===== THÊM VÀO FORM =====
             this.Controls.Add(this.panelCard);
 
             this.panelCard.ResumeLayout(false);
