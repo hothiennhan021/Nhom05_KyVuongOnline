@@ -150,44 +150,38 @@ namespace AccountUI
         }
 
         // Nút ĐỒNG Ý KẾT BẠN (Accept)
-        private void btnAccept_Click(object sender, EventArgs e)
+        private async void btnAccept_Click(object sender, EventArgs e)
         {
-            if (lbRequests.SelectedItem == null)
-            {
-                MessageBox.Show("Vui lòng chọn một lời mời trong danh sách!");
-                return;
-            }
+            if (lbRequests.SelectedItem == null) { MessageBox.Show("Chọn lời mời!"); return; }
 
             try
             {
-                // Item trong ListBox có dạng "15|HungNguyen"
-                string selected = lbRequests.SelectedItem.ToString();
+                string reqId = lbRequests.SelectedItem.ToString().Split('|')[0];
 
-                // Cắt lấy ID (phần trước dấu |)
-                string reqId = selected.Split('|')[0];
+                await ClientManager.Instance.SendAsync($"FRIEND_ACCEPT|{reqId}");
 
-                // Gửi lệnh đồng ý
-                string response = ClientSocket.SendAndReceive($"FRIEND_ACCEPT|{reqId}");
+                // Đợi phản hồi ở background thread để không đơ UI
+                string response = await Task.Run(() => ClientManager.Instance.WaitForMessage(5000));
 
-                //  Chỉ cần chứa từ khóa "OK" hoặc "SUCCESS" là được
-                if (response.Contains("OK") || response.Contains("SUCCESS") || response.Contains("FRIEND_ACCEPTED") || response.Contains("FRIEND_REQUESTS"))
+                if (!string.IsNullOrEmpty(response) &&
+                    (response.Contains("OK") || response.Contains("SUCCESS") || response.Contains("FRIEND_ACCEPTED")))
                 {
                     MessageBox.Show("Đã chấp nhận kết bạn!");
-
-                    // Tải lại danh sách ngay lập tức
-                    LoadFriendListAsync();
-                    LoadFriendRequestsAsync();
+                    await LoadFriendListAsync();
+                    await LoadFriendRequestsAsync();
                 }
                 else
                 {
-                    // Có thể thêm thông báo lỗi tiếng Việt ở đây nếu cần
+                    MessageBox.Show("Chấp nhận thất bại. Phản hồi: " + (response ?? "null"));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi xử lý: " + ex.Message);
+                MessageBox.Show("Lỗi: " + ex.Message);
             }
         }
+
+
 
         private void btnRefreshRequest_Click(object sender, EventArgs e)
         {
@@ -352,52 +346,7 @@ namespace AccountUI
 
             // Vẽ viền focus
             e.DrawFocusRectangle();
-        }
-
-        private void lbFriends_DoubleClick(object sender, EventArgs e)
-        {
-            // 1. Kiểm tra xem có đang chọn dòng nào không
-            if (lbFriends.SelectedItem == null || lbFriends.SelectedIndex == -1) return;
-
-            try
-            {
-                // 2. Lấy dữ liệu thô từ dòng đang chọn
-
-                string rawData = lbFriends.SelectedItem.ToString();
-                string[] parts = rawData.Split('|');
-
-                // Lấy tên và trạng thái
-                string friendName = parts[0];
-                string isOnline = (parts.Length > 2) ? parts[2] : "false";
-
-
-                if (isOnline != "true")
-                {
-                    // Đã sửa "Offline" -> "ngoại tuyến"
-                    MessageBox.Show(
-                        $"Người chơi {friendName} đang ngoại tuyến, không thể thách đấu!",
-                        "Thông báo",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    return;
-                }
-
-                //  Hỏi xác nhận (UX tốt hơn là gửi luôn)
-                DialogResult result = MessageBox.Show(
-                    $"Bạn có muốn gửi lời mời thách đấu tới {friendName}?",
-                    "Thách đấu",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    ClientSocket.SendAndReceive($"CHALLENGE|{friendName}");
-                }
-            }
-            catch (Exception ex)
-            {
-
-            }
+              
         }
     }
 }

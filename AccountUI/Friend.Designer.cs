@@ -111,7 +111,6 @@
             lbFriends.Size = new Size(526, 402);
             lbFriends.TabIndex = 2;
             lbFriends.DrawItem += lbFriends_DrawItem;
-            lbFriends.DoubleClick += lbFriends_DoubleClick;
             // 
             // btnRefresh
             // 

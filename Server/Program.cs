@@ -27,6 +27,8 @@ namespace MyTcpServer
             _config = builder.Build();
 
             string connString = _config.GetConnectionString("DefaultConnection");
+            Console.WriteLine("[DB] DefaultConnection = " + connString);
+            GameManager.Init(connString);
 
             try
             {

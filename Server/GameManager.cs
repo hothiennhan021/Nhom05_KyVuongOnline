@@ -23,7 +23,6 @@ namespace MyTcpServer
             Player2 = p2;
         }
     }
-
     public static class GameManager
     {
         private static readonly List<ConnectedClient> _waitingLobby = new List<ConnectedClient>();
@@ -32,7 +31,12 @@ namespace MyTcpServer
         private static readonly ConcurrentDictionary<ConnectedClient, GameSession> _activeGames = new ConcurrentDictionary<ConnectedClient, GameSession>();
         private static readonly ConcurrentDictionary<string, ConnectedClient> _privateRooms = new ConcurrentDictionary<string, ConnectedClient>();
         private static readonly ConcurrentDictionary<string, PendingMatch> _pendingMatches = new ConcurrentDictionary<string, PendingMatch>();
+        public static string ConnectionString { get; private set; }
 
+        public static void Init(string conn)
+        {
+            ConnectionString = conn;
+        }
         public static void HandleClientConnect(ConnectedClient client) { }
 
         public static void HandleClientDisconnect(ConnectedClient client)
@@ -117,8 +121,8 @@ namespace MyTcpServer
 
                     if (startGame)
                     {
-                        var session = new GameSession(match.Player1, match.Player2);
-                        session.OnGameEnded += HandleGameEndLog;
+                        var session = new GameSession(match.Player1, match.Player2, ConnectionString);
+                        session.OnGameEnded += (s, w, r) => _ = HandleGameEndLog(s, w, r);
                         _activeGames[match.Player1] = session;
                         _activeGames[match.Player2] = session;
                         await session.StartGame();
@@ -153,8 +157,8 @@ namespace MyTcpServer
                     await joiner.SendMessageAsync("ROOM_ERROR|Phòng đã hủy.");
                     return;
                 }
-                var session = new GameSession(creator, joiner);
-                session.OnGameEnded += HandleGameEndLog;
+                var session = new GameSession(creator, joiner, ConnectionString);
+                session.OnGameEnded += (s, w, r) => _ = HandleGameEndLog(s, w, r);
                 _activeGames[creator] = session;
                 _activeGames[joiner] = session;
                 await session.StartGame();
@@ -186,14 +190,9 @@ namespace MyTcpServer
                 }
             }
         }
-
-        // Thêm hàm này vào cuối class GameManager
-        // Đặt hàm này trong GameManager.cs
-        private static async void HandleGameEndLog(GameSession session, Player winner, string reason)
+        private static async Task HandleGameEndLog(GameSession session, Player winner, string reason)
         {
-            // Chuỗi kết nối (Thay bằng chuỗi kết nối của bạn)
-            string connectionString = "Server=.;Database=ChessDB;Trusted_Connection=True;TrustServerCertificate=True;";
-            var userRepo = new ChessData.UserRepository(connectionString);
+            var userRepo = new ChessData.UserRepository(ConnectionString);
 
             try
             {
@@ -202,13 +201,11 @@ namespace MyTcpServer
                     var winnerClient = (winner == Player.White) ? session.PlayerWhite : session.PlayerBlack;
                     var loserClient = (winner == Player.White) ? session.PlayerBlack : session.PlayerWhite;
 
-                    // --- SỬA Ở ĐÂY: Dùng .Username thay vì .Client.Username ---
                     await userRepo.UpdateGameResultAsync(winnerClient.Username, 25, 1);
                     await userRepo.UpdateGameResultAsync(loserClient.Username, -25, -1);
                 }
-                else // Hòa
+                else
                 {
-                    // --- SỬA Ở ĐÂY: Dùng .Username thay vì .Client.Username ---
                     await userRepo.UpdateGameResultAsync(session.PlayerWhite.Username, 0, 0);
                     await userRepo.UpdateGameResultAsync(session.PlayerBlack.Username, 0, 0);
                 }
@@ -220,5 +217,6 @@ namespace MyTcpServer
                 Console.WriteLine($"[DB Error] Failed to save result: {ex.Message}");
             }
         }
+
     }
 }
