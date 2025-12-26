@@ -1,2 +1,7 @@
-# NT106-Lab4
-Lab 4 - Working with Web Server in C#
+# Nhóm 05 - Kỳ Vương Online
+## Danh sách thành viên:
+23521073 - Hồ Thiện Nhân <br>
+24520947 - Phạm Hữu Lầu <br>
+24520829 - Nguyễn Huỳnh Đăng Khoa <br>
+24521888 - Nguyễn Xuân Trung <br>
+
